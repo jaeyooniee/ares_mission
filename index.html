@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Martian Map – Habitat Display & Helmet HUD Mockup</title>
+<style>
+  :root{
+    --cyan:#5ef2ff; --cyan-dim:rgba(94,242,255,.35); --amber:#ffb347; --red:#ff5a4f; --green:#5dff9d;
+    --bg:#04070b; --panel:rgba(8,22,30,.55); --line:rgba(94,242,255,.25); --text:#d8f6ff; --muted:#7fa7b3;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
+  header{display:flex;align-items:center;gap:18px;padding:12px 22px;border-bottom:1px solid #10232c;flex-wrap:wrap}
+  header h1{font-size:15px;margin:0;letter-spacing:.14em;color:var(--cyan);font-weight:600}
+  header .sub{font-size:12px;color:var(--muted)}
+  .tabs{margin-left:auto;display:flex;gap:6px}
+  .tabs button{background:#0a1720;color:#9cc;border:1px solid #1d3a48;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+  .tabs button.active{background:#0f3242;color:#fff;border-color:var(--cyan)}
+  .controls{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)}
+  .controls button{background:#0a1720;color:var(--text);border:1px solid #1d3a48;border-radius:6px;padding:6px 10px;cursor:pointer}
+  .view{display:none;padding:16px 22px 26px}
+  .view.active{display:block}
+
+  /* ---------- Habitat transparent display ---------- */
+  .window{position:relative;border-radius:28px;overflow:hidden;height:600px;
+    background:
+      radial-gradient(ellipse at 70% 120%, #7a3a1c 0%, #4a2312 35%, transparent 60%),
+      linear-gradient(180deg,#2a1a17 0%,#6b3b22 46%,#8c4a26 52%,#5b2c16 70%,#2d150b 100%);
+    box-shadow: inset 0 0 0 10px #0d1418, inset 0 0 0 12px #26343b, 0 20px 60px rgba(0,0,0,.6);}
+  .window::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(115deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 30%,rgba(255,255,255,.04) 55%,rgba(255,255,255,0) 70%);z-index:3}
+  .window .hills{position:absolute;left:0;right:0;bottom:30%;height:120px;opacity:.55;
+    background:radial-gradient(ellipse 30% 100% at 20% 100%,#3a1c0f 60%,transparent 61%),
+               radial-gradient(ellipse 40% 80% at 70% 100%,#43200f 60%,transparent 61%)}
+  .window-label{position:absolute;top:18px;left:28px;font-size:11px;letter-spacing:.2em;color:rgba(255,220,200,.45);z-index:4}
+  .holo{position:absolute;inset:0;display:grid;grid-template-columns:240px 1fr 280px;gap:14px;padding:46px 26px 22px;z-index:2}
+  .glass{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 14px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 0 24px rgba(94,242,255,.08) inset}
+  .glass h3{margin:0 0 10px;font-size:11px;letter-spacing:.18em;color:var(--cyan);font-weight:600}
+  .glass + .glass{margin-top:12px}
+  .col{display:flex;flex-direction:column;min-height:0}
+  .layer{display:flex;align-items:center;gap:8px;font-size:13px;margin:7px 0;cursor:pointer}
+  .layer input{accent-color:#5ef2ff}
+  .sw{width:14px;height:4px;border-radius:2px;display:inline-block}
+  .wp{display:flex;gap:8px;font-size:12.5px;margin:8px 0;line-height:1.35}
+  .wp b{color:#fff;font-weight:600}
+  .wp .dot{flex:0 0 18px;height:18px;border-radius:50%;border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--cyan)}
+  .center{position:relative;border-radius:14px;overflow:hidden}
+  #holoCanvas{width:100%;height:100%;display:block;cursor:grab}
+  #holoCanvas:active{cursor:grabbing}
+  .hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);background:rgba(0,0,0,.35);padding:4px 10px;border-radius:20px}
+  .stat{display:flex;justify-content:space-between;font-size:13px;margin:6px 0}
+  .stat span:last-child{font-variant-numeric:tabular-nums;color:#fff}
+  .big{font-size:26px;color:#fff;font-weight:300;font-variant-numeric:tabular-nums}
+  .cmp{font-size:12px;line-height:1.5;color:var(--muted)}
+  .cmp .bad{color:var(--red)} .cmp .good{color:var(--green)}
+  #profile{width:100%;height:110px;display:block}
+  .tag{font-size:10px;color:var(--muted);margin-top:6px}
+
+  /* ---------- Helmet HUD ---------- */
+  .hud-wrap{position:relative;max-width:1200px;margin:0 auto;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000}
+  #hudCanvas{position:absolute;inset:0;width:100%;height:100%}
+  .visor{position:absolute;inset:-4%;pointer-events:none;border-radius:50% / 42%;
+    box-shadow:0 0 0 2000px rgba(4,6,8,.92), inset 0 0 80px 30px rgba(0,0,0,.55), inset 0 0 0 2px rgba(94,242,255,.25)}
+  .visor-glare{position:absolute;inset:0;pointer-events:none;background:linear-gradient(160deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,0) 28%)}
+  .hud{position:absolute;color:var(--cyan);text-shadow:0 0 8px rgba(94,242,255,.6);font-size:13px;pointer-events:none}
+  .hud .lbl{font-size:10px;letter-spacing:.18em;opacity:.75}
+  .hud .val{font-size:22px;font-weight:300;font-variant-numeric:tabular-nums}
+  #compass{position:absolute;top:6%;left:50%;transform:translateX(-50%);width:44%;height:42px}
+  .hud-left{top:22%;left:12%;width:170px}
+  .hud-right{top:22%;right:12%;width:190px;text-align:right}
+  .bar{height:6px;border:1px solid var(--cyan-dim);border-radius:3px;margin:4px 0 12px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .hud-bottom{bottom:13%;left:50%;transform:translateX(-50%);text-align:center;width:46%}
+  .instr{font-size:15px;color:#fff;text-shadow:0 0 6px rgba(0,0,0,.9),0 0 10px rgba(94,242,255,.5)}
+  .warn{margin-top:6px;font-size:13px;color:var(--amber);text-shadow:0 0 8px rgba(255,179,71,.7)}
+  #arrow{position:absolute;bottom:22%;left:50%;width:70px;height:70px;transform:translateX(-50%)}
+  #minimap{position:absolute;right:11%;bottom:12%;width:150px;height:150px;border-radius:50%;border:1px solid var(--cyan-dim);background:rgba(0,20,28,.45)}
+  .space-wx{bottom:12%;left:11%;width:220px;font-size:12px}
+  .crosshair{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border:1px solid rgba(94,242,255,.45);border-radius:50%}
+  .note{max-width:1200px;margin:12px auto 0;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>MARTIAN MAP · MOCKUP</h1>
+  <span class="sub">Jezero-like 가상 지형 · 경로는 경사 기반 A* 로 실제 계산 · 수치는 시연용 추정치</span>
+  <div class="controls">
+    <button id="playBtn">⏸ 일시정지</button>
+    <label>속도 <input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></label>
+  </div>
+  <div class="tabs">
+    <button data-view="display" class="active">🛰 Habitat Transparent Display</button>
+    <button data-view="hud">👨‍🚀 Helmet HUD</button>
+  </div>
+</header>
+
+<!-- ================= VIEW 1: transparent display ================= -->
+<section id="display" class="view active">
+  <div class="window">
+    <div class="hills"></div>
+    <div class="window-label">HABITAT VIEWPORT · TRANSPARENT OLED</div>
+    <div class="holo">
+      <div class="col">
+        <div class="glass">
+          <h3>MISSION</h3>
+          <div style="font-size:14px;color:#fff;margin-bottom:6px">EVA-07 · 삼각주 샘플링</div>
+          <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><span style="color:var(--muted)">출발 / 복귀 지점</span></div></div>
+          <div class="wp"><div class="dot">1</div><div><b>삼각주 퇴적층</b><br><span style="color:var(--muted)">층리 관찰 + 코어 샘플</span></div></div>
+          <div class="wp"><div class="dot">2</div><div><b>점토 광물 노두</b><br><span style="color:var(--muted)">CRISM 점토 신호 확인</span></div></div>
+        </div>
+        <div class="glass">
+          <h3>LAYERS</h3>
+          <label class="layer"><input type="checkbox" id="lyTerrain" checked> 3D 지형 (HiRISE DTM)</label>
+          <label class="layer"><input type="checkbox" id="lySlope"> 경사 위험도</label>
+          <label class="layer"><input type="checkbox" id="lyRoute" checked><span class="sw" style="background:var(--green)"></span> 최적 경로</label>
+          <label class="layer"><input type="checkbox" id="lyStraight" checked><span class="sw" style="background:var(--red)"></span> 직선 경로 (비교)</label>
+          <label class="layer"><input type="checkbox" id="lyRotate" checked> 자동 회전</label>
+        </div>
+      </div>
+
+      <div class="center glass" style="padding:0">
+        <canvas id="holoCanvas"></canvas>
+        <div class="hint">드래그해서 회전 · 휠로 확대/축소</div>
+      </div>
+
+      <div class="col">
+        <div class="glass">
+          <h3>ROUTE BUDGET</h3>
+          <div class="stat"><span>총 거리</span><span id="sDist">–</span></div>
+          <div class="stat"><span>예상 소요</span><span id="sTime">–</span></div>
+          <div class="stat"><span>최대 경사</span><span id="sSlope">–</span></div>
+          <div class="stat"><span>O₂ 사용 (예상)</span><span id="sO2">–</span></div>
+          <div class="cmp" id="cmp"></div>
+        </div>
+        <div class="glass">
+          <h3>ELEVATION PROFILE</h3>
+          <canvas id="profile"></canvas>
+          <div class="tag">색: 초록 &lt;8° · 노랑 8–15° · 빨강 &gt;15°</div>
+        </div>
+        <div class="glass">
+          <h3>CREW TRACK</h3>
+          <div class="big" id="sProgress">0%</div>
+          <div class="tag" id="sNext">–</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VIEW 2: helmet HUD ================= -->
+<section id="hud" class="view">
+  <div class="hud-wrap" id="hudWrap">
+    <canvas id="hudCanvas"></canvas>
+    <canvas id="compass"></canvas>
+    <div class="crosshair"></div>
+
+    <div class="hud hud-left">
+      <div class="lbl">O₂ RESERVE</div><div class="val" id="hO2">–</div><div class="bar"><i id="hO2bar"></i></div>
+      <div class="lbl">SUIT POWER</div><div class="val" id="hPwr">–</div><div class="bar"><i id="hPwrbar"></i></div>
+      <div class="lbl">EVA ELAPSED</div><div class="val" id="hTime">–</div>
+    </div>
+
+    <div class="hud hud-right">
+      <div class="lbl">NEXT WAYPOINT</div><div class="val" id="hWp">–</div>
+      <div class="lbl" style="margin-top:10px">DISTANCE</div><div class="val" id="hDist">–</div>
+      <div class="lbl" style="margin-top:10px">GRADE AHEAD</div><div class="val" id="hGrade">–</div>
+      <div class="lbl" style="margin-top:10px">RETURN TO HAB</div><div class="val" id="hRet">–</div>
+    </div>
+
+    <canvas id="arrow" width="140" height="140"></canvas>
+    <div class="hud hud-bottom">
+      <div class="instr" id="hInstr">–</div>
+      <div class="warn" id="hWarn"></div>
+    </div>
+
+    <div class="hud space-wx">
+      <div class="lbl">SPACE WEATHER · DONKI</div>
+      <div style="margin-top:4px">☢ SEP 경보 없음 · 선량률 정상</div>
+      <div style="opacity:.7;font-size:11px">(시연용 정적 데이터)</div>
+    </div>
+    <canvas id="minimap" width="300" height="300"></canvas>
+
+    <div class="visor"></div><div class="visor-glare"></div>
+  </div>
+  <div class="note">헬멧 HUD 시점: 우주인이 최적 경로를 따라 걷는 모습을 재생합니다. 초록 리본이 갈 길, 비콘이 목표 지점입니다. 실제 구현에서는 배경이 카메라 실시간 영상(AR)이고 그 위에 경로가 덧씌워집니다.</div>
+</section>
+
+<script>
+(() => {
+// ====================== TERRAIN ======================
+const N = 64, CELL = 25, EXAG = 2.0;           // 64x64 grid, 25 m cells (~1.6 km), vertical exaggeration
+const wx = i => (i - (N - 1) / 2) * CELL;
+function hRaw(x, z) {
+  let h = 18*Math.sin(x*0.0045+1.3) + 14*Math.cos(z*0.0052-0.4) + 8*Math.sin((x+z)*0.011) + 5*Math.cos((x-z)*0.017);
+  const cx=-150, cz=120, R=260, r=Math.hypot(x-cx, z-cz);                   // crater
+  h += -40*Math.exp(-(r*r)/(2*(R*0.55)**2)) + 30*Math.exp(-((r-R)**2)/(2*40**2));
+  h += 32*Math.exp(-((x-250)**2)/(2*55**2)) * (0.5+0.5*Math.sin(z*0.012));   // ridge with gaps
+  h += 3*Math.sin(x*0.08)*Math.cos(z*0.07);                                  // small roughness
+  return h;
+}
+const H = [], S = [], P = [];
+for (let i=0;i<N;i++){ H[i]=[]; for(let j=0;j<N;j++) H[i][j]=hRaw(wx(i), wx(j)); }
+for (let i=0;i<N;i++){ S[i]=[]; P[i]=[];
+  for (let j=0;j<N;j++){
+    const i0=Math.max(i-1,0), i1=Math.min(i+1,N-1), j0=Math.max(j-1,0), j1=Math.min(j+1,N-1);
+    const gx=(H[i1][j]-H[i0][j])/((i1-i0)*CELL), gz=(H[i][j1]-H[i][j0])/((j1-j0)*CELL);
+    S[i][j]=Math.atan(Math.hypot(gx,gz))*180/Math.PI;
+    P[i][j]={x:wx(i), y:H[i][j]*EXAG, z:wx(j)};
+  }
+}
+let hMin=Infinity,hMax=-Infinity; for(const r of H) for(const v of r){hMin=Math.min(hMin,v);hMax=Math.max(hMax,v);}
+
+// quads with static lighting
+const L = (()=>{const v=[-0.45,0.8,-0.4];const n=Math.hypot(...v);return v.map(a=>a/n);})();
+const quads=[];
+for(let i=0;i<N-1;i++) for(let j=0;j<N-1;j++){
+  const a=P[i][j], b=P[i+1][j], c=P[i][j+1];
+  const ux=b.x-a.x, uy=(b.y-a.y)/EXAG, uz=b.z-a.z, vx=c.x-a.x, vy=(c.y-a.y)/EXAG, vz=c.z-a.z;
+  let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx; if(ny<0){nx=-nx;ny=-ny;nz=-nz;}
+  const nl=Math.hypot(nx,ny,nz); const shade=0.45+0.55*Math.max(0,(nx*L[0]+ny*L[1]+nz*L[2])/nl);
+  const hAvg=(H[i][j]+H[i+1][j]+H[i][j+1]+H[i+1][j+1])/4;
+  const sAvg=Math.max(S[i][j],S[i+1][j],S[i][j+1],S[i+1][j+1]);
+  quads.push({i,j,shade,t:(hAvg-hMin)/(hMax-hMin),s:sAvg});
+}
+
+// ====================== PATHFINDING (slope-aware A*) ======================
+const MAX_SLOPE = 15;   // deg – walkable limit in suit
+function astar(s, g, maxSlope){
+  const id=(i,j)=>i*N+j, gid=id(g[0],g[1]);
+  const G=new Float64Array(N*N).fill(Infinity), came=new Int32Array(N*N).fill(-1), closed=new Uint8Array(N*N);
+  const heap=[]; const push=(f,v)=>{heap.push([f,v]);let k=heap.length-1;while(k>0){const p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;[heap[p],heap[k]]=[heap[k],heap[p]];k=p;}};
+  const pop=()=>{const top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;let k=0;for(;;){const l=2*k+1,r=l+1;let m=k;if(l<heap.length&&heap[l][0]<heap[m][0])m=l;if(r<heap.length&&heap[r][0]<heap[m][0])m=r;if(m===k)break;[heap[m],heap[k]]=[heap[k],heap[m]];k=m;}}return top;};
+  const hd=v=>Math.hypot(Math.floor(v/N)-g[0], v%N-g[1])*CELL;
+  const s0=id(s[0],s[1]); G[s0]=0; push(hd(s0),s0);
+  while(heap.length){
+    const [,u]=pop(); if(closed[u])continue; closed[u]=1; if(u===gid)break;
+    const ui=Math.floor(u/N), uj=u%N;
+    for(let di=-1;di<=1;di++) for(let dj=-1;dj<=1;dj++){
+      if(!di&&!dj)continue; const vi=ui+di, vj=uj+dj; if(vi<0||vj<0||vi>=N||vj>=N)continue;
+      const v=id(vi,vj); if(closed[v])continue;
+      if(S[vi][vj]>maxSlope && v!==gid) continue;
+      const d=CELL*(di&&dj?Math.SQRT2:1), gr=Math.atan(Math.abs(H[vi][vj]-H[ui][uj])/d)*180/Math.PI;
+      const c=d*(1+0.02*gr*gr+0.01*S[vi][vj]**2);
+      const ng=G[u]+c; if(ng<G[v]){G[v]=ng;came[v]=u;push(ng+hd(v),v);}
+    }
+  }
+  if(came[gid]<0 && gid!==s0) return null;
+  const path=[]; for(let v=gid; v>=0; v=came[v]){ path.push([Math.floor(v/N), v%N]); if(v===s0)break; }
+  return path.reverse();
+}
+const HAB=[6,56], W1=[30,8], W2=[56,40];
+const seg1 = astar(HAB,W1,MAX_SLOPE) || astar(HAB,W1,90);
+const seg2 = astar(W1,W2,MAX_SLOPE) || astar(W1,W2,90);
+const route = seg1.concat(seg2.slice(1));
+const idxW1 = seg1.length-1;
+const straight=[]; for(let k=0;k<=60;k++){const t=k/60; straight.push([Math.round(HAB[0]+(W1[0]-HAB[0])*t), Math.round(HAB[1]+(W1[1]-HAB[1])*t)]);}
+
+// route metrics (Tobler hiking function, slowed for suit) – illustrative only
+function metrics(path){
+  let dist=0,time=0,maxS=0,o2=0; const cum=[0], prof=[{d:0,h:H[path[0][0]][path[0][1]],g:0}];
+  for(let k=1;k<path.length;k++){
+    const [a,b]=path[k-1],[c,d]=path[k]; const dh=H[c][d]-H[a][b], dxy=Math.hypot(c-a,d-b)*CELL; if(dxy===0){cum.push(dist);prof.push({d:dist,h:H[c][d],g:S[c][d]});continue;}
+    const seg=Math.hypot(dxy,dh), grade=dh/dxy, gdeg=Math.atan(Math.abs(grade))*180/Math.PI;
+    const v=6*Math.exp(-3.5*Math.abs(grade+0.05))*0.55/3.6;                // m/s
+    const dt=seg/v; time+=dt; dist+=seg; maxS=Math.max(maxS,gdeg,S[c][d]);
+    o2+=dt*(1+3*Math.max(grade,0));                                         // relative O2 load
+    cum.push(dist); prof.push({d:dist,h:H[c][d],g:Math.max(gdeg,S[c][d])});
+  }
+  return {dist,time,maxS,o2Pct:o2/(8*3600)*100,cum,prof};
+}
+const M = metrics(route), MS = metrics(straight);
+const fmtT = s => `${Math.floor(s/3600)}h ${String(Math.round(s%3600/60)).padStart(2,'0')}m`;
+document.getElementById('sDist').textContent=(M.dist/1000).toFixed(2)+' km';
+document.getElementById('sTime').textContent=fmtT(M.time);
+document.getElementById('sSlope').textContent=M.maxS.toFixed(0)+'°';
+document.getElementById('sO2').textContent=M.o2Pct.toFixed(0)+'%';
+const steepStraight = straight.filter(([i,j])=>S[i][j]>MAX_SLOPE).length;
+document.getElementById('cmp').innerHTML =
+  `<div style="margin-top:8px">직선 경로(H→1): <span class="bad">최대 경사 ${MS.maxS.toFixed(0)}°</span>, 통행 불가 구간 ${steepStraight}곳 포함</div>
+   <div>최적 경로: <span class="good">경사 ${MAX_SLOPE}° 이하만 통과</span>하도록 크레이터 림을 우회</div>`;
+
+// world points along route (lifted slightly)
+const routeW = route.map(([i,j])=>({x:P[i][j].x, y:P[i][j].y+4, z:P[i][j].z}));
+const straightW = straight.map(([i,j])=>({x:P[i][j].x, y:P[i][j].y+4, z:P[i][j].z}));
+const wps = [{p:HAB,label:'H  HABITAT'},{p:W1,label:'1  삼각주 퇴적층'},{p:W2,label:'2  점토 노두'}];
+
+// ====================== CAMERA ======================
+function makeCam(pos,yaw,pitch,F,cx,cy){
+  const cY=Math.cos(yaw), sY=Math.sin(yaw), cP=Math.cos(pitch), sP=Math.sin(pitch);
+  return {proj(p){const dx=p.x-pos.x, dy=p.y-pos.y, dz=p.z-pos.z;
+    const x1=dx*cY-dz*sY, z1=dx*sY+dz*cY; const y2=dy*cP+z1*sP, z2=-dy*sP+z1*cP;
+    return {x:cx+F*x1/z2, y:cy-F*y2/z2, z:z2};}, F,cx,cy,pitch};
+}
+function fitCanvas(cv){const r=cv.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=Math.round(r.width*dpr), h=Math.round(r.height*dpr); if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;} return dpr;}
+
+// ====================== STATE ======================
+let walker=0, playing=true, speed=1, view='display';
+let orbitYaw=-0.7, orbitPitch=0.62, orbitDist=2100, dragging=null;
+
+// ====================== VIEW 1: HOLO RENDER ======================
+const holo=document.getElementById('holoCanvas'), hctx=holo.getContext('2d');
+function slopeColor(s,a){ if(s<8) return `rgba(93,255,157,${a})`; if(s<15) return `rgba(255,214,90,${a})`; return `rgba(255,90,79,${a})`; }
+function drawHolo(){
+  const dpr=fitCanvas(holo), W=holo.width, Hh=holo.height; hctx.clearRect(0,0,W,Hh);
+  const f=[Math.sin(orbitYaw)*Math.cos(orbitPitch), -Math.sin(orbitPitch), Math.cos(orbitYaw)*Math.cos(orbitPitch)];
+  const pos={x:-f[0]*orbitDist, y:-f[1]*orbitDist, z:-f[2]*orbitDist};
+  const cam=makeCam(pos,orbitYaw,orbitPitch,Math.min(W,Hh)*1.15,W/2,Hh*0.55);
+  const PR=P.map(r=>r.map(p=>cam.proj(p)));
+  const showT=lyTerrain.checked, showS=lySlope.checked;
+  if(showT||showS){
+    const list=[];
+    for(const q of quads){const a=PR[q.i][q.j],b=PR[q.i+1][q.j],c=PR[q.i+1][q.j+1],d=PR[q.i][q.j+1];
+      if(a.z<1||b.z<1||c.z<1||d.z<1)continue; list.push([(a.z+b.z+c.z+d.z)/4,q,a,b,c,d]);}
+    list.sort((u,v)=>v[0]-u[0]);
+    hctx.lineWidth=0.6*dpr;
+    for(const [,q,a,b,c,d] of list){
+      hctx.beginPath(); hctx.moveTo(a.x,a.y); hctx.lineTo(b.x,b.y); hctx.lineTo(c.x,c.y); hctx.lineTo(d.x,d.y); hctx.closePath();
+      if(showS){ hctx.fillStyle=slopeColor(q.s,0.18+0.45*q.shade); }
+      else { const r=(200+55*q.t)*q.shade, g=(110+80*q.t)*q.shade, bl=(70+60*q.t)*q.shade; hctx.fillStyle=`rgba(${r|0},${g|0},${bl|0},0.55)`; }
+      hctx.fill(); hctx.strokeStyle='rgba(94,242,255,0.13)'; hctx.stroke();
+    }
+  }
+  const poly=(pts,color,w,dash)=>{hctx.save();hctx.setLineDash(dash||[]);hctx.strokeStyle=color;hctx.lineWidth=w*dpr;hctx.shadowColor=color;hctx.shadowBlur=12*dpr;
+    hctx.beginPath();let started=false;for(const p of pts){const s=cam.proj(p);if(s.z<1){started=false;continue;}if(!started){hctx.moveTo(s.x,s.y);started=true;}else hctx.lineTo(s.x,s.y);}hctx.stroke();hctx.restore();};
+  if(lyStraight.checked) poly(straightW,'rgba(255,90,79,0.9)',2,[8*dpr,6*dpr]);
+  if(lyRoute.checked){ poly(routeW,'rgba(93,255,157,0.95)',3.2); poly(routeW.slice(0,Math.floor(walker)+1),'rgba(255,255,255,0.9)',1.4); }
+  // waypoints
+  hctx.font=`${12*dpr}px Segoe UI, sans-serif`;
+  for(const w of wps){const base=P[w.p[0]][w.p[1]], top={x:base.x,y:base.y+170,z:base.z};
+    const s0=cam.proj(base), s1=cam.proj(top); if(s0.z<1)continue;
+    hctx.strokeStyle='rgba(94,242,255,0.9)'; hctx.lineWidth=1.2*dpr; hctx.beginPath(); hctx.moveTo(s0.x,s0.y); hctx.lineTo(s1.x,s1.y); hctx.stroke();
+    hctx.fillStyle='rgba(94,242,255,1)'; hctx.beginPath(); hctx.arc(s1.x,s1.y,4*dpr,0,7); hctx.fill();
+    hctx.fillStyle='#e9fdff'; hctx.fillText(w.label, s1.x+8*dpr, s1.y+4*dpr);}
+  // crew marker
+  const k=Math.floor(walker), cp=routeW[Math.min(k,routeW.length-1)], cs=cam.proj(cp);
+  if(cs.z>1){const pulse=(Math.sin(performance.now()/250)+1)/2;
+    hctx.fillStyle='#fff'; hctx.beginPath(); hctx.arc(cs.x,cs.y,4*dpr,0,7); hctx.fill();
+    hctx.strokeStyle=`rgba(255,255,255,${0.8-0.6*pulse})`; hctx.lineWidth=1.5*dpr; hctx.beginPath(); hctx.arc(cs.x,cs.y,(6+12*pulse)*dpr,0,7); hctx.stroke();
+    hctx.fillStyle='#fff'; hctx.fillText('EV1', cs.x+10*dpr, cs.y-8*dpr);}
+}
+holo.addEventListener('mousedown',e=>{dragging={x:e.clientX,y:e.clientY};});
+window.addEventListener('mouseup',()=>dragging=null);
+window.addEventListener('mousemove',e=>{if(!dragging)return; orbitYaw+= (e.clientX-dragging.x)*0.006; orbitPitch=Math.max(0.15,Math.min(1.35,orbitPitch+(e.clientY-dragging.y)*0.005)); dragging={x:e.clientX,y:e.clientY};});
+holo.addEventListener('wheel',e=>{e.preventDefault(); orbitDist=Math.max(900,Math.min(3600,orbitDist*(1+e.deltaY*0.001)));},{passive:false});
+
+// elevation profile
+const prof=document.getElementById('profile'), pctx=prof.getContext('2d');
+function drawProfile(){
+  const dpr=fitCanvas(prof), W=prof.width, Hh=prof.height, pad=6*dpr; pctx.clearRect(0,0,W,Hh);
+  const ps=M.prof, hmin=Math.min(...ps.map(p=>p.h)), hmax=Math.max(...ps.map(p=>p.h));
+  const X=d=>pad+(W-2*pad)*d/M.dist, Y=h=>Hh-pad-(Hh-2*pad)*(h-hmin)/(hmax-hmin||1);
+  for(let k=1;k<ps.length;k++){pctx.strokeStyle=slopeColor(ps[k].g,1);pctx.lineWidth=2*dpr;pctx.beginPath();pctx.moveTo(X(ps[k-1].d),Y(ps[k-1].h));pctx.lineTo(X(ps[k].d),Y(ps[k].h));pctx.stroke();}
+  const d1=M.cum[idxW1]; pctx.strokeStyle='rgba(94,242,255,.5)'; pctx.setLineDash([3*dpr,3*dpr]); pctx.beginPath(); pctx.moveTo(X(d1),pad); pctx.lineTo(X(d1),Hh-pad); pctx.stroke(); pctx.setLineDash([]);
+  const k=Math.min(Math.floor(walker),ps.length-1); pctx.fillStyle='#fff'; pctx.beginPath(); pctx.arc(X(ps[k].d),Y(ps[k].h),3.5*dpr,0,7); pctx.fill();
+  pctx.fillStyle='rgba(216,246,255,.7)'; pctx.font=`${10*dpr}px Segoe UI`; pctx.fillText(`${(hmax-hmin).toFixed(0)} m 고도차`, pad, 12*dpr);
+}
+
+// ====================== VIEW 2: HUD RENDER ======================
+const hud=document.getElementById('hudCanvas'), uctx=hud.getContext('2d');
+const comp=document.getElementById('compass'), cctx=comp.getContext('2d');
+const mm=document.getElementById('minimap'), mctx=mm.getContext('2d');
+const arrow=document.getElementById('arrow'), actx=arrow.getContext('2d');
+// minimap base image
+const mmBase=document.createElement('canvas'); mmBase.width=N; mmBase.height=N;
+(()=>{const c=mmBase.getContext('2d'), img=c.createImageData(N,N);
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){const t=(H[i][j]-hMin)/(hMax-hMin), k=(j*N+i)*4;
+    img.data[k]=40+90*t; img.data[k+1]=25+50*t; img.data[k+2]=18+30*t; img.data[k+3]=255;
+    if(S[i][j]>MAX_SLOPE){img.data[k]=150;img.data[k+1]=40;img.data[k+2]=35;}}
+  c.putImageData(img,0,0);})();
+
+function routePointAt(t){const k=Math.min(Math.floor(t),routeW.length-2), f=Math.min(t-k,1), a=routeW[k], b=routeW[k+1];
+  return {x:a.x+(b.x-a.x)*f, y:a.y+(b.y-a.y)*f, z:a.z+(b.z-a.z)*f};}
+let hudYaw=0;
+function drawHud(){
+  const dpr=fitCanvas(hud), W=hud.width, Hh=hud.height; const t=Math.min(walker,routeW.length-1.001);
+  const here=routePointAt(t), ahead=routePointAt(Math.min(t+6,routeW.length-1.001));
+  const targetYaw=Math.atan2(ahead.x-here.x, ahead.z-here.z);
+  let dy=targetYaw-hudYaw; while(dy>Math.PI)dy-=2*Math.PI; while(dy<-Math.PI)dy+=2*Math.PI; hudYaw+=dy*0.06;
+  const pitch=0.12, F=W*0.62, pos={x:here.x, y:here.y+14, z:here.z};
+  const cam=makeCam(pos,hudYaw,pitch,F,W/2,Hh*0.5);
+  // sky + ground
+  const horizon=Hh*0.5 - F*Math.tan(pitch);
+  const sky=uctx.createLinearGradient(0,0,0,horizon); sky.addColorStop(0,'#6e4a36'); sky.addColorStop(1,'#d9a57a');
+  uctx.fillStyle=sky; uctx.fillRect(0,0,W,horizon+2);
+  uctx.fillStyle='#7a3f22'; uctx.fillRect(0,horizon,W,Hh-horizon);
+  // terrain + AR route ribbon, depth-sorted together so hills hide the far route
+  const PR=P.map(r=>r.map(p=>cam.proj(p))); const list=[];
+  for(const q of quads){const a=PR[q.i][q.j],b=PR[q.i+1][q.j],c=PR[q.i+1][q.j+1],d=PR[q.i][q.j+1];
+    if(a.z<2||b.z<2||c.z<2||d.z<2)continue; list.push([(a.z+b.z+c.z+d.z)/4,0,q,a,b,c,d]);}
+  const k0=Math.floor(t);
+  for(let k=Math.max(k0,0);k<routeW.length-1;k++){
+    const a=k===k0?routePointAt(t+0.35):routeW[k], b=routeW[k+1];
+    const sa=cam.proj(a), sb=cam.proj(b); if(sa.z<3||sb.z<3)continue;
+    list.push([Math.min(sa.z,sb.z)-30,1,sa,sb]);
+  }
+  list.sort((u,v)=>v[0]-u[0]);
+  uctx.lineCap='round';
+  for(const it of list){
+    if(it[1]===0){const [z,,q,a,b,c,d]=it;
+      const fog=Math.min(1,z/1700)**1.3, sh=q.shade;
+      const r=(178*sh)*(1-fog)+217*fog, g=(96*sh)*(1-fog)+165*fog, bl=(56*sh)*(1-fog)+122*fog;
+      uctx.fillStyle=`rgb(${r|0},${g|0},${bl|0})`; uctx.strokeStyle=uctx.fillStyle;
+      uctx.beginPath(); uctx.moveTo(a.x,a.y); uctx.lineTo(b.x,b.y); uctx.lineTo(c.x,c.y); uctx.lineTo(d.x,d.y); uctx.closePath(); uctx.fill(); uctx.lineWidth=1; uctx.stroke();
+    } else {const [,,sa,sb]=it;
+      uctx.strokeStyle=`rgba(93,255,157,${Math.max(0.35,1-sa.z/1800)})`; uctx.lineWidth=Math.max(2*dpr,Math.min(22*dpr,F*2.2/sa.z));
+      uctx.shadowColor='rgba(93,255,157,.9)'; uctx.shadowBlur=10*dpr;
+      uctx.beginPath(); uctx.moveTo(sa.x,sa.y); uctx.lineTo(sb.x,sb.y); uctx.stroke(); uctx.shadowBlur=0;}
+  }
+  // waypoint beacons
+  uctx.font=`${13*dpr}px Segoe UI, sans-serif`; uctx.textAlign='center';
+  for(const w of wps){const base=P[w.p[0]][w.p[1]], s0=cam.proj(base), s1=cam.proj({x:base.x,y:base.y+90,z:base.z}); if(s0.z<5)continue;
+    const dist=Math.hypot(base.x-here.x, base.z-here.z);
+    uctx.strokeStyle='rgba(94,242,255,.95)'; uctx.lineWidth=2*dpr; uctx.shadowColor='#5ef2ff'; uctx.shadowBlur=10*dpr;
+    uctx.beginPath(); uctx.moveTo(s0.x,s0.y); uctx.lineTo(s1.x,s1.y); uctx.stroke();
+    uctx.beginPath(); uctx.moveTo(s1.x,s1.y-10*dpr); uctx.lineTo(s1.x+8*dpr,s1.y); uctx.lineTo(s1.x,s1.y+10*dpr); uctx.lineTo(s1.x-8*dpr,s1.y); uctx.closePath(); uctx.stroke();
+    uctx.shadowBlur=0; uctx.fillStyle='#e9fdff'; uctx.fillText(`${w.label} · ${dist.toFixed(0)} m`, s1.x, s1.y-16*dpr);}
+  uctx.textAlign='left';
+  drawCompass(); drawMinimap(here); updateHudText(t, here, targetYaw);
+}
+function drawCompass(){
+  const dpr=fitCanvas(comp), W=comp.width, Hh=comp.height; cctx.clearRect(0,0,W,Hh);
+  const deg=((hudYaw*180/Math.PI)%360+360)%360, span=90, pxPerDeg=W/span;
+  cctx.strokeStyle='rgba(94,242,255,.8)'; cctx.fillStyle='rgba(94,242,255,.95)'; cctx.font=`${12*dpr}px Segoe UI`; cctx.textAlign='center';
+  for(let d=Math.floor(deg-span/2);d<=deg+span/2;d++){ if(d%5)continue; const x=W/2+(d-deg)*pxPerDeg, dd=((d%360)+360)%360;
+    const major=dd%15===0; cctx.lineWidth=dpr; cctx.beginPath(); cctx.moveTo(x,Hh*0.55); cctx.lineTo(x,Hh*(major?0.25:0.4)); cctx.stroke();
+    if(dd%45===0){const lab={0:'N',45:'NE',90:'E',135:'SE',180:'S',225:'SW',270:'W',315:'NW'}[dd]; cctx.fillText(lab,x,Hh*0.95);} }
+  cctx.fillStyle='#fff'; cctx.beginPath(); cctx.moveTo(W/2-6*dpr,0); cctx.lineTo(W/2+6*dpr,0); cctx.lineTo(W/2,8*dpr); cctx.fill();
+  cctx.textAlign='left';
+}
+function drawMinimap(here){
+  const W=mm.width, Hh=mm.height; mctx.clearRect(0,0,W,Hh); mctx.save(); mctx.beginPath(); mctx.arc(W/2,Hh/2,W/2-2,0,7); mctx.clip();
+  // rotate map so heading is up
+  mctx.translate(W/2,Hh/2); mctx.rotate(Math.PI+hudYaw);
+  const scale=W/(N*0.55); const ci=here.x/CELL+(N-1)/2, cj=here.z/CELL+(N-1)/2;
+  mctx.scale(scale,scale); mctx.translate(-ci,-cj); mctx.globalAlpha=0.85; mctx.imageSmoothingEnabled=true; mctx.drawImage(mmBase,0,0); mctx.globalAlpha=1;
+  mctx.strokeStyle='#5dff9d'; mctx.lineWidth=0.45; mctx.beginPath(); route.forEach(([i,j],k)=>k?mctx.lineTo(i,j):mctx.moveTo(i,j)); mctx.stroke();
+  mctx.fillStyle='#5ef2ff'; for(const w of wps){mctx.beginPath(); mctx.arc(w.p[0],w.p[1],0.9,0,7); mctx.fill();}
+  mctx.restore();
+  mctx.fillStyle='#fff'; mctx.beginPath(); mctx.moveTo(W/2,Hh/2-9); mctx.lineTo(W/2+6,Hh/2+6); mctx.lineTo(W/2-6,Hh/2+6); mctx.fill();
+  mctx.fillStyle='rgba(94,242,255,.9)'; mctx.font='16px Segoe UI'; mctx.fillText('500 m',W/2-20,Hh-14);
+}
+function drawArrow(turnDeg){
+  const W=arrow.width; actx.clearRect(0,0,W,W); actx.save(); actx.translate(W/2,W/2); actx.rotate(turnDeg*Math.PI/180);
+  actx.strokeStyle='#5dff9d'; actx.shadowColor='#5dff9d'; actx.shadowBlur=12; actx.lineWidth=6; actx.lineJoin='round';
+  actx.beginPath(); actx.moveTo(-26,18); actx.lineTo(0,-22); actx.lineTo(26,18); actx.stroke(); actx.restore();
+}
+function updateHudText(t, here, targetYaw){
+  const k=Math.floor(t), toW1=k<idxW1, wpIdx=toW1?idxW1:route.length-1;
+  const remain=Math.max(0,M.cum[wpIdx]-M.cum[Math.min(k,M.cum.length-1)]);
+  const elapsedFrac=M.cum[Math.min(k,M.cum.length-1)]/M.dist, el=M.time*elapsedFrac;
+  const o2=100-M.o2Pct*elapsedFrac*1.0-8;
+  hO2.textContent=o2.toFixed(0)+'%'; hO2bar.style.width=o2+'%';
+  const pw=92-40*elapsedFrac; hPwr.textContent=pw.toFixed(0)+'%'; hPwrbar.style.width=pw+'%';
+  hTime.textContent=fmtT(el);
+  hWp.textContent=toW1?'1 · 삼각주 퇴적층':'2 · 점토 노두';
+  hDist.textContent=remain>=1000?(remain/1000).toFixed(2)+' km':remain.toFixed(0)+' m';
+  // grade ahead within next ~150 m
+  let g=0, at=0; for(let q=k+1;q<Math.min(route.length,k+8);q++){const p=M.prof[q]; if(p.g>g){g=p.g; at=M.cum[q]-M.cum[k];}}
+  hGrade.textContent=g.toFixed(0)+'°'; hGrade.style.color=g>12?'var(--amber)':'var(--cyan)';
+  const back=M.time*elapsedFrac*0.9; hRet.textContent=fmtT(back);
+  // instruction / turn
+  const far=routePointAt(Math.min(t+14,routeW.length-1.001)), want=Math.atan2(far.x-here.x, far.z-here.z);
+  let turn=(want-hudYaw)*180/Math.PI; while(turn>180)turn-=360; while(turn<-180)turn+=360;
+  drawArrow(Math.max(-90,Math.min(90,turn)));
+  const dir=Math.abs(turn)<12?'직진':(turn>0?`우측 ${Math.abs(turn).toFixed(0)}° 방향`:`좌측 ${Math.abs(turn).toFixed(0)}° 방향`);
+  hInstr.textContent= t>=routeW.length-1.5 ? '✅ 목표 2 도착 · 샘플링 시작' : `${dir} · 다음 목표까지 ${hDist.textContent}`;
+  hWarn.textContent = g>12 ? `⚠ 경사 ${g.toFixed(0)}° 구간 ${at.toFixed(0)} m 앞 · 보폭 줄이고 속도 감소` : (toW1&&remain<150?'◎ 목표 1 접근 중 · 크레이터 림 우회 완료':'');
+}
+
+// ====================== UI / LOOP ======================
+const $ = id => document.getElementById(id);
+const [lyTerrain,lySlope,lyRoute,lyStraight,lyRotate,hO2,hO2bar,hPwr,hPwrbar,hTime,hWp,hDist,hGrade,hRet,hInstr,hWarn] =
+  ['lyTerrain','lySlope','lyRoute','lyStraight','lyRotate','hO2','hO2bar','hPwr','hPwrbar','hTime','hWp','hDist','hGrade','hRet','hInstr','hWarn'].map($);
+window.lyTerrain=lyTerrain; window.lySlope=lySlope; window.lyRoute=lyRoute; window.lyStraight=lyStraight;
+Object.assign(window,{hO2,hO2bar,hPwr,hPwrbar,hTime,hWp,hDist,hGrade,hRet,hInstr,hWarn});
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===b.dataset.view)); view=b.dataset.view;});
+$('playBtn').onclick=()=>{playing=!playing; $('playBtn').textContent=playing?'⏸ 일시정지':'▶ 재생';};
+$('speed').oninput=e=>speed=+e.target.value;
+
+let last=performance.now();
+function loop(now){
+  const dt=Math.max(0,Math.min(0.05,(now-last)/1000)); last=now;
+  if(playing){ walker+=dt*speed*1.6; if(walker>=routeW.length-1){walker=0;} }
+  if(view==='display'){
+    if(lyRotate.checked && !dragging) orbitYaw+=dt*0.08;
+    drawHolo(); drawProfile();
+    const k=Math.floor(walker); $('sProgress').textContent=Math.round(M.cum[Math.min(k,M.cum.length-1)]/M.dist*100)+'%';
+    $('sNext').textContent=(k<idxW1?'→ 목표 1 · 삼각주 퇴적층':'→ 목표 2 · 점토 노두')+` · 경과 ${fmtT(M.time*M.cum[Math.min(k,M.cum.length-1)]/M.dist)}`;
+  } else drawHud();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
