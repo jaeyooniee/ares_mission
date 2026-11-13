@@ -1,11 +1,11 @@
-# ---- 대용량 원본 데이터 (GitHub 파일 한도 100MB) ----
-# 원본은 data/raw/ 에만 두고 올리지 않음. 받는 방법은 docs/data_inventory.md 참고.
+# ---- Large raw data (GitHub file size limit is 100 MB) ----
+# Keep raw data in data/raw/ only and do not commit it. See docs/data_inventory.md for download instructions.
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
 
-# 래스터·PDS 원본 형식 (어느 폴더에 있든 제외)
+# Raster / PDS raw formats (excluded in any folder)
 *.tif
 *.tiff
 *.TIF
@@ -27,15 +27,15 @@ env/
 .ipynb_checkpoints/
 .pytest_cache/
 
-# ---- Node (빌드 도구를 쓸 경우) ----
+# ---- Node (if a build tool is used) ----
 node_modules/
 dist/
 
-# ---- 비밀값 (NASA API 키 등) ----
+# ---- Secrets (NASA API keys, etc.) ----
 .env
 .env.*
 
-# ---- 에디터 / OS ----
+# ---- Editor / OS ----
 .vscode/
 .idea/
 .DS_Store
