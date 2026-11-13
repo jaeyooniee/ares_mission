@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -84,10 +84,10 @@
 <body>
 <header>
   <h1>MARTIAN MAP · MOCKUP</h1>
-  <span class="sub">Jezero-like 가상 지형 · 경로는 경사 기반 A* 로 실제 계산 · 수치는 시연용 추정치</span>
+  <span class="sub">Jezero-like synthetic terrain · route computed with slope-aware A* · figures are illustrative estimates</span>
   <div class="controls">
-    <button id="playBtn">⏸ 일시정지</button>
-    <label>속도 <input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></label>
+    <button id="playBtn">⏸ Pause</button>
+    <label>Speed <input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"></label>
   </div>
   <div class="tabs">
     <button data-view="display" class="active">🛰 Habitat Transparent Display</button>
@@ -104,39 +104,39 @@
       <div class="col">
         <div class="glass">
           <h3>MISSION</h3>
-          <div style="font-size:14px;color:#fff;margin-bottom:6px">EVA-07 · 삼각주 샘플링</div>
-          <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><span style="color:var(--muted)">출발 / 복귀 지점</span></div></div>
-          <div class="wp"><div class="dot">1</div><div><b>삼각주 퇴적층</b><br><span style="color:var(--muted)">층리 관찰 + 코어 샘플</span></div></div>
-          <div class="wp"><div class="dot">2</div><div><b>점토 광물 노두</b><br><span style="color:var(--muted)">CRISM 점토 신호 확인</span></div></div>
+          <div style="font-size:14px;color:#fff;margin-bottom:6px">EVA-07 · Delta sampling</div>
+          <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><span style="color:var(--muted)">Departure / return point</span></div></div>
+          <div class="wp"><div class="dot">1</div><div><b>Delta sediments</b><br><span style="color:var(--muted)">Bedding survey + core sample</span></div></div>
+          <div class="wp"><div class="dot">2</div><div><b>Clay mineral outcrop</b><br><span style="color:var(--muted)">Confirm CRISM clay signal</span></div></div>
         </div>
         <div class="glass">
           <h3>LAYERS</h3>
-          <label class="layer"><input type="checkbox" id="lyTerrain" checked> 3D 지형 (HiRISE DTM)</label>
-          <label class="layer"><input type="checkbox" id="lySlope"> 경사 위험도</label>
-          <label class="layer"><input type="checkbox" id="lyRoute" checked><span class="sw" style="background:var(--green)"></span> 최적 경로</label>
-          <label class="layer"><input type="checkbox" id="lyStraight" checked><span class="sw" style="background:var(--red)"></span> 직선 경로 (비교)</label>
-          <label class="layer"><input type="checkbox" id="lyRotate" checked> 자동 회전</label>
+          <label class="layer"><input type="checkbox" id="lyTerrain" checked> 3D terrain (HiRISE DTM)</label>
+          <label class="layer"><input type="checkbox" id="lySlope"> Slope hazard</label>
+          <label class="layer"><input type="checkbox" id="lyRoute" checked><span class="sw" style="background:var(--green)"></span> Optimal route</label>
+          <label class="layer"><input type="checkbox" id="lyStraight" checked><span class="sw" style="background:var(--red)"></span> Straight route (comparison)</label>
+          <label class="layer"><input type="checkbox" id="lyRotate" checked> Auto-rotate</label>
         </div>
       </div>
 
       <div class="center glass" style="padding:0">
         <canvas id="holoCanvas"></canvas>
-        <div class="hint">드래그해서 회전 · 휠로 확대/축소</div>
+        <div class="hint">Drag to rotate · scroll to zoom</div>
       </div>
 
       <div class="col">
         <div class="glass">
           <h3>ROUTE BUDGET</h3>
-          <div class="stat"><span>총 거리</span><span id="sDist">–</span></div>
-          <div class="stat"><span>예상 소요</span><span id="sTime">–</span></div>
-          <div class="stat"><span>최대 경사</span><span id="sSlope">–</span></div>
-          <div class="stat"><span>O₂ 사용 (예상)</span><span id="sO2">–</span></div>
+          <div class="stat"><span>Total distance</span><span id="sDist">–</span></div>
+          <div class="stat"><span>Est. duration</span><span id="sTime">–</span></div>
+          <div class="stat"><span>Max slope</span><span id="sSlope">–</span></div>
+          <div class="stat"><span>O₂ use (est.)</span><span id="sO2">–</span></div>
           <div class="cmp" id="cmp"></div>
         </div>
         <div class="glass">
           <h3>ELEVATION PROFILE</h3>
           <canvas id="profile"></canvas>
-          <div class="tag">색: 초록 &lt;8° · 노랑 8–15° · 빨강 &gt;15°</div>
+          <div class="tag">Color: green &lt;8° · yellow 8–15° · red &gt;15°</div>
         </div>
         <div class="glass">
           <h3>CREW TRACK</h3>
@@ -176,14 +176,14 @@
 
     <div class="hud space-wx">
       <div class="lbl">SPACE WEATHER · DONKI</div>
-      <div style="margin-top:4px">☢ SEP 경보 없음 · 선량률 정상</div>
-      <div style="opacity:.7;font-size:11px">(시연용 정적 데이터)</div>
+      <div style="margin-top:4px">☢ No SEP alert · dose rate nominal</div>
+      <div style="opacity:.7;font-size:11px">(static demo data)</div>
     </div>
     <canvas id="minimap" width="300" height="300"></canvas>
 
     <div class="visor"></div><div class="visor-glare"></div>
   </div>
-  <div class="note">헬멧 HUD 시점: 우주인이 최적 경로를 따라 걷는 모습을 재생합니다. 초록 리본이 갈 길, 비콘이 목표 지점입니다. 실제 구현에서는 배경이 카메라 실시간 영상(AR)이고 그 위에 경로가 덧씌워집니다.</div>
+  <div class="note">Helmet HUD view: replays an astronaut walking the optimal route. The green ribbon is the path ahead and the beacons are the targets. In a real implementation the background would be a live camera feed (AR) with the route overlaid on top.</div>
 </section>
 
 <script>
@@ -277,13 +277,13 @@ document.getElementById('sSlope').textContent=M.maxS.toFixed(0)+'°';
 document.getElementById('sO2').textContent=M.o2Pct.toFixed(0)+'%';
 const steepStraight = straight.filter(([i,j])=>S[i][j]>MAX_SLOPE).length;
 document.getElementById('cmp').innerHTML =
-  `<div style="margin-top:8px">직선 경로(H→1): <span class="bad">최대 경사 ${MS.maxS.toFixed(0)}°</span>, 통행 불가 구간 ${steepStraight}곳 포함</div>
-   <div>최적 경로: <span class="good">경사 ${MAX_SLOPE}° 이하만 통과</span>하도록 크레이터 림을 우회</div>`;
+  `<div style="margin-top:8px">Straight route (H→1): <span class="bad">max slope ${MS.maxS.toFixed(0)}°</span>, includes ${steepStraight} impassable cells</div>
+   <div>Optimal route: detours around the crater rim to <span class="good">stay at or below ${MAX_SLOPE}° slope</span></div>`;
 
 // world points along route (lifted slightly)
 const routeW = route.map(([i,j])=>({x:P[i][j].x, y:P[i][j].y+4, z:P[i][j].z}));
 const straightW = straight.map(([i,j])=>({x:P[i][j].x, y:P[i][j].y+4, z:P[i][j].z}));
-const wps = [{p:HAB,label:'H  HABITAT'},{p:W1,label:'1  삼각주 퇴적층'},{p:W2,label:'2  점토 노두'}];
+const wps = [{p:HAB,label:'H  HABITAT'},{p:W1,label:'1  DELTA SEDIMENTS'},{p:W2,label:'2  CLAY OUTCROP'}];
 
 // ====================== CAMERA ======================
 function makeCam(pos,yaw,pitch,F,cx,cy){
@@ -354,7 +354,7 @@ function drawProfile(){
   for(let k=1;k<ps.length;k++){pctx.strokeStyle=slopeColor(ps[k].g,1);pctx.lineWidth=2*dpr;pctx.beginPath();pctx.moveTo(X(ps[k-1].d),Y(ps[k-1].h));pctx.lineTo(X(ps[k].d),Y(ps[k].h));pctx.stroke();}
   const d1=M.cum[idxW1]; pctx.strokeStyle='rgba(94,242,255,.5)'; pctx.setLineDash([3*dpr,3*dpr]); pctx.beginPath(); pctx.moveTo(X(d1),pad); pctx.lineTo(X(d1),Hh-pad); pctx.stroke(); pctx.setLineDash([]);
   const k=Math.min(Math.floor(walker),ps.length-1); pctx.fillStyle='#fff'; pctx.beginPath(); pctx.arc(X(ps[k].d),Y(ps[k].h),3.5*dpr,0,7); pctx.fill();
-  pctx.fillStyle='rgba(216,246,255,.7)'; pctx.font=`${10*dpr}px Segoe UI`; pctx.fillText(`${(hmax-hmin).toFixed(0)} m 고도차`, pad, 12*dpr);
+  pctx.fillStyle='rgba(216,246,255,.7)'; pctx.font=`${10*dpr}px Segoe UI`; pctx.fillText(`${(hmax-hmin).toFixed(0)} m elevation range`, pad, 12*dpr);
 }
 
 // ====================== VIEW 2: HUD RENDER ======================
@@ -454,7 +454,7 @@ function updateHudText(t, here, targetYaw){
   hO2.textContent=o2.toFixed(0)+'%'; hO2bar.style.width=o2+'%';
   const pw=92-40*elapsedFrac; hPwr.textContent=pw.toFixed(0)+'%'; hPwrbar.style.width=pw+'%';
   hTime.textContent=fmtT(el);
-  hWp.textContent=toW1?'1 · 삼각주 퇴적층':'2 · 점토 노두';
+  hWp.textContent=toW1?'1 · Delta sediments':'2 · Clay outcrop';
   hDist.textContent=remain>=1000?(remain/1000).toFixed(2)+' km':remain.toFixed(0)+' m';
   // grade ahead within next ~150 m
   let g=0, at=0; for(let q=k+1;q<Math.min(route.length,k+8);q++){const p=M.prof[q]; if(p.g>g){g=p.g; at=M.cum[q]-M.cum[k];}}
@@ -464,9 +464,9 @@ function updateHudText(t, here, targetYaw){
   const far=routePointAt(Math.min(t+14,routeW.length-1.001)), want=Math.atan2(far.x-here.x, far.z-here.z);
   let turn=(want-hudYaw)*180/Math.PI; while(turn>180)turn-=360; while(turn<-180)turn+=360;
   drawArrow(Math.max(-90,Math.min(90,turn)));
-  const dir=Math.abs(turn)<12?'직진':(turn>0?`우측 ${Math.abs(turn).toFixed(0)}° 방향`:`좌측 ${Math.abs(turn).toFixed(0)}° 방향`);
-  hInstr.textContent= t>=routeW.length-1.5 ? '✅ 목표 2 도착 · 샘플링 시작' : `${dir} · 다음 목표까지 ${hDist.textContent}`;
-  hWarn.textContent = g>12 ? `⚠ 경사 ${g.toFixed(0)}° 구간 ${at.toFixed(0)} m 앞 · 보폭 줄이고 속도 감소` : (toW1&&remain<150?'◎ 목표 1 접근 중 · 크레이터 림 우회 완료':'');
+  const dir=Math.abs(turn)<12?'Straight ahead':(turn>0?`Bear right ${Math.abs(turn).toFixed(0)}°`:`Bear left ${Math.abs(turn).toFixed(0)}°`);
+  hInstr.textContent= t>=routeW.length-1.5 ? '✅ Arrived at target 2 · begin sampling' : `${dir} · ${hDist.textContent} to next target`;
+  hWarn.textContent = g>12 ? `⚠ ${g.toFixed(0)}° slope ${at.toFixed(0)} m ahead · shorten stride and slow down` : (toW1&&remain<150?'◎ Approaching target 1 · crater rim bypassed':'');
 }
 
 // ====================== UI / LOOP ======================
@@ -478,7 +478,7 @@ Object.assign(window,{hO2,hO2bar,hPwr,hPwrbar,hTime,hWp,hDist,hGrade,hRet,hInstr
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===b.dataset.view)); view=b.dataset.view;});
-$('playBtn').onclick=()=>{playing=!playing; $('playBtn').textContent=playing?'⏸ 일시정지':'▶ 재생';};
+$('playBtn').onclick=()=>{playing=!playing; $('playBtn').textContent=playing?'⏸ Pause':'▶ Play';};
 $('speed').oninput=e=>speed=+e.target.value;
 
 let last=performance.now();
@@ -489,7 +489,7 @@ function loop(now){
     if(lyRotate.checked && !dragging) orbitYaw+=dt*0.08;
     drawHolo(); drawProfile();
     const k=Math.floor(walker); $('sProgress').textContent=Math.round(M.cum[Math.min(k,M.cum.length-1)]/M.dist*100)+'%';
-    $('sNext').textContent=(k<idxW1?'→ 목표 1 · 삼각주 퇴적층':'→ 목표 2 · 점토 노두')+` · 경과 ${fmtT(M.time*M.cum[Math.min(k,M.cum.length-1)]/M.dist)}`;
+    $('sNext').textContent=(k<idxW1?'→ Target 1 · Delta sediments':'→ Target 2 · Clay outcrop')+` · elapsed ${fmtT(M.time*M.cum[Math.min(k,M.cum.length-1)]/M.dist)}`;
   } else drawHud();
   requestAnimationFrame(loop);
 }
