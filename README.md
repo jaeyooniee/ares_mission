@@ -10,7 +10,7 @@ A local map and route-planning tool for the first astronauts on Mars to plan and
 
 Challenge page: https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/
 
-> **Current status**: `index.html` is a UI concept mockup built before the hackathon. The terrain is a Jezero-like **synthetic terrain**, and the time and oxygen figures are illustrative estimates. It will be replaced with an app driven by the real HiRISE DEM during the hackathon.
+> **Current status**: `index.html` is the v2 demo built before the hackathon. It has an EVA planner (habitat transparent display) plus a helmet HUD and a pressurized-rover HUD, with a GO / NO-GO readiness check. The terrain is **synthetic** (2 km × 2 km, 10 m grid) and all time, oxygen and battery figures are illustrative. It will be replaced with an app driven by the real HiRISE DEM during the hackathon.
 
 ## Project structure
 
@@ -43,7 +43,7 @@ Raw data (GeoTIFF, etc.) is too large for Git and is excluded (see `.gitignore`)
 
 ## Run locally
 
-The web app is static and needs no build step. Because it loads files with `fetch`, serve it from a local web server instead of double-clicking `index.html`.
+The web app is static and needs no build step. It uses ES modules and loads Three.js (pinned to version 0.160.0) from the jsDelivr CDN, so it needs an internet connection and must be served from a local web server instead of being opened by double-clicking `index.html`.
 
 ```bash
 python -m http.server 8000
