@@ -1,25 +1,25 @@
 {
- "source": "HiRISE DEM of Gale crater (Gale_DEM_SMG_1m, 1 m) cropped to the team area, then sampled every 4th cell by the Python pipeline",
- "nx": 444,
- "ny": 444,
- "cell_m": 8.0,
- "z_min": -4274.53,
- "z_max": -3530.3,
+ "source": "HiRISE DEM of Gale crater (Gale_DEM_SMG_1m, 1 m) cropped to a 10 x 10 km area, resampled to 4 m by the Python pipeline, then every 4th cell (16 m)",
+ "nx": 624,
+ "ny": 624,
+ "cell_m": 16.0,
+ "z_min": -4460.89,
+ "z_max": -2453.65,
  "area_lonlat_W_S_E_N": [
-  137.36,
-  -4.78,
-  137.42,
-  -4.72
+  137.311,
+  -4.866,
+  137.48,
+  -4.697
  ],
  "origin": "x east, y south, metres from the north-west corner of the area; row 0 = north",
  "dropped_last_row": true,
  "texture": {
   "file": "texture_color.jpg",
-  "source": "USGS Astrogeology 'Mars MSL Gale Merged Orthophoto Mosaic 25cm' HiRISE LRGB colour mosaic (78 quads, sharpened); cropped to the team area. Processed colour, NOT a true-colour photo",
+  "source": "USGS Astrogeology 'Mars MSL Gale Merged Orthophoto Mosaic 25cm' HiRISE LRGB colour mosaic, cropped to the area (where the colour mosaic has no data, ESTIMATED colour: a brightness -> colour table learned from this area's real colour pixels, not measured). Processed, NOT a true-colour photo",
   "authors": "T. Parker, F. J. Calef III (USGS)",
   "covers_m": [
-   3546.0,
-   3558.0
+   9983.3056640625,
+   10017.5537109375
   ]
  },
  "walk": {
@@ -41,5 +41,74 @@
   "rover_cabin_o2_kg": 4,
   "crew": 2,
   "o2_per_person_kg_h": 0.035
- }
+ },
+ "minerals": {
+  "file": "minerals.png",
+  "cost_file": "cost.png",
+  "covers_m": [
+   9984.0,
+   10020.0
+  ],
+  "source": "MRO CRISM MTRDR summary parameters, 5 FRT observations: frt00021c92, frt0000b6f1, frt0001ca91, frt0001bba1, frt000058a3 (100.0% coverage). A pixel is a detection when the 3x3-smoothed index is above 0.010 (Min_trial pipeline, mineral_layers)",
+  "classes": {
+   "clay": {
+    "label": "Fe/Mg clay (smectite)",
+    "index": "D2300",
+    "color": [
+     220,
+     60,
+     60
+    ],
+    "area_pct": 0.51
+   },
+   "poly_sulf": {
+    "label": "Polyhydrated sulfate",
+    "index": "BD1900_2",
+    "color": [
+     60,
+     200,
+     90
+    ],
+    "area_pct": 1.25
+   },
+   "mono_sulf": {
+    "label": "Monohydrated sulfate",
+    "index": "BD2100_2",
+    "color": [
+     70,
+     120,
+     240
+    ],
+    "area_pct": 3.7
+   },
+   "hematite": {
+    "label": "Crystalline hematite",
+    "index": "BD860_2",
+    "color": [
+     255,
+     150,
+     30
+    ],
+    "area_pct": 0.02
+   }
+  }
+ },
+ "destinations": [
+  {
+   "name": "Clay-2",
+   "kind": "clay",
+   "label": "Fe/Mg clay (smectite)",
+   "index": "D2300",
+   "peak_index": 0.0216,
+   "area_m2": 22320
+  },
+  {
+   "name": "PolySulf-2",
+   "kind": "poly_sulf",
+   "label": "Polyhydrated sulfate",
+   "index": "BD1900_2",
+   "peak_index": 0.0284,
+   "area_m2": 19872
+  }
+ ]
 }

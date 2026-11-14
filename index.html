@@ -141,12 +141,12 @@
 <div id="left" class="panel">
   <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
   <div class="sub">Habitat transparent display → helmet / rover HUD</div>
-  <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (3.5 km, 8 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo).</div>
+  <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
 
   <h2>Mission · EVA-07</h2>
   <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><small>Departure / return point</small></div></div>
-  <div class="wp"><div class="dot">1</div><div><b>WP1</b><br><small id="wp1Txt">–</small></div></div>
-  <div class="wp"><div class="dot">2</div><div><b>WP2</b><br><small id="wp2Txt">–</small></div></div>
+  <div class="wp"><div class="dot">1</div><div><b id="wp1Name">WP1</b><br><small id="wp1Txt">–</small></div></div>
+  <div class="wp"><div class="dot">2</div><div><b id="wp2Name">WP2</b><br><small id="wp2Txt">–</small></div></div>
   <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
 
   <h2>Travel mode</h2>
@@ -160,8 +160,11 @@
     <button class="btn on" data-l="img">Imagery</button>
     <button class="btn" data-l="elev">Elevation</button>
     <button class="btn" data-l="slope">Slope</button>
+    <button class="btn" data-l="cost">Cost map</button>
   </div>
   <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
+  <label class="chk"><input type="checkbox" id="showMin" checked> CRISM minerals overlay</label>
+  <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
 
   <h2>Route</h2>
   <div class="small">Routes are precomputed by the Python pipeline from the real DEM (on foot: slope limit <b>18°</b>; rover: <b>28°</b>). The route sliders of the synthetic demo were removed.</div>
@@ -173,9 +176,9 @@
     <li>① Crop the Gale DEM <span class="tag py">Python</span> <span class="small">HiRISE 1 m → 2 m grid (rasterio)</span></li>
     <li>② Slope · roughness <span class="tag py">Python</span> <span class="small">gradient + 5×5 window</span></li>
     <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·roughness; over the limit = blocked</span></li>
-    <li>④ Optimal route <span class="tag py">Python</span> <span class="small">H → WP1 → WP2 → H, line-of-sight smoothing</span></li>
+    <li>④ Destinations + optimal route <span class="tag py">Python</span> <span class="small">CRISM mineral patches → one clay + one sulfate stop; H → stops → H, smoothed</span></li>
     <li>⑤ Time · O₂ · energy <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (Mars gravity) / rover energy model</span></li>
-    <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">8 m mesh, route tubes, AR line, HUD</span></li>
+    <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">16 m mesh, route tubes, AR line, HUD</span></li>
   </ol>
 </div>
 
@@ -208,10 +211,11 @@
 
   <h2>Data used in this build</h2>
   <table class="src">
-    <tr><td>Elevation · slope</td><td>HiRISE DEM of Gale (1 m source, shown at 8 m)</td></tr>
+    <tr><td>Elevation · slope</td><td>HiRISE DEM of Gale (1 m source, shown at 16 m)</td></tr>
     <tr><td>Imagery</td><td>USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
     <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
-    <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, minerals (CRISM), live space weather (DONKI), radiation, rover photos</td></tr>
+    <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
+    <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos</td></tr>
   </table>
   <h2>Model assumptions</h2>
   <div class="small" id="assump"></div>
@@ -281,11 +285,17 @@ try {
 
 const N = TERRAIN.nx, CELL = TERRAIN.cell_m;     // 444×444 cells, 8 m each
 const idx = (i, j) => i * N + j;
-const WPS = ROUTES.suit.waypoints.map((w, k) => ({ id: ['H', '1', '2'][k], name: w.name, short: ['HAB', 'WP1', 'WP2'][k], lon: w.lon, lat: w.lat,
+const WPS = ROUTES.suit.waypoints.map((w, k) => ({ id: ['H', '1', '2'][k], name: w.name, short: k === 0 ? 'HAB' : w.name, lon: w.lon, lat: w.lat,
   cell: [Math.min(N - 1, Math.round(w.y / CELL)), Math.min(N - 1, Math.round(w.x / CELL))] }));
 const MISSION = [0, 1, 2, 0];                    // visit order H → 1 → 2 → H
 const HAB = WPS[0].cell;
-for (const [id, k] of [['wp1Txt', 1], ['wp2Txt', 2]]) document.getElementById(id).textContent = `${Math.abs(WPS[k].lat).toFixed(4)}°S, ${WPS[k].lon.toFixed(4)}°E`;
+const KCOL = { clay: [220, 60, 60], poly_sulf: [60, 200, 90], mono_sulf: [70, 120, 240], hematite: [255, 150, 30] };
+const DEST = TERRAIN.destinations || [];
+for (const [id, nid, k] of [['wp1Txt', 'wp1Name', 1], ['wp2Txt', 'wp2Name', 2]]) {
+  const d = DEST[k - 1], pos = `${Math.abs(WPS[k].lat).toFixed(4)}°S, ${WPS[k].lon.toFixed(4)}°E`;
+  document.getElementById(nid).textContent = WPS[k].name;
+  document.getElementById(id).textContent = d ? `${d.label} · ${d.index} ${d.peak_index} · ${(d.area_m2 / 1e4).toFixed(1)} ha · ${pos}` : pos;
+}
 
 // walking model: same constants as the pipeline config
 const W_BODY = TERRAIN.walk.body_kg, L_SUIT = TERRAIN.walk.suit_kg, SUIT_SPEED = TERRAIN.walk.suit_speed_factor, G_MARS = 3.71, G_EARTH = 9.81;
@@ -388,6 +398,7 @@ document.getElementById('assump').innerHTML =
 
 // =================== Three.js scene ===================
 const SIZE = (N - 1) * CELL;
+const SC = SIZE / 3544;                           // scene scale: sizes below were tuned for the 3.5 km area
 const wx = j => -SIZE / 2 + j * CELL, wz = i => -SIZE / 2 + i * CELL;
 let VEX = 2.0;                                    // display-only vertical exaggeration (routes, slopes and budgets stay true); 1 in the first-person EVA view
 // The Gale area slopes one way as a whole (the foot of Mount Sharp), so the map looked like a tilted slab.
@@ -414,8 +425,8 @@ renderer.setSize(innerWidth, innerHeight);
 const scene = new THREE.Scene();
 const SKY = new THREE.Color(0xc99a72), SPACE_BG = new THREE.Color(0x150f0d);
 scene.background = SPACE_BG;
-const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 20000);
-const MAP_CAM = () => { camera.position.set(1300, 2500, 3000); controls.target.set(0, 0, 0); controls.update(); };
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 20000 * Math.max(1, SC));
+const MAP_CAM = () => { camera.position.set(1300 * SC, 2500 * SC, 3000 * SC); controls.target.set(0, 0, 0); controls.update(); };
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI * 0.47; MAP_CAM();
 scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a2418, 0.9));
@@ -434,6 +445,16 @@ const matImg = new THREE.MeshStandardMaterial({ map: imgTex, roughness: 0.95, me
 const terrain = new THREE.Mesh(geo, matImg);
 scene.add(terrain);
 // holographic grid overlay for the habitat display
+// cost-map layer and CRISM mineral overlay: both images cover the same area as the DEM grid
+const MIN = TERRAIN.minerals;
+const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(DATA + file); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const rx = SIZE / cover[0], ry = SIZE / cover[1]; t.repeat.set(rx, ry); t.offset.set(0, 1 - ry); return t; };
+const costTex = MIN ? areaTex(MIN.cost_file, MIN.covers_m) : null;
+const matCost = new THREE.MeshStandardMaterial({ map: costTex, roughness: 0.95, metalness: 0 });
+const minTex = MIN ? areaTex(MIN.file, MIN.covers_m) : null;
+if (minTex) { minTex.magFilter = THREE.NearestFilter; }
+const minMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: minTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+minMesh.visible = !!MIN; scene.add(minMesh);
 const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x37e0ff, wireframe: true, transparent: true, opacity: 0.025 }));
 scene.add(wire);
 
@@ -444,22 +465,23 @@ const hab = new THREE.Group(); const white = new THREE.MeshStandardMaterial({ co
 const base = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 8, 32), white); base.position.y = 4; hab.add(base);
 const dome = new THREE.Mesh(new THREE.SphereGeometry(14, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); dome.position.y = 8; hab.add(dome);
 const tubeH = new THREE.Mesh(new THREE.BoxGeometry(26, 6, 6), white); tubeH.position.set(20, 3, 0); hab.add(tubeH);
-{ const hx = wx(HAB[1]) - 22, hz = wz(HAB[0]) + 22; hab.position.set(hx, heightAt(hx, hz), hz); } scene.add(hab);
+{ const hx = wx(HAB[1]) - 22, hz = wz(HAB[0]) + 22; hab.position.set(hx, heightAt(hx, hz), hz); } hab.scale.setScalar(SC); scene.add(hab);
 // waypoint beacons + labels
 const labelsEl = document.getElementById('labels');
 const wpViz = WPS.map((w, n) => {
   const x = wx(w.cell[1]), z = wz(w.cell[0]), y = heightAt(x, z);
   let beacon = null;
-  if (w.id !== 'H') { beacon = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 220, 16), new THREE.MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0.7 }));
-    beacon.position.set(x, y + 110, z); scene.add(beacon); }
+  if (w.id !== 'H') { const dk = (TERRAIN.destinations || [])[n - 1], bc = dk && KCOL[dk.kind] ? new THREE.Color(`rgb(${KCOL[dk.kind].join(',')})`) : new THREE.Color(0x37e0ff);
+    beacon = new THREE.Mesh(new THREE.CylinderGeometry(5 * SC, 5 * SC, 220 * SC, 16), new THREE.MeshBasicMaterial({ color: bc, transparent: true, opacity: 0.7 }));
+    beacon.position.set(x, y + 110 * SC, z); scene.add(beacon); }
   const el = document.createElement('div'); el.className = 'wlabel' + (w.id === 'H' ? ' hab' : ''); labelsEl.appendChild(el);
-  return { w, beacon, el, anchor: new THREE.Vector3(x, y + (w.id === 'H' ? 60 : 225), z), ground: new THREE.Vector3(x, y, z) };
+  return { w, beacon, el, anchor: new THREE.Vector3(x, y + (w.id === 'H' ? 60 * SC : 225 * SC), z), ground: new THREE.Vector3(x, y, z) };
 });
 // crew marker
 const crew = new THREE.Group();
 crew.add(new THREE.Mesh(new THREE.SphereGeometry(8, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })));
 const ring = new THREE.Mesh(new THREE.RingGeometry(12, 15, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
-ring.rotation.x = -Math.PI / 2; crew.add(ring); crew.visible = false; scene.add(crew);
+ring.rotation.x = -Math.PI / 2; crew.add(ring); crew.visible = false; crew.scale.setScalar(SC); scene.add(crew);
 
 // =================== layers ===================
 const lerp3 = (c0, c1, t) => [c0[0] + (c1[0] - c0[0]) * t, c0[1] + (c1[1] - c0[1]) * t, c0[2] + (c1[2] - c0[2]) * t];
@@ -469,6 +491,10 @@ const SLOPE = [[0, [0.18, 0.62, 0.3]], [0.45, [0.95, 0.85, 0.2]], [0.75, [0.97, 
 const css = st => 'linear-gradient(90deg,' + st.map(([t, c]) => `rgb(${c.map(v => v * 255 | 0)}) ${t * 100}%`).join(',') + ')';
 function paint(force) {
   const L = force || layer, P = params[mode], lgEl = document.getElementById('legend');
+  if (L === 'cost') {
+    terrain.material = matCost; wire.visible = false; lgEl.style.background = 'linear-gradient(90deg,#440154,#3b528b,#21918c,#5ec962,#fde725)';
+    document.getElementById('lg0').textContent = 'easy'; document.getElementById('lg1').textContent = 'hard · yellow = no-go (walk)'; return;
+  }
   if (L === 'img') {
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
     document.getElementById('lg0').textContent = 'HiRISE colour mosaic'; document.getElementById('lg1').textContent = 'USGS · processed colour'; return;
@@ -479,6 +505,11 @@ function paint(force) {
   lgEl.style.background = css(lg[0]);
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
+if (MIN) {
+  document.getElementById('minLegend').innerHTML = Object.values(MIN.classes).map(c => `<span style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:rgb(${c.color.join(',')})"></i>${c.label} ${c.area_pct}%</span>`).join('');
+  document.getElementById('srcMin').textContent = MIN.source;
+} else { document.getElementById('showMin').parentElement.style.display = 'none'; }
+document.getElementById('showMin').onchange = e => { minMesh.visible = e.target.checked; };
 document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#layers button').forEach(x => x.classList.remove('on')); b.classList.add('on'); layer = b.dataset.l; paint(); });
 
@@ -487,7 +518,7 @@ let plan = null, straight = null, optTube = null, strTube = null, arLine = null;
 const toPts = (p, lift = 2.5) => p.map(k => new THREE.Vector3(wx(k % N), data.h[k] + lift, wz(Math.floor(k / N))));
 function makeTube(pts, color) {
   const curve = new THREE.CatmullRomCurve3(pts);
-  const m = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(pts.length * 2, 1600), 3.5, 6, false), new THREE.MeshBasicMaterial({ color }));
+  const m = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(pts.length * 2, 1600), 3.5 * SC, 6, false), new THREE.MeshBasicMaterial({ color }));
   scene.add(m); return m;
 }
 const fmtT = s => { const m = Math.round(s / 60); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; };
@@ -609,7 +640,7 @@ function setVex(v) {
   for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), (data.h[idx(i, j)] - tilt(wx(j), wz(i))) * VEX);
   pos.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingSphere();
   hab.position.y = heightAt(hab.position.x, hab.position.z);
-  wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 : 225); if (o.beacon) o.beacon.position.y = y + 110; });
+  wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 * SC : 225 * SC); if (o.beacon) o.beacon.position.y = y + 110 * SC; });
   if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
   set('vexNote', VEX === 1 ? 'terrain at true height ×1, overall tilt levelled (display only)' : 'terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)');
 }
@@ -618,19 +649,19 @@ const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the butto
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
-  if (!plan) return; resetSim(); setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
-  paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false;
+  if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
+  paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
-  scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150, 1500); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
+  scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
   const st = stateAt(sim.active, 0); look.copy(pointAtDist(sim.active, 30)); camera.position.set(st.p.x, heightAt(st.p.x, st.p.z) + params[mode].eye, st.p.z);
   document.getElementById('sep').style.display = 'none'; sim.sep = false; set('swxTxt', '☢ No SEP alert · dose rate nominal');
   document.getElementById('swx').style.borderColor = ''; document.getElementById('arrive').style.display = 'none';
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
 };
 function exitFP() {
-  setVex(2); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
-  if (arLine) arLine.visible = false; wire.visible = layer !== 'img'; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
+  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
+  if (arLine) arLine.visible = false; wire.visible = layer === 'elev' || layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
@@ -762,7 +793,7 @@ function showArrive(a, b) { const el = document.getElementById('arrive'); el.inn
 function updateMapPreview(dt) {
   if (!sim.preview || !sim.active) return;
   const r = advance(dt, 400); if (!r) return; const { st } = r;
-  crew.position.copy(st.p).setY(heightAt(st.p.x, st.p.z) + 6); ring.scale.setScalar(1 + 0.4 * Math.sin(performance.now() / 200));
+  crew.position.copy(st.p).setY(heightAt(st.p.x, st.p.z) + 6 * SC); ring.scale.setScalar(1 + 0.4 * Math.sin(performance.now() / 200));
   const P = sim.active, prog = sim.t / P.b.time;
   set('trkP', `${Math.round(prog * 100)}%`);
   const ns = nextStop(P, st.n), w = P.stops[ns] != null ? WPS[P.stops[ns]] : WPS[0];
@@ -773,6 +804,8 @@ function updateMapPreview(dt) {
 
 function updateFP(dt) {
   const r = advance(dt, speedUp); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
+  // draw only the leg ahead (current position -> next stop), so the way home is not drawn as a second line beside the way out
+  if (arLine) { const cnt = arLine.geometry.attributes.position.count, a = Math.max(0, st.n - 1), z = Math.min(cnt - 1, P.stopIdx[ns] + 1); arLine.geometry.setDrawRange(a, Math.max(2, z - a + 1)); }
   const p = st.p, moving = sim.t < P.b.time && !st.dwelling;
   const bob = moving && mode === 'suit' ? Math.sin(sim.t * 3.5) * 0.04 : 0;
   camera.position.set(p.x, heightAt(p.x, p.z) + M.eye + bob, p.z);
@@ -796,7 +829,7 @@ function updateFP(dt) {
   set('hTime', fmtClock(tot.t));
   // return-to-habitat safety factor (live re-plan)
   const now = performance.now();
-  if (now - sim.retClock > 700) { sim.retClock = now; updateReturn(p); }
+  if (now - sim.retClock > (N > 500 ? 1500 : 700)) { sim.retClock = now; updateReturn(p); }
   if (sim.ret) {
     const needO2 = sim.ret.o2, needWh = sim.ret.wh;
     const sfO = needO2 > 1e-6 ? (sup.o2 - tot.o2) / needO2 : 99, sfE = needWh > 1e-6 ? (sup.wh - tot.wh) / needWh : 99;

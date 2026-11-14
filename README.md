@@ -10,7 +10,7 @@ A local map and route-planning tool for the first astronauts on Mars to plan and
 
 Live site: https://aresmission.us · Challenge page: https://www.spaceappschallenge.org/2026/challenges/interplanetary-survival-guide-martian-map/
 
-> **Current status**: the site shows the **real Gale crater team area** (about 3.5 km): a HiRISE elevation model (8 m grid made from a 1 m source) with a USGS HiRISE colour mosaic on top. Walking and rover routes come from the Python pipeline. The colour is *processed* colour, not a true-colour photo. Soil, boulders, minerals, live space weather, radiation and rover photos are **not** in this build. Battery and rover-cabin values are demo assumptions. See [web/data/README.md](web/data/README.md).
+> **Current status**: the site shows the **real Gale crater area** (10 × 10 km): a HiRISE elevation model (16 m grid made from a 1 m source), a USGS HiRISE colour mosaic on top, and CRISM mineral overlays. Two science stops are chosen from the mineral patches (clay and polyhydrated sulfate). Walking and rover routes come from the Python pipeline and are smoothed. The colour is *processed* colour, not a true-colour photo; grey strips without colour data use **estimated** colour. Soil, boulders, live space weather, radiation and rover photos are **not** in this build. Battery and rover-cabin values are demo assumptions. See [web/data/README.md](web/data/README.md).
 
 ## Project structure
 
