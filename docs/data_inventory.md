@@ -1,7 +1,33 @@
 # ARES MISSION Data Inventory
 
-> The datasets we can **actually download and use** for the Martian Map challenge. Every link and API below was opened and verified on 2026-11-13.
-> The target site is **Jezero Crater** (see the appendix for Gale).
+> The datasets we can **actually download and use** for the Martian Map challenge. Links and APIs were opened and verified on 2026-11-13 (Jezero) and 2026-11-14 (Gale).
+> **Current site: Gale crater.** Jezero is kept below as the planned next site (sections 0–8 are the Jezero notes).
+
+---
+
+## Gale crater (used by the current site)
+
+Team area: 137.36–137.42°E, 4.78–4.72°S (about 3.5 km). Working waypoints: Habitat (137.365°E, 4.775°S), WP1 (137.395°E, 4.750°S), WP2 (137.412°E, 4.728°S).
+
+| Layer | Dataset | Resolution | Size | Where | Used for |
+|---|---|---|---|---|---|
+| Terrain | Mars Trek "MRO HiRISE, Gale Crater DEM" (`Gale_DEM_SMG_1m`), float32 metres | 1 m | 5.78 GB | Mars Trek download | Slope, routes, 3D terrain |
+| Imagery (grey) | Mars Trek "MRO HiRISE, Curiosity Roving Site Mosaic" (`curiosity_hirise_mosaic`), 8-bit | 0.25 m | 8.6 GB | Mars Trek download | Source of the grey image (not shown directly) |
+| **Imagery (colour)** | USGS Astrogeology *Mars MSL Gale Merged Orthophoto Mosaic 25cm*, HiRISE LRGB colour version `MSL_Gale_HiRISE-LRGB_78quads_sharp_cog.tif` (cloud-optimised GeoTIFF, JPEG-compressed) | 0.25 m | 1.03 GB | https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_HiRISE-LRGB_78quads_sharp_cog.tif | Texture on the 3D terrain. **Processed colour, not true colour** (colour strips fused with the red mosaic and sharpened) |
+| Context | `curiosity_ctx_mosaic` (156 MB) and `Gale_CTX_BlockAdj_dd` (1.8 GB), 8-bit CTX images | about 5–16 m | | Mars Trek | Not used by the site |
+| Spectral | CRISM MTRDR scene `frt00021c92` (in the team data folder) | about 18 m | 50 MB | PDS | Not used yet |
+
+Facts checked on 2026-11-14: the DEM covers 137.1225–137.7298°E, 4.9255–4.2490°S; the colour mosaic is 36000 × 76000 pixels (equirectangular, bounds x 8,140,000–8,149,000 m, y −289,000 to −270,000 m) and fully covers the team area; because it is a COG, a small window can be read over HTTP (`/vsicurl/`) without downloading the whole file.
+
+**Resolution chain**: 1 m source → 2 m grid for route computation (Python pipeline) → 8 m mesh for the web page (every 4th cell). 1 m is only practical for small zoom windows; a full 3.5 km area at 1 m would be about 12.6 million vertices and about 50 MB.
+
+**Files the page loads**: see [../web/data/README.md](../web/data/README.md).
+
+**Known gaps**: no soil (THEMIS) or boulder layer; no suit-battery model in the pipeline; science stops are not included in times; the resource models are simplified and not validated against real rover data.
+
+Everything below this line is the original **Jezero** inventory (planned next site).
+
+---
 
 ---
 
@@ -248,7 +274,7 @@ https://api.nasa.gov/DONKI/SEP?startDate=2025-01-01&endDate=2025-03-01&api_key=D
 
 ---
 
-## Appendix: if we choose Gale Crater instead
+## Appendix: earlier Gale notes (Gale is now the current site; see the Gale section at the top)
 
 | Data | Status |
 |---|---|

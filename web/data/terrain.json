@@ -1,0 +1,45 @@
+{
+ "source": "HiRISE DEM of Gale crater (Gale_DEM_SMG_1m, 1 m) cropped to the team area, then sampled every 4th cell by the Python pipeline",
+ "nx": 444,
+ "ny": 444,
+ "cell_m": 8.0,
+ "z_min": -4274.53,
+ "z_max": -3530.3,
+ "area_lonlat_W_S_E_N": [
+  137.36,
+  -4.78,
+  137.42,
+  -4.72
+ ],
+ "origin": "x east, y south, metres from the north-west corner of the area; row 0 = north",
+ "dropped_last_row": true,
+ "texture": {
+  "file": "texture_color.jpg",
+  "source": "USGS Astrogeology 'Mars MSL Gale Merged Orthophoto Mosaic 25cm' HiRISE LRGB colour mosaic (78 quads, sharpened); cropped to the team area. Processed colour, NOT a true-colour photo",
+  "authors": "T. Parker, F. J. Calef III (USGS)",
+  "covers_m": [
+   3546.0,
+   3558.0
+  ]
+ },
+ "walk": {
+  "slope_limit_deg": 18.0,
+  "o2_capacity_kg": 1.2,
+  "body_kg": 75,
+  "suit_kg": 60,
+  "suit_speed_factor": 0.6
+ },
+ "rover": {
+  "slope_limit_deg": 28.0,
+  "speed_ms": 2.5,
+  "wh_per_km": 250
+ },
+ "assumptions_kept_from_demo": {
+  "suit_battery_wh": 450,
+  "suit_base_w": 60,
+  "rover_battery_wh": 40000,
+  "rover_cabin_o2_kg": 4,
+  "crew": 2,
+  "o2_per_person_kg_h": 0.035
+ }
+}

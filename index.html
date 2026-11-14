@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Martian Map – EVA Planner, Helmet HUD & Rover HUD (Demo v3)</title>
+<title>Martian Map – EVA Planner, Helmet HUD & Rover HUD (Gale data)</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -115,6 +115,7 @@
   #hudCtl button.danger{border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.7)}
   #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
   ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(120,230,255,.25);border-radius:3px}
+  #credit{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:10.5px;color:rgba(200,230,240,.6);pointer-events:none;z-index:5;white-space:nowrap}
 </style>
 <script type="importmap">
 { "imports": {
@@ -122,8 +123,24 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
+<link rel="stylesheet" href="web/css/intro.css">
 </head>
 <body>
+<div id="intro" aria-hidden="true">
+  <canvas id="introStars"></canvas>
+  <svg id="introLogo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="introMars" cx="0.38" cy="0.34" r="0.75"><stop offset="0" stop-color="#ff9a62"/><stop offset="0.55" stop-color="#d9502f"/><stop offset="1" stop-color="#7a2418"/></radialGradient></defs>
+    <g transform="translate(32 32) scale(1.36) translate(-32 -32)">
+      <circle cx="32" cy="32" r="23" fill="url(#introMars)"/>
+      <path id="introRoute" d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/>
+      <circle id="introStart" class="introDot" cx="17" cy="45" r="3.6" fill="#37e0ff"/>
+      <circle id="introEnd" class="introDot" cx="47" cy="17" r="5.2" fill="#0a161e" stroke="#37e0ff" stroke-width="3"/>
+    </g>
+  </svg>
+  <div id="introTitle"><span id="introGhost"></span><span id="introText"></span><span id="introCursor"></span></div>
+  <div id="introSkip">click or press any key to skip</div>
+</div>
+<script src="web/js/intro.js"></script>
 <canvas id="c"></canvas>
 <div id="frame"></div><div id="frameLbl">HABITAT VIEWPORT · TRANSPARENT DISPLAY</div>
 <div id="labels"></div>
@@ -132,12 +149,12 @@
 <div id="left" class="panel">
   <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
   <div class="sub">Habitat transparent display → helmet / rover HUD</div>
-  <div class="note">Terrain here is <b>synthetic</b> (2 km × 2 km, 10 m grid). In the real build this grid is replaced by a HiRISE DTM and the layers below by NASA data products.</div>
+  <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (3.5 km, 8 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo).</div>
 
   <h2>Mission · EVA-07</h2>
   <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><small>Departure / return point</small></div></div>
-  <div class="wp"><div class="dot">1</div><div><b>WP1 · Delta layered outcrop</b><br><small>Stratigraphy imaging + core sample · 20 min stop</small></div></div>
-  <div class="wp"><div class="dot">2</div><div><b>WP2 · Clay-bearing rocks</b><br><small>CRISM clay signature check · 20 min stop</small></div></div>
+  <div class="wp"><div class="dot">1</div><div><b>WP1</b><br><small id="wp1Txt">–</small></div></div>
+  <div class="wp"><div class="dot">2</div><div><b>WP2</b><br><small id="wp2Txt">–</small></div></div>
   <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
 
   <h2>Travel mode</h2>
@@ -148,28 +165,25 @@
 
   <h2>Layers (data overlay)</h2>
   <div class="btns" id="layers">
-    <button class="btn on" data-l="elev">Elevation</button>
+    <button class="btn on" data-l="img">Imagery</button>
+    <button class="btn" data-l="elev">Elevation</button>
     <button class="btn" data-l="slope">Slope</button>
-    <button class="btn" data-l="soil">Soil</button>
-    <button class="btn" data-l="cost">Cost map</button>
   </div>
   <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
 
-  <h2>Route conditions → recompute</h2>
-  <label class="sl">Max traversable slope: <b id="limV">18</b>°<input id="lim" type="range" min="10" max="32" value="18"></label>
-  <label class="sl">Slope weight: <b id="wsV">0.15</b><input id="ws" type="range" min="0" max="100" value="15"></label>
-  <div class="small" style="margin-top:4px">Set the slope weight to 0 for a shorter but steeper route. Push the slope limit low enough and no safe route exists (NO-GO).</div>
+  <h2>Route</h2>
+  <div class="small">Routes are precomputed by the Python pipeline from the real DEM (on foot: slope limit <b>18°</b>; rover: <b>28°</b>). The route sliders of the synthetic demo were removed.</div>
   <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
   <label class="chk"><input type="checkbox" id="showFrame" checked> Habitat window frame</label>
 
   <h2>Pipeline</h2>
   <ol class="steps">
-    <li>① Elevation grid <span class="tag py">Python</span> <span class="small">HiRISE DTM via rasterio</span></li>
-    <li>② Slope · soil · boulders <span class="tag py">Python</span> <span class="small">DTM gradient, THEMIS, HiRISE</span></li>
-    <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·soft soil; over limit / boulder = blocked</span></li>
-    <li>④ Optimal route (A*) <span class="tag py">Python</span> <span class="small">H → WP1 → WP2 → H</span></li>
-    <li>⑤ Time · O₂ · battery budget <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (0.38 g) / rover energy model</span></li>
-    <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">mesh, tubes, AR line, HUD</span></li>
+    <li>① Crop the Gale DEM <span class="tag py">Python</span> <span class="small">HiRISE 1 m → 2 m grid (rasterio)</span></li>
+    <li>② Slope · roughness <span class="tag py">Python</span> <span class="small">gradient + 5×5 window</span></li>
+    <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·roughness; over the limit = blocked</span></li>
+    <li>④ Optimal route <span class="tag py">Python</span> <span class="small">H → WP1 → WP2 → H, line-of-sight smoothing</span></li>
+    <li>⑤ Time · O₂ · energy <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (Mars gravity) / rover energy model</span></li>
+    <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">8 m mesh, route tubes, AR line, HUD</span></li>
   </ol>
 </div>
 
@@ -183,7 +197,7 @@
     <div class="h"></div><div class="h opt">■ Optimal</div><div class="h str">■ Straight</div>
     <div>Distance</div><div id="oD"></div><div id="sD"></div>
     <div>Max slope</div><div id="oS"></div><div id="sS"></div>
-    <div>Time (incl. stops)</div><div id="oT"></div><div id="sT"></div>
+    <div>Travel time</div><div id="oT"></div><div id="sT"></div>
     <div id="rLbl1">O₂ used</div><div id="oO"></div><div id="sO"></div>
     <div id="rLbl2">Battery used</div><div id="oE"></div><div id="sE"></div>
     <div>Blocked cells</div><div id="oB"></div><div id="sB"></div>
@@ -200,15 +214,12 @@
 
   <button id="evaBtn">▶ Start first-person EVA (helmet HUD)</button>
 
-  <h2>Data sources (real build)</h2>
+  <h2>Data used in this build</h2>
   <table class="src">
-    <tr><td>Elevation · slope</td><td>MRO HiRISE DTM (~1 m), MOLA</td></tr>
-    <tr><td>Soft soil</td><td>Odyssey THEMIS thermal inertia</td></tr>
-    <tr><td>Boulders</td><td>MRO HiRISE imagery</td></tr>
-    <tr><td>Science targets</td><td>MRO CRISM mineral maps (archive)</td></tr>
-    <tr><td>Weather</td><td>Perseverance MEDA, Curiosity REMS</td></tr>
-    <tr><td>Radiation</td><td>Curiosity RAD, NASA DONKI (SEP/CME)</td></tr>
-    <tr><td>POV photos</td><td>Rover Navcam / Mastcam-Z</td></tr>
+    <tr><td>Elevation · slope</td><td>HiRISE DEM of Gale (1 m source, shown at 8 m)</td></tr>
+    <tr><td>Imagery</td><td>USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
+    <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
+    <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, minerals (CRISM), live space weather (DONKI), radiation, rover photos</td></tr>
   </table>
   <h2>Model assumptions</h2>
   <div class="small" id="assump"></div>
@@ -253,73 +264,49 @@
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
+<div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-// ==== COMPUTE START  (in the real project this block is the Python side)
-const N = 200, CELL = 10;                       // 200×200 cells, 10 m each → 2 km × 2 km
-const idx = (i, j) => i * N + j;
-const WPS = [
-  { id: 'H', name: 'Habitat',              short: 'HAB', cell: [170, 30] },
-  { id: '1', name: 'WP1 · Delta outcrop',  short: 'WP1', cell: [40, 160] },
-  { id: '2', name: 'WP2 · Clay-bearing rocks', short: 'WP2', cell: [120, 150] },
-];
-const MISSION = [0, 1, 2, 0];                   // visit order H → 1 → 2 → H
-const HAB = WPS[0].cell;
-const DWELL_S = 20 * 60;                        // science stop duration
+// ==== DATA + MODEL (values come from the Python pipeline: web/data/terrain.json and route_*.json)
+const DATA = 'web/data/';
+function showFatal(msg) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:#3a0d0d;color:#fff;padding:16px 22px;border:1px solid #f66;border-radius:10px;z-index:2000;max-width:520px;font:14px sans-serif;line-height:1.5';
+  d.innerHTML = '<b>Could not load the terrain data.</b><br>' + msg + '<br><small>Open the page through a web server (not by double-clicking the file).</small>';
+  document.body.appendChild(d);
+}
+let TERRAIN, ROUTES = {};
+try {
+  TERRAIN = await (await fetch(DATA + 'terrain.json')).json();
+  const rs = await Promise.all(['route_walk.json', 'route_rover.json'].map(f => fetch(DATA + f).then(r => r.json())));
+  ROUTES.suit = rs[0]; ROUTES.rover = rs[1];
+} catch (err) { showFatal(String(err)); throw err; }
 
-// --- model constants (assumptions, see panel) ---
-const W_BODY = 80, L_SUIT = 90, G_MARS = 0.38, SUIT_SPEED = 0.6;
-const SUIT_O2_KG = 0.54, SUIT_BAT_WH = 450, SUIT_BASE_W = 60, M_REST = 180;   // EMU-like: ~1.2 lb primary O2, ~0.45 kWh battery
-const ROVER_MASS = 4500, G_MS2 = 3.71, ROVER_VMAX = 2.8, ROVER_AUX_W = 1500, ROVER_BAT_WH = 40000, ROVER_ETA = 0.8;
-const CREW = 2, O2_PP_KGH = 0.035, ROVER_O2_KG = 4;
+const N = TERRAIN.nx, CELL = TERRAIN.cell_m;     // 444×444 cells, 8 m each
+const idx = (i, j) => i * N + j;
+const WPS = ROUTES.suit.waypoints.map((w, k) => ({ id: ['H', '1', '2'][k], name: w.name, short: ['HAB', 'WP1', 'WP2'][k], lon: w.lon, lat: w.lat,
+  cell: [Math.min(N - 1, Math.round(w.y / CELL)), Math.min(N - 1, Math.round(w.x / CELL))] }));
+const MISSION = [0, 1, 2, 0];                    // visit order H → 1 → 2 → H
+const HAB = WPS[0].cell;
+for (const [id, k] of [['wp1Txt', 1], ['wp2Txt', 2]]) document.getElementById(id).textContent = `${Math.abs(WPS[k].lat).toFixed(4)}°S, ${WPS[k].lon.toFixed(4)}°E`;
+
+// walking model: same constants as the pipeline config
+const W_BODY = TERRAIN.walk.body_kg, L_SUIT = TERRAIN.walk.suit_kg, SUIT_SPEED = TERRAIN.walk.suit_speed_factor, G_MARS = 3.71, G_EARTH = 9.81;
+const SUIT_O2_KG = TERRAIN.walk.o2_capacity_kg;
+// values kept from the earlier demo (NOT produced by the pipeline)
+const AS = TERRAIN.assumptions_kept_from_demo;
+const SUIT_BAT_WH = AS.suit_battery_wh, SUIT_BASE_W = AS.suit_base_w, ROVER_BAT_WH = AS.rover_battery_wh, ROVER_O2_KG = AS.rover_cabin_o2_kg, CREW = AS.crew, O2_PP_KGH = AS.o2_per_person_kg_h;
+const ROVER_SPEED = TERRAIN.rover.speed_ms, ROVER_WH_PER_KM = TERRAIN.rover.wh_per_km;
+const O2_PER_J = 1 / 20100 * 1.429e-3;           // 20.1 kJ per litre O2, 1.429 g per litre → kg per joule
 const SF_GO = 1.5;
 const MODES = {
-  suit:  { name: 'On foot (EVA suit)',  limit: 18, wSlope: 0.15, wSoft: 3, eye: 1.7 },
-  rover: { name: 'Pressurized rover',   limit: 25, wSlope: 0.06, wSoft: 6, eye: 3.2 },
+  suit:  { name: 'On foot (EVA suit)', limit: TERRAIN.walk.slope_limit_deg,  wSlope: 0.25, wSoft: 0, eye: 1.7 },
+  rover: { name: 'Pressurized rover',  limit: TERRAIN.rover.slope_limit_deg, wSlope: 0.10, wSoft: 0, eye: 3.2 },
 };
-
-function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function makeNoise(seed) {
-  const rnd = mulberry32(seed), G = 256, tbl = new Float32Array(G * G);
-  for (let k = 0; k < G * G; k++) tbl[k] = rnd();
-  const v = (x, y) => tbl[(((y % G) + G) % G) * G + (((x % G) + G) % G)];
-  const sm = t => t * t * (3 - 2 * t);
-  return (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), u = sm(x - xi), w = sm(y - yi);
-    const a = v(xi, yi), b = v(xi + 1, yi), c = v(xi, yi + 1), d = v(xi + 1, yi + 1);
-    return (a + (b - a) * u) * (1 - w) + (c + (d - c) * u) * w; };
-}
-function fbm(n, x, y, oct) { let s = 0, amp = 1, f = 1, norm = 0; for (let o = 0; o < oct; o++) { s += amp * n(x * f, y * f); norm += amp; amp *= 0.5; f *= 2; } return s / norm; }
-const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-
-// ① synthetic DTM: rolling hills + crater + escarpment with two gaps
-function generateFakeDTM() {
-  const n1 = makeNoise(7), n2 = makeNoise(42), rnd = mulberry32(99);
-  const h = new Float32Array(N * N), soft = new Float32Array(N * N);
-  const cy = 105, cx = 95, R = 26;
-  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
-    let z = (fbm(n1, j / 55, i / 55, 4) - 0.5) * 110 + (j - i) * 0.1;
-    const r = Math.hypot(i - cy, j - cx) / R;
-    z += r < 1 ? -48 + 72 * r * r * r : 24 * Math.exp(-(r - 1) * 4);
-    const gap = (i < 58 && i > 30) || i > 150 ? 0.25 : 1;
-    z += gap * 28 / (1 + Math.exp(-((j - i) - 60) / 1.6));
-    h[idx(i, j)] = z;
-    soft[idx(i, j)] = smooth(0.56, 0.68, fbm(n2, j / 22, i / 22, 3));   // real: THEMIS thermal inertia
-  }
-  const boulders = [];                                                   // real: marked from HiRISE imagery
-  while (boulders.length < 90) {
-    const i = Math.floor(rnd() * N), j = Math.floor(rnd() * N);
-    if (WPS.some(w => Math.hypot(i - w.cell[0], j - w.cell[1]) < 10)) continue;
-    boulders.push([i, j, 3 + rnd() * 4]);
-  }
-  const dilate = r => { const m = new Uint8Array(N * N);
-    for (const [i, j] of boulders) for (let di = -r; di <= r; di++) for (let dj = -r; dj <= r; dj++) {
-      const a = i + di, b = j + dj; if (a >= 0 && a < N && b >= 0 && b < N) m[idx(a, b)] = 1; } return m; };
-  return { h, soft, boulders, rock: { suit: dilate(1), rover: dilate(2) } };        // rover needs wider clearance
-}
 
 // ② slope (deg)
 function computeSlope(h) {
@@ -357,6 +344,7 @@ function astar(cost, s, g) {
     for (const [di, dj, d] of nb) {
       const a = i + di, b = j + dj; if (a < 0 || a >= N || b < 0 || b >= N) continue;
       const nk = idx(a, b); if (closed[nk] || !isFinite(cost[nk])) continue;
+      if (Math.atan(Math.abs(data.h[nk] - data.h[k]) / (d * CELL)) * 180 / Math.PI > params[mode].limit) continue;   // the step itself must also respect the slope limit
       const ng = gS[k] + d * CELL * (ck + cost[nk]) / 2;
       if (ng < gS[nk]) { gS[nk] = ng; came[nk] = k; push(nk, ng + H(nk)); }
     }
@@ -365,72 +353,45 @@ function astar(cost, s, g) {
   const path = [gk]; let k = gk; while (k !== sk) { k = came[k]; path.push(k); }
   return path.reverse();
 }
-function straightPath(s, g) {
-  const n = Math.max(Math.abs(g[0] - s[0]), Math.abs(g[1] - s[1])), p = [];
-  for (let t = 0; t <= n; t++) p.push(idx(Math.round(s[0] + (g[0] - s[0]) * t / n), Math.round(s[1] + (g[1] - s[1]) * t / n)));
-  return p;
-}
-// multi-leg mission: concatenate legs, duplicate the cell at science stops (= dwell segment)
-function buildMission(legFn) {
-  const path = [], stopIdx = [0], dwell = new Set();
-  for (let m = 0; m < MISSION.length - 1; m++) {
-    const leg = legFn(WPS[MISSION[m]].cell, WPS[MISSION[m + 1]].cell); if (!leg) return null;
-    if (m > 0) { if (WPS[MISSION[m]].id !== 'H') { path.push(path[path.length - 1]); dwell.add(path.length - 1); } leg.shift(); }
-    path.push(...leg); stopIdx.push(path.length - 1);
-  }
-  return { path, stopIdx, dwell, stops: MISSION.slice() };
-}
 
-// ⑤ time · O2 · battery budget (simplified models)
-function budget(path, h, soft, slope, cost, mode, limit, dwell = new Set()) {
+// resource model ported from the pipeline (used for ABORT / return estimates; the planned route uses the pipeline numbers directly)
+const walkSpeed = deg => Math.max(0.05, 6 * Math.exp(-3.5 * Math.abs(Math.tan(deg * Math.PI / 180) + 0.05)) / 3.6 * SUIT_SPEED);
+const pandolfW = (v, gradePct) => {
+  const m = 1.5 * W_BODY + 2 * (W_BODY + L_SUIT) * (L_SUIT / W_BODY) ** 2 + 1.2 * (W_BODY + L_SUIT) * (1.5 * v * v + 0.35 * v * Math.max(gradePct, 0));
+  return 1.5 * W_BODY + (m - 1.5 * W_BODY) * (G_MARS / G_EARTH);
+};
+function budget(path, h, soft, slope, cost, mode) {
   const r = { dist: 0, time: 0, o2: 0, wh: 0, maxSlope: 0, blocked: 0, cumD: [0], cumT: [0], cumO: [0], cumE: [0], seg: [0], spd: [0] };
   for (let n = 1; n < path.length; n++) {
     const a = path[n - 1], b = path[n];
-    const horiz = CELL * Math.hypot(Math.floor(b / N) - Math.floor(a / N), b % N - a % N);
-    let t, o2, wh, d3 = 0, ang = 0, v = 0;
-    if (horiz === 0) {                                                     // dwell at a science stop
-      t = dwell.has(n) ? DWELL_S : 0;
-      if (mode === 'suit') { o2 = M_REST * t / 20100 * 1.429 / 1000; wh = (SUIT_BASE_W + 0.03 * M_REST) * t / 3600; }
-      else { o2 = CREW * O2_PP_KGH * t / 3600; wh = ROVER_AUX_W * t / 3600; }
-    } else {
-      const dz = h[b] - h[a], grade = dz / horiz; d3 = Math.hypot(horiz, dz);
-      ang = Math.max(Math.atan(Math.abs(grade)) * 180 / Math.PI, slope[b] * 0.5);
-      if (!isFinite(cost[b])) r.blocked++;
-      if (mode === 'suit') {
-        v = 6 * Math.exp(-3.5 * Math.abs(grade + 0.05)) / 3.6 * SUIT_SPEED;          // Tobler × suit factor
-        t = d3 / v; const eta = 1 + 0.6 * soft[b], G = Math.max(grade * 100, 0);
-        const M = 1.5 * W_BODY + G_MARS * (2 * (W_BODY + L_SUIT) * (L_SUIT / W_BODY) ** 2 + eta * (W_BODY + L_SUIT) * (1.5 * v * v + 0.35 * v * G)); // Pandolf (W)
-        o2 = M * t / 20100 * 1.429 / 1000;                                             // 1 L O2 ≈ 20.1 kJ, 1.429 g/L
-        wh = (SUIT_BASE_W + 0.03 * M) * t / 3600;
-      } else {
-        v = Math.max(0.4, ROVER_VMAX * (1 - 0.55 * Math.min(1, ang / limit)) * (1 - 0.35 * soft[b]));
-        t = d3 / v; const sin = dz / d3, cos = horiz / d3, crr = 0.06 + 0.10 * soft[b];
-        const F = ROVER_MASS * G_MS2 * (crr * cos + sin);
-        wh = (Math.max(0, F) * d3 / ROVER_ETA + ROVER_AUX_W * t) / 3600;
-        o2 = CREW * O2_PP_KGH * t / 3600;
-      }
-      r.maxSlope = Math.max(r.maxSlope, Math.atan(Math.abs(grade)) * 180 / Math.PI);
-    }
-    r.dist += d3; r.time += t; r.o2 += o2; r.wh += wh;
-    r.cumD.push(r.dist); r.cumT.push(r.time); r.cumO.push(r.o2); r.cumE.push(r.wh); r.seg.push(ang); r.spd.push(v);
+    const hz = CELL * Math.hypot(Math.floor(b / N) - Math.floor(a / N), b % N - a % N);
+    if (hz === 0) { r.cumD.push(r.dist); r.cumT.push(r.time); r.cumO.push(r.o2); r.cumE.push(r.wh); r.seg.push(0); r.spd.push(0); continue; }
+    const dz = h[b] - h[a], s = Math.atan2(dz, hz) * 180 / Math.PI, sg = Math.hypot(hz, dz);
+    let v, dt, o2, wh;
+    if (mode === 'suit') { v = walkSpeed(s); dt = sg / v; const M = pandolfW(v, 100 * dz / hz); o2 = M * dt * O2_PER_J; wh = (SUIT_BASE_W + 0.03 * M) * dt / 3600; }
+    else { v = ROVER_SPEED * Math.max(0.3, 1 - Math.abs(s) / 40); dt = sg / v; o2 = CREW * O2_PP_KGH * dt / 3600; wh = ROVER_WH_PER_KM / 1000 * sg * (1 + Math.max(s, 0) / 10); }
+    r.dist += sg; r.time += dt; r.o2 += o2; r.wh += wh; r.maxSlope = Math.max(r.maxSlope, Math.abs(s));
+    r.cumD.push(r.dist); r.cumT.push(r.time); r.cumO.push(r.o2); r.cumE.push(r.wh); r.seg.push(Math.max(Math.abs(s), slope[b] * 0.5)); r.spd.push(v);
   }
   return r;
 }
 // ==== COMPUTE END
 
 // =================== shared state ===================
-const data = generateFakeDTM();
+const demRaw = new Float32Array(await (await fetch(DATA + 'dem.bin')).arrayBuffer());
+if (demRaw.length !== N * N) { showFatal(`dem.bin has ${demRaw.length} values, expected ${N * N}`); throw new Error('dem.bin size mismatch'); }
+const data = { h: demRaw, soft: new Float32Array(N * N), boulders: [], rock: { suit: new Uint8Array(N * N), rover: new Uint8Array(N * N) } };   // no soil / boulder data in the pipeline yet
 const slope = computeSlope(data.h);
 let mean = 0; for (const z of data.h) mean += z; mean /= N * N;
 for (let k = 0; k < N * N; k++) data.h[k] -= mean;
 let hMin = Infinity, hMax = -Infinity; for (const z of data.h) { hMin = Math.min(hMin, z); hMax = Math.max(hMax, z); }
 
-let mode = 'suit', layer = 'elev', cost = null;
+let mode = 'suit', layer = 'img', cost = null;
 const params = { suit: { ...MODES.suit }, rover: { ...MODES.rover } };
 const supply = () => mode === 'suit' ? { o2: SUIT_O2_KG, wh: SUIT_BAT_WH } : { o2: ROVER_O2_KG, wh: ROVER_BAT_WH };
 document.getElementById('assump').innerHTML =
-  `Walking speed: Tobler hiking function × ${SUIT_SPEED} (suit). Metabolic rate: Pandolf equation at ${G_MARS} g, body ${W_BODY} kg + suit/load ${L_SUIT} kg; O₂ from 20.1 kJ per L. Suit (EMU-like): ${SUIT_O2_KG} kg O₂, ${SUIT_BAT_WH} Wh battery, ${SUIT_BASE_W} W base load. ` +
-  `Rover: ${ROVER_MASS / 1000} t, ≤${(ROVER_VMAX * 3.6).toFixed(0)} km/h, rolling resistance 0.06–0.16 by soil, ${ROVER_AUX_W / 1000} kW life support, ${ROVER_BAT_WH / 1000} kWh battery. Science stops ${DWELL_S / 60} min. GO when safety factor ≥ ${SF_GO}. All values illustrative.`;
+  `From the Python pipeline: distances, times, slope and O₂ use (Tobler walking speed × ${SUIT_SPEED}; Pandolf metabolic rate at ${G_MARS} m/s², body ${W_BODY} kg + suit ${L_SUIT} kg; ${SUIT_O2_KG} kg O₂ capacity; walking slope limit ${MODES.suit.limit}°; rover ${ROVER_SPEED} m/s, ${ROVER_WH_PER_KM} Wh/km, slope limit ${MODES.rover.limit}°). ` +
+  `Assumed in this demo, not from the pipeline: suit battery ${SUIT_BAT_WH} Wh with ${SUIT_BASE_W} W base load; rover battery ${ROVER_BAT_WH / 1000} kWh, ${CREW} crew, ${ROVER_O2_KG} kg cabin O₂ (rover life-support load is not included). No science stops are included. GO when safety factor ≥ ${SF_GO}. All values illustrative.`;
 
 // =================== Three.js scene ===================
 const SIZE = (N - 1) * CELL;
@@ -450,7 +411,7 @@ const scene = new THREE.Scene();
 const SKY = new THREE.Color(0xc99a72), SPACE_BG = new THREE.Color(0x150f0d);
 scene.background = SPACE_BG;
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 20000);
-const MAP_CAM = () => { camera.position.set(700, 1500, 1700); controls.target.set(-60, 0, 0); controls.update(); };
+const MAP_CAM = () => { camera.position.set(1300, 2500, 3000); controls.target.set(0, 0, 0); controls.update(); };
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI * 0.47; MAP_CAM();
 scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a2418, 0.9));
@@ -461,17 +422,18 @@ const pos = geo.attributes.position;
 for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), data.h[idx(i, j)]);
 geo.computeVertexNormals();
 const colors = new Float32Array(N * N * 3); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-const terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+const matVC = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
+const imgTex = new THREE.TextureLoader().load(DATA + TERRAIN.texture.file);
+imgTex.colorSpace = THREE.SRGBColorSpace; imgTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+{ const rx = SIZE / TERRAIN.texture.covers_m[0], ry = SIZE / TERRAIN.texture.covers_m[1]; imgTex.repeat.set(rx, ry); imgTex.offset.set(0, 1 - ry); }   // the image covers 3546 × 3558 m, the mesh 3544 m
+const matImg = new THREE.MeshStandardMaterial({ map: imgTex, roughness: 0.95, metalness: 0 });
+const terrain = new THREE.Mesh(geo, matImg);
 scene.add(terrain);
 // holographic grid overlay for the habitat display
-const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x37e0ff, wireframe: true, transparent: true, opacity: 0.05 }));
+const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x37e0ff, wireframe: true, transparent: true, opacity: 0.025 }));
 scene.add(wire);
 
-const bMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: 0x3b2a22, roughness: 1, flatShading: true }), data.boulders.length);
-{ const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
-  data.boulders.forEach(([i, j, r], n) => { e.set(n, n * 2, n * 3); q.setFromEuler(e);
-    m4.compose(new THREE.Vector3(wx(j), data.h[idx(i, j)] + r * 0.4, wz(i)), q, new THREE.Vector3(r, r * 0.7, r)); bMesh.setMatrixAt(n, m4); }); }
-scene.add(bMesh);
+
 
 // habitat
 const hab = new THREE.Group(); const white = new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5 });
@@ -484,15 +446,15 @@ const labelsEl = document.getElementById('labels');
 const wpViz = WPS.map((w, n) => {
   const x = wx(w.cell[1]), z = wz(w.cell[0]), y = heightAt(x, z);
   let beacon = null;
-  if (w.id !== 'H') { beacon = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 120, 16), new THREE.MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0.7 }));
-    beacon.position.set(x, y + 60, z); scene.add(beacon); }
+  if (w.id !== 'H') { beacon = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 220, 16), new THREE.MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0.7 }));
+    beacon.position.set(x, y + 110, z); scene.add(beacon); }
   const el = document.createElement('div'); el.className = 'wlabel' + (w.id === 'H' ? ' hab' : ''); labelsEl.appendChild(el);
-  return { w, beacon, el, anchor: new THREE.Vector3(x, y + (w.id === 'H' ? 40 : 125), z), ground: new THREE.Vector3(x, y, z) };
+  return { w, beacon, el, anchor: new THREE.Vector3(x, y + (w.id === 'H' ? 60 : 225), z), ground: new THREE.Vector3(x, y, z) };
 });
 // crew marker
 const crew = new THREE.Group();
-crew.add(new THREE.Mesh(new THREE.SphereGeometry(5, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })));
-const ring = new THREE.Mesh(new THREE.RingGeometry(8, 10, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
+crew.add(new THREE.Mesh(new THREE.SphereGeometry(8, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })));
+const ring = new THREE.Mesh(new THREE.RingGeometry(12, 15, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
 ring.rotation.x = -Math.PI / 2; crew.add(ring); crew.visible = false; scene.add(crew);
 
 // =================== layers ===================
@@ -500,22 +462,17 @@ const lerp3 = (c0, c1, t) => [c0[0] + (c1[0] - c0[0]) * t, c0[1] + (c1[1] - c0[1
 function ramp(stops, t) { t = Math.min(1, Math.max(0, t)); for (let s = 1; s < stops.length; s++) if (t <= stops[s][0]) { const [t0, c0] = stops[s - 1], [t1, c1] = stops[s]; return lerp3(c0, c1, (t - t0) / (t1 - t0)); } return stops[stops.length - 1][1]; }
 const ELEV = [[0, [0.28, 0.12, 0.07]], [0.5, [0.62, 0.32, 0.18]], [1, [0.88, 0.66, 0.46]]];
 const SLOPE = [[0, [0.18, 0.62, 0.3]], [0.45, [0.95, 0.85, 0.2]], [0.75, [0.97, 0.5, 0.12]], [1, [0.85, 0.12, 0.1]]];
-const SOIL = [[0, [0.42, 0.37, 0.35]], [1, [0.98, 0.82, 0.42]]];
-const COST = [[0, [0.15, 0.35, 0.85]], [0.5, [0.95, 0.85, 0.25]], [1, [0.95, 0.3, 0.12]]];
 const css = st => 'linear-gradient(90deg,' + st.map(([t, c]) => `rgb(${c.map(v => v * 255 | 0)}) ${t * 100}%`).join(',') + ')';
 function paint(force) {
-  const L = force || layer, P = params[mode];
-  for (let k = 0; k < N * N; k++) {
-    let c;
-    if (L === 'elev') c = ramp(ELEV, (data.h[k] - hMin) / (hMax - hMin));
-    else if (L === 'slope') c = ramp(SLOPE, slope[k] / P.limit);
-    else if (L === 'soil') c = ramp(SOIL, data.soft[k]);
-    else c = isFinite(cost[k]) ? ramp(COST, (cost[k] - 1) / (P.wSoft + 4)) : [0.12, 0.05, 0.05];
-    colors.set(c, k * 3);
+  const L = force || layer, P = params[mode], lgEl = document.getElementById('legend');
+  if (L === 'img') {
+    terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
+    document.getElementById('lg0').textContent = 'HiRISE colour mosaic'; document.getElementById('lg1').textContent = 'USGS · processed colour'; return;
   }
-  geo.attributes.color.needsUpdate = true;
-  const lg = { elev: [ELEV, `${hMin.toFixed(0)} m`, `+${hMax.toFixed(0)} m`], slope: [SLOPE, '0°', `${P.limit}°+ (blocked)`], soil: [SOIL, 'Bedrock (firm)', 'Soft sand (sinkage)'], cost: [COST, 'Easy', 'Hard · black = blocked'] }[L];
-  document.getElementById('legend').style.background = css(lg[0]);
+  for (let k = 0; k < N * N; k++) colors.set(L === 'elev' ? ramp(ELEV, (data.h[k] - hMin) / (hMax - hMin)) : ramp(SLOPE, slope[k] / P.limit), k * 3);
+  geo.attributes.color.needsUpdate = true; terrain.material = matVC; wire.visible = true;
+  const lg = { elev: [ELEV, `${(hMin + mean).toFixed(0)} m`, `${(hMax + mean).toFixed(0)} m`], slope: [SLOPE, '0°', `${P.limit}°+ (blocked)`] }[L];
+  lgEl.style.background = css(lg[0]);
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
 document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
@@ -526,42 +483,65 @@ let plan = null, straight = null, optTube = null, strTube = null, arLine = null;
 const toPts = (p, lift = 2.5) => p.map(k => new THREE.Vector3(wx(k % N), data.h[k] + lift, wz(Math.floor(k / N))));
 function makeTube(pts, color) {
   const curve = new THREE.CatmullRomCurve3(pts);
-  const m = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(pts.length * 2, 1600), 2.2, 6, false), new THREE.MeshBasicMaterial({ color }));
+  const m = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.min(pts.length * 2, 1600), 3.5, 6, false), new THREE.MeshBasicMaterial({ color }));
   scene.add(m); return m;
 }
 const fmtT = s => { const m = Math.round(s / 60); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; };
 const fmtClock = s => { const m = Math.floor(s / 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 const set = (id, v) => document.getElementById(id).textContent = v;
 
+// pipeline route rows: [x, y, z, dist_m, slope_deg, t_min, o2_kg, rover_wh]  (x east, y south, metres from the area's NW corner)
+function seriesFrom(rows, summary, which) {
+  const n = rows.length, pts = [], path = [], cumD = [], cumT = [], cumO = [], cumE = [], seg = [], spd = [];
+  let bat = 0;
+  rows.forEach((r, k) => {
+    const [x, y, z, dist, slp, tmin, o2, wh] = r, t = tmin * 60;
+    const px = -SIZE / 2 + x, pz = -SIZE / 2 + y;
+    pts.push(new THREE.Vector3(px, heightAt(px, pz) + 2.5, pz));
+    path.push(idx(Math.min(N - 1, Math.max(0, Math.round(y / CELL))), Math.min(N - 1, Math.max(0, Math.round(x / CELL)))));
+    cumD.push(dist); cumT.push(t); seg.push(Math.abs(slp));
+    let v = 0;
+    if (k > 0) {
+      const q = rows[k - 1], dt = t - q[5] * 60; v = dt > 0 ? (dist - q[3]) / dt : 0;
+      if (which === 'suit' && dt > 0) { const hz = Math.hypot(x - q[0], y - q[1]), dz = z - q[2]; if (hz > 0) bat += (SUIT_BASE_W + 0.03 * pandolfW(Math.max(v, 0.05), 100 * dz / hz)) * dt / 3600; }
+    }
+    spd.push(v);
+    cumO.push(which === 'suit' ? o2 : CREW * O2_PP_KGH * t / 3600);   // rover: cabin O2 from crew and time (assumption)
+    cumE.push(which === 'suit' ? bat : wh);                           // suit: battery estimate (assumption) / rover: pipeline traction energy
+  });
+  return { path, pts, b: { dist: cumD[n - 1], time: cumT[n - 1], o2: cumO[n - 1], wh: cumE[n - 1], maxSlope: summary.max_slope_deg, blocked: summary.blocked_cells, cumD, cumT, cumO, cumE, seg, spd } };
+}
+function stopIdxFor(rows) {                // index of the route point nearest to WP1 and WP2 (in order)
+  const out = [0]; let from = 1;
+  for (const k of [1, 2]) {
+    const wp = ROUTES.suit.waypoints[k]; let best = from, bd = Infinity;
+    for (let i = from; i < rows.length; i++) { const d = Math.hypot(rows[i][0] - wp.x, rows[i][1] - wp.y); if (d < bd) { bd = d; best = i; } }
+    out.push(best); from = best + 1;
+  }
+  out.push(rows.length - 1); return out;
+}
+
 function recompute() {
-  const P = params[mode];
+  const P = params[mode], R = ROUTES[mode], sup = supply();
   cost = computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft);
-  const m = buildMission((a, b) => astar(cost, a, b));
-  const s = buildMission((a, b) => straightPath(a, b));
-  straight = { ...s, b: budget(s.path, data.h, data.soft, slope, cost, mode, P.limit, s.dwell) };
+  straight = seriesFrom(R.straight, R.summary.straight, mode);
+  plan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
   [optTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = arLine = null;
-  strTube = makeTube(toPts(s.path), 0xff5a4d); strTube.visible = document.getElementById('showStraight').checked;
-  const sb = straight.b, sup = supply();
+  strTube = makeTube(straight.pts, 0xff5a4d); strTube.visible = document.getElementById('showStraight').checked;
+  const sb = straight.b;
   set('sD', `${(sb.dist / 1000).toFixed(2)} km`); set('sS', `${sb.maxSlope.toFixed(0)}°`); set('sT', fmtT(sb.time));
   set('sO', `${(100 * sb.o2 / sup.o2).toFixed(0)}%`); set('sE', `${(100 * sb.wh / sup.wh).toFixed(0)}%`); set('sB', `${sb.blocked} ⚠`);
-  if (m) {
-    plan = { ...m, b: budget(m.path, data.h, data.soft, slope, cost, mode, P.limit, m.dwell) }; plan.pts = toPts(m.path);
-    optTube = makeTube(plan.pts, 0x37e0ff);
-    arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(plan.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: 0x5dff9d }));
-    arLine.visible = false; scene.add(arLine);
-    const b = plan.b;
-    set('oD', `${(b.dist / 1000).toFixed(2)} km`); set('oS', `${b.maxSlope.toFixed(0)}°`); set('oT', fmtT(b.time));
-    set('oO', `${(100 * b.o2 / sup.o2).toFixed(0)}%`); set('oE', `${(100 * b.wh / sup.wh).toFixed(0)}%`); set('oB', '0 ✓');
-    const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = Math.min(sfO, sfE), lim = sfO < sfE ? 'O₂' : 'battery';
-    const go = sf >= SF_GO, g = document.getElementById('gonogo');
-    g.className = go ? 'go' : 'nogo'; set('gnTxt', go ? 'GO' : 'NO-GO');
-    document.getElementById('gnWhy').innerHTML = `Safety factor <b>×${sf.toFixed(2)}</b> (limited by ${lim})<br>${(b.dist / 1000).toFixed(2)} km · ${fmtT(b.time)} · max ${b.maxSlope.toFixed(0)}°`;
-  } else {
-    plan = null; ['oD', 'oS', 'oT', 'oO', 'oE', 'oB'].forEach(id => set(id, 'no route'));
-    document.getElementById('gonogo').className = 'nogo'; set('gnTxt', 'NO-GO');
-    document.getElementById('gnWhy').innerHTML = `No traversable route under<br>the ${P.limit}° slope limit`;
-  }
-  document.getElementById('evaBtn').disabled = !plan; document.getElementById('previewBtn').disabled = !plan;
+  optTube = makeTube(plan.pts, 0x37e0ff);
+  arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(plan.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: 0x5dff9d }));
+  arLine.visible = false; scene.add(arLine);
+  const b = plan.b;
+  set('oD', `${(b.dist / 1000).toFixed(2)} km`); set('oS', `${b.maxSlope.toFixed(0)}°`); set('oT', fmtT(b.time));
+  set('oO', `${(100 * b.o2 / sup.o2).toFixed(0)}%`); set('oE', `${(100 * b.wh / sup.wh).toFixed(0)}%`); set('oB', b.blocked === 0 ? '0 ✓' : `${b.blocked} ⚠`);
+  const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = Math.min(sfO, sfE), lim = sfO < sfE ? 'O₂' : 'battery';
+  const go = sf >= SF_GO, g = document.getElementById('gonogo');
+  g.className = go ? 'go' : 'nogo'; set('gnTxt', go ? 'GO' : 'NO-GO');
+  document.getElementById('gnWhy').innerHTML = `Safety factor <b>×${sf.toFixed(2)}</b> (limited by ${lim})<br>${(b.dist / 1000).toFixed(2)} km · ${fmtT(b.time)} · max ${b.maxSlope.toFixed(0)}°`;
+  document.getElementById('evaBtn').disabled = false; document.getElementById('previewBtn').disabled = false;
   set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
   resetSim(); paint(); drawProfile();
 }
@@ -611,12 +591,8 @@ function drawProfile(cur) {
 }
 
 // =================== UI wiring ===================
-const lim = document.getElementById('lim'), ws = document.getElementById('ws');
-function syncSliders() { const P = params[mode]; lim.value = P.limit; ws.value = Math.round(P.wSlope * 100); set('limV', P.limit); set('wsV', P.wSlope.toFixed(2)); }
-lim.oninput = () => { params[mode].limit = +lim.value; set('limV', lim.value); recompute(); };
-ws.oninput = () => { params[mode].wSlope = ws.value / 100; set('wsV', params[mode].wSlope.toFixed(2)); recompute(); };
 document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b)); mode = b.dataset.m; syncSliders();
+  document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b)); mode = b.dataset.m;
   set('evaBtn', mode === 'suit' ? '▶ Start first-person EVA (helmet HUD)' : '▶ Start drive (rover windshield HUD)'); recompute(); });
 document.getElementById('showStraight').onchange = e => { if (strTube) strTube.visible = e.target.checked; };
 document.getElementById('showFrame').onchange = e => { document.getElementById('frame').style.display = document.getElementById('frameLbl').style.display = e.target.checked ? '' : 'none'; };
@@ -628,7 +604,7 @@ const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('
 const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
-  paint('elev'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false;
+  paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150, 1500); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
@@ -639,7 +615,7 @@ document.getElementById('evaBtn').onclick = () => {
 };
 function exitFP() {
   fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
-  if (arLine) arLine.visible = false; wire.visible = true; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
+  if (arLine) arLine.visible = false; wire.visible = layer !== 'img'; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
@@ -727,7 +703,7 @@ function drawMinimap(p, hdg) {
   mctx.fillStyle = '#37e0ff'; for (const w of WPS) { mctx.beginPath(); mctx.arc(w.cell[1], w.cell[0], 1.6, 0, 7); mctx.fill(); }
   mctx.restore();
   mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.moveTo(W / 2, W / 2 - 10); mctx.lineTo(W / 2 + 7, W / 2 + 7); mctx.lineTo(W / 2 - 7, W / 2 + 7); mctx.fill();
-  mctx.fillStyle = 'rgba(143,243,255,.9)'; mctx.font = '16px Menlo, monospace'; mctx.textAlign = 'center'; mctx.fillText('N↑ heading-up · 350 m', W / 2, W - 16);
+  mctx.fillStyle = 'rgba(143,243,255,.9)'; mctx.font = '16px Menlo, monospace'; mctx.textAlign = 'center'; mctx.fillText(`N↑ heading-up · ${35 * CELL} m`, W / 2, W - 16);
 }
 function drawArrow(turn) {
   const W = arw.width; actx.clearRect(0, 0, W, W); actx.save(); actx.translate(W / 2, W / 2); actx.rotate(Math.max(-90, Math.min(90, turn)) * Math.PI / 180);
@@ -762,7 +738,7 @@ function advance(dt, mult) {
   const ns = nextStop(P, st.n);
   for (let k = sim.lastStop + 1; k < P.stopIdx.length; k++) if (st.d >= P.b.cumD[P.stopIdx[k]] - 0.5 && (st.n >= P.stopIdx[k] || sim.t >= P.b.time)) {
     sim.lastStop = k; const w = P.stops[k] != null ? WPS[P.stops[k]] : null;
-    if (w && w.id !== 'H') { sim.arriveUntil = performance.now() + 2500; showArrive(`✓ Arrived at ${w.name}`, 'Science stop · 20 min (simulated)'); }
+    if (w && w.id !== 'H') { sim.arriveUntil = performance.now() + 2500; showArrive(`✓ Arrived at ${w.name}`, 'Waypoint reached'); }
   }
   return { st, ns };
 }
@@ -854,18 +830,37 @@ function updateFP(dt) {
 }
 
 const clock = new THREE.Clock();
-recompute(); syncSliders(); buildMinimapBase();
+recompute(); buildMinimapBase();
+
+// ---- intro hand-over: the camera flies in from space once the intro screen has finished ----
+const FLY = { active: false, pending: false, t0: 0, dur: 3600, tgt: controls.target.clone(), end: new THREE.Spherical(), from: new THREE.Spherical() };
+function setFly(e) {
+  const r = FLY.from.radius + (FLY.end.radius - FLY.from.radius) * e, ph = FLY.from.phi + (FLY.end.phi - FLY.from.phi) * e, th = FLY.from.theta + (FLY.end.theta - FLY.from.theta) * e;
+  camera.position.setFromSpherical(new THREE.Spherical(r, ph, th)).add(FLY.tgt); controls.update();
+}
+function startFly() { if (!FLY.pending) return; FLY.pending = false; FLY.active = true; FLY.t0 = performance.now(); }
+function stepFly() {
+  if (!FLY.active) return;
+  const t = Math.min(1, (performance.now() - FLY.t0) / FLY.dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  setFly(e); if (t >= 1) { FLY.active = false; controls.enabled = true; }
+}
+if (!window.__introDone && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  FLY.end.setFromVector3(camera.position.clone().sub(controls.target));
+  FLY.from.set(FLY.end.radius * 2.3, Math.max(0.2, FLY.end.phi * 0.5), FLY.end.theta + 0.9);
+  setFly(0); controls.enabled = false; FLY.pending = true;
+  addEventListener('intro-done', startFly, { once: true }); setTimeout(startFly, 30000);   // failsafe
+}
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), tt = performance.now();
   wpViz.forEach(v => v.beacon && (v.beacon.material.opacity = 0.45 + 0.3 * Math.sin(tt / 300)));
-  if (fp) updateFP(dt); else { controls.update(); updateMapPreview(dt); }
+  if (fp) updateFP(dt); else { stepFly(); controls.update(); updateMapPreview(dt); }
   updateLabels();
   renderer.render(scene, camera);
 });
 // keep the minimap's blocked-cell tint in sync with the current cost map
-for (const id of ['lim', 'ws']) document.getElementById(id).addEventListener('input', buildMinimapBase);
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', buildMinimapBase));
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); drawProfile(); });
+window.__siteReady = true; window.dispatchEvent(new Event('site-ready'));
 </script>
 </body>
 </html>
