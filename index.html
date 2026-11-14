@@ -258,12 +258,13 @@
   </div>
 </div>
 <div id="hudCtl">
-  <button id="speedBtn">Sim speed ×60</button>
+  <button id="speedBtn">Sim speed ×15</button>
   <button id="lookBtn">🖱 Mouse look: ON</button>
   <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
+<div id="vexNote" style="position:fixed;top:8px;right:14px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px">terrain height shown ×2 (display only; slopes and routes use true heights)</div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
 
@@ -396,7 +397,9 @@ document.getElementById('assump').innerHTML =
 // =================== Three.js scene ===================
 const SIZE = (N - 1) * CELL;
 const wx = j => -SIZE / 2 + j * CELL, wz = i => -SIZE / 2 + i * CELL;
-function heightAt(x, z) {
+const VEX = 2.0;                                  // display-only vertical exaggeration (routes, slopes and budgets stay true)
+function heightAt(x, z) { return heightRaw(x, z) * VEX; }
+function heightRaw(x, z) {
   const fj = Math.min(Math.max((x + SIZE / 2) / CELL, 0), N - 1.001), fi = Math.min(Math.max((z + SIZE / 2) / CELL, 0), N - 1.001);
   const i = Math.floor(fi), j = Math.floor(fj), u = fj - j, v = fi - i;
   const a = data.h[idx(i, j)], b = data.h[idx(i, j + 1)], c = data.h[idx(i + 1, j)], d = data.h[idx(i + 1, j + 1)];
@@ -419,7 +422,7 @@ const sun = new THREE.DirectionalLight(0xfff0dd, 2.2); sun.position.set(-1200, 9
 
 const geo = new THREE.PlaneGeometry(SIZE, SIZE, N - 1, N - 1); geo.rotateX(-Math.PI / 2);
 const pos = geo.attributes.position;
-for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), data.h[idx(i, j)]);
+for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), data.h[idx(i, j)] * VEX);
 geo.computeVertexNormals();
 const colors = new Float32Array(N * N * 3); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 const matVC = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
@@ -586,7 +589,7 @@ function drawProfile(cur) {
   if (plan) { ctx.setLineDash([3, 3]); ctx.strokeStyle = 'rgba(200,240,255,.45)';
     plan.stopIdx.slice(1, -1).forEach(si => { const xx = X(plan.b.cumD[si]); ctx.beginPath(); ctx.moveTo(xx, pad); ctx.lineTo(xx, Hc - pad); ctx.stroke(); });
     ctx.setLineDash([]);
-    if (cur && sim.active === plan) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(cur.d), y(heightAt(cur.p.x, cur.p.z)), 3.5, 0, 7); ctx.fill(); } }
+    if (cur && sim.active === plan) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(cur.d), y(heightRaw(cur.p.x, cur.p.z)), 3.5, 0, 7); ctx.fill(); } }
   ctx.fillStyle = '#97b3bd'; ctx.font = '10px sans-serif'; ctx.fillText(`0 → ${(maxD / 1000).toFixed(1)} km`, pad + 2, 12);
 }
 
@@ -599,7 +602,8 @@ document.getElementById('showFrame').onchange = e => { document.getElementById('
 document.getElementById('previewBtn').onclick = () => { if (!plan) return; sim.preview = !sim.preview; crew.visible = true; set('previewBtn', sim.preview ? '⏸ Pause preview' : '▶ Preview traverse'); };
 document.getElementById('resetBtn').onclick = () => resetSim();
 
-let fp = false, speedUp = 60;
+let fp = false, speedUp = 15;
+const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
@@ -621,7 +625,7 @@ function exitFP() {
   crew.visible = sim.t > 0;
 }
 document.getElementById('exitBtn').onclick = exitFP;
-document.getElementById('speedBtn').onclick = e => { speedUp = speedUp === 60 ? 240 : speedUp === 240 ? 15 : 60; e.target.textContent = `Sim speed ×${speedUp}`; };
+document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
 document.getElementById('sepBtn').onclick = () => { sim.sep = true; document.getElementById('sep').style.display = 'block';
   set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)'; };
 document.getElementById('abortBtn').onclick = () => {
@@ -817,10 +821,10 @@ function updateFP(dt) {
   if (mode === 'rover') {
     set('dSpd', `${moving ? (st.spd * 3.6).toFixed(1) : '0.0'} km/h`);
     const back = new THREE.Vector3().subVectors(look, camera.position).setY(0).normalize();
-    const pA = heightAt(p.x + back.x * 4, p.z + back.z * 4) - heightAt(p.x - back.x * 4, p.z - back.z * 4);
+    const pA = heightRaw(p.x + back.x * 4, p.z + back.z * 4) - heightRaw(p.x - back.x * 4, p.z - back.z * 4);
     const pitch = Math.atan2(pA, 8) * 180 / Math.PI;
     const lat = new THREE.Vector3(-back.z, 0, back.x);
-    const rA = heightAt(p.x + lat.x * 2, p.z + lat.z * 2) - heightAt(p.x - lat.x * 2, p.z - lat.z * 2);
+    const rA = heightRaw(p.x + lat.x * 2, p.z + lat.z * 2) - heightRaw(p.x - lat.x * 2, p.z - lat.z * 2);
     const roll = Math.atan2(rA, 4) * 180 / Math.PI;
     set('dAtt', `${pitch.toFixed(0)}° / ${roll.toFixed(0)}°`); drawAttitude(pitch, roll);
     const whPerM = P.b.dist > 0 ? P.b.wh / P.b.dist : 1; set('dRange', `${((sup.wh - tot.wh) / whPerM / 1000).toFixed(0)} km`);
