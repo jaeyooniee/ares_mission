@@ -18,11 +18,7 @@
     font-family:-apple-system,"Segoe UI",Inter,Roboto,sans-serif}
   #c{position:fixed;inset:0}
 
-  /* ---------- habitat window frame (transparent display look) ---------- */
-  #frame{position:fixed;inset:0;pointer-events:none;border-radius:34px;
-    box-shadow:inset 0 0 0 10px #0c1216, inset 0 0 0 12px #2b3a41, inset 0 0 90px 20px rgba(0,0,0,.55)}
-  #frame::after{content:"";position:absolute;inset:0;border-radius:34px;
-    background:linear-gradient(115deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 28%,rgba(255,255,255,.035) 55%,rgba(255,255,255,0) 70%)}
+  /* the old thick window frame was removed: the page now fills the whole browser window */
   #frameLbl{position:fixed;top:16px;left:50%;transform:translateX(-50%);font-size:10.5px;letter-spacing:.28em;color:rgba(200,240,255,.5);pointer-events:none}
 
   /* ---------- panels ---------- */
@@ -134,7 +130,7 @@
 </div>
 <script src="web/js/intro.js"></script>
 <canvas id="c"></canvas>
-<div id="frame"></div><div id="frameLbl">HABITAT VIEWPORT · TRANSPARENT DISPLAY</div>
+<div id="frameLbl">HABITAT VIEWPORT · TRANSPARENT DISPLAY</div>
 <div id="labels"></div>
 
 <!-- ================= LEFT PANEL ================= -->
@@ -163,13 +159,12 @@
     <button class="btn" data-l="cost">Cost map</button>
   </div>
   <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
-  <label class="chk"><input type="checkbox" id="showMin" checked> CRISM minerals overlay</label>
+  <label class="chk"><input type="checkbox" id="showMin"> CRISM minerals overlay</label>
   <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
 
   <h2>Route</h2>
   <div class="small">Routes are precomputed by the Python pipeline from the real DEM (on foot: slope limit <b>18°</b>; rover: <b>28°</b>). The route sliders of the synthetic demo were removed.</div>
   <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
-  <label class="chk"><input type="checkbox" id="showFrame" checked> Habitat window frame</label>
 
   <h2>Pipeline</h2>
   <ol class="steps">
@@ -454,7 +449,7 @@ const matCost = new THREE.MeshStandardMaterial({ map: costTex, roughness: 0.95, 
 const minTex = MIN ? areaTex(MIN.file, MIN.covers_m) : null;
 if (minTex) { minTex.magFilter = THREE.NearestFilter; }
 const minMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: minTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
-minMesh.visible = !!MIN; scene.add(minMesh);
+minMesh.visible = false; scene.add(minMesh);       // the CRISM overlay starts switched off; the checkbox turns it on
 const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x37e0ff, wireframe: true, transparent: true, opacity: 0.025 }));
 scene.add(wire);
 
@@ -630,7 +625,6 @@ document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x === b)); mode = b.dataset.m;
   set('evaBtn', mode === 'suit' ? '▶ Start first-person EVA (helmet HUD)' : '▶ Start drive (rover windshield HUD)'); recompute(); });
 document.getElementById('showStraight').onchange = e => { if (strTube) strTube.visible = e.target.checked; };
-document.getElementById('showFrame').onchange = e => { document.getElementById('frame').style.display = document.getElementById('frameLbl').style.display = e.target.checked ? '' : 'none'; };
 document.getElementById('previewBtn').onclick = () => { if (!plan) return; sim.preview = !sim.preview; crew.visible = true; set('previewBtn', sim.preview ? '⏸ Pause preview' : '▶ Preview traverse'); };
 document.getElementById('resetBtn').onclick = () => resetSim();
 
@@ -647,7 +641,7 @@ function setVex(v) {
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
-const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
+const panels = ['left', 'right', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
@@ -685,7 +679,7 @@ function toast(msg) { const t = document.getElementById('toast'); t.textContent 
 
 // =================== mouse look (first-person) ===================
 // cursor position → head rotation relative to walking direction (helmet-fixed HUD stays put)
-const mouseLook = { on: true, tx: 0, ty: 0, yaw: 0, pitch: 0, MAX_YAW: 100, MAX_PITCH: 40 };
+const mouseLook = { on: true, tx: 0, ty: 0, yaw: 0, pitch: 0, MAX_YAW: 180, MAX_PITCH: 40 };      // ±180° = the whole 360° around the walking direction (was ±100°)
 const shape = v => { const a = Math.abs(v), dz = 0.06; return a < dz ? 0 : Math.sign(v) * ((a - dz) / (1 - dz)) ** 1.3; };   // small dead-zone, softer centre
 addEventListener('mousemove', e => {
   if (!fp || !mouseLook.on || e.target.closest('#hudCtl')) return;
