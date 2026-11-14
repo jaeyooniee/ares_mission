@@ -48,3 +48,7 @@ body.intro-pending #frame,body.intro-pending #frameLbl,body.intro-pending #credi
   #intro,#introLogo,#introRoute,.introDot,#introStars{transition-duration:.01s !important;transition-delay:0s !important}
   #introCursor{animation:none}
 }
+
+/* logo: planet image with the route drawn on top (same animation as before) */
+#introLogo img{display:block;width:100%;height:100%}
+#introLogo svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
