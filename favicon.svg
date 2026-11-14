@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="mars" cx="0.38" cy="0.34" r="0.75">
+      <stop offset="0" stop-color="#ff9a62"/>
+      <stop offset="0.55" stop-color="#d9502f"/>
+      <stop offset="1" stop-color="#7a2418"/>
+    </radialGradient>
+  </defs>
+  <g transform="translate(32 32) scale(1.36) translate(-32 -32)">
+    <circle cx="32" cy="32" r="23" fill="url(#mars)"/>
+    <path d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/>
+    <circle cx="17" cy="45" r="3.6" fill="#37e0ff"/>
+    <circle cx="47" cy="17" r="5.2" fill="#0a161e" stroke="#37e0ff" stroke-width="3"/>
+  </g>
+</svg>
