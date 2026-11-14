@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Martian Map – EVA Planner, Helmet HUD & Rover HUD (Demo)</title>
+<title>Martian Map – EVA Planner, Helmet HUD & Rover HUD (Demo v3)</title>
 <style>
   :root{
     --glass: rgba(10,22,30,0.62); --line: rgba(120,230,255,0.22); --txt:#e8f3f7; --dim:#97b3bd;
@@ -94,6 +94,8 @@
   #instr{position:absolute;bottom:15%;left:50%;transform:translateX(-50%);text-align:center;width:48%}
   #instr .main{font-size:15px;color:#fff;text-shadow:0 0 6px #000,0 0 10px rgba(0,200,255,.6)}
   #instr .warn{font-size:13px;color:var(--amber);text-shadow:0 0 8px rgba(255,140,0,.8);margin-top:5px;min-height:18px}
+  #lookInd{position:absolute;top:calc(5% + 46px);left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.12em;opacity:.85}
+  #lookHint{position:absolute;top:calc(5% + 64px);left:50%;transform:translateX(-50%);font-size:11px;opacity:.55;white-space:nowrap}
   #arrow{position:absolute;bottom:23%;left:50%;width:64px;height:64px;transform:translateX(-50%)}
   #minimap{position:absolute;right:9%;bottom:10%;width:150px;height:150px;border-radius:50%;border:1px solid rgba(120,240,255,.5);background:rgba(0,20,28,.4)}
   #swx{position:absolute;left:9%;bottom:11%;width:230px;font-size:11.5px}
@@ -213,6 +215,8 @@
   <div class="visor"></div><div class="glare"></div><div class="pillarL"></div><div class="pillarR"></div>
   <canvas id="compass"></canvas>
   <div id="cross"></div>
+  <div id="lookInd"></div>
+  <div id="lookHint">🖱 Move the mouse to look around · M toggles mouse look · C re-centres</div>
   <div class="hbox" id="hL">
     <div class="lbl" id="hL1">O₂ RESERVE</div><div class="big" id="hO2">100%</div><div class="hbar"><i id="hO2bar" style="width:100%"></i></div>
     <div class="lbl" id="hL2">SUIT BATTERY</div><div class="big" id="hBat">100%</div><div class="hbar"><i id="hBatbar" style="width:100%"></i></div>
@@ -240,6 +244,7 @@
 </div>
 <div id="hudCtl">
   <button id="speedBtn">Sim speed ×60</button>
+  <button id="lookBtn">🖱 Mouse look: ON</button>
   <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
@@ -618,7 +623,7 @@ let fp = false, speedUp = 60;
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
-  if (!plan) return; resetSim(); fp = true; controls.enabled = false; crew.visible = false;
+  if (!plan) return; resetSim(); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   paint('elev'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
@@ -652,6 +657,36 @@ document.getElementById('abortBtn').onclick = () => {
 };
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = 'none', 3500); }
 
+// =================== mouse look (first-person) ===================
+// cursor position → head rotation relative to walking direction (helmet-fixed HUD stays put)
+const mouseLook = { on: true, tx: 0, ty: 0, yaw: 0, pitch: 0, MAX_YAW: 100, MAX_PITCH: 40 };
+const shape = v => { const a = Math.abs(v), dz = 0.06; return a < dz ? 0 : Math.sign(v) * ((a - dz) / (1 - dz)) ** 1.3; };   // small dead-zone, softer centre
+addEventListener('mousemove', e => {
+  if (!fp || !mouseLook.on || e.target.closest('#hudCtl')) return;
+  const nx = e.clientX / innerWidth * 2 - 1, ny = e.clientY / innerHeight * 2 - 1;
+  mouseLook.tx = shape(nx) * mouseLook.MAX_YAW; mouseLook.ty = -shape(ny) * mouseLook.MAX_PITCH;
+});
+document.documentElement.addEventListener('mouseleave', () => { mouseLook.tx = mouseLook.ty = 0; });
+function setMouseLook(on) { mouseLook.on = on; if (!on) mouseLook.tx = mouseLook.ty = 0;
+  document.getElementById('lookBtn').textContent = `🖱 Mouse look: ${on ? 'ON' : 'OFF'}`;
+  document.getElementById('lookHint').style.display = on ? '' : 'none'; }
+document.getElementById('lookBtn').onclick = () => setMouseLook(!mouseLook.on);
+addEventListener('keydown', e => { if (!fp) return;
+  if (e.key === 'm' || e.key === 'M') setMouseLook(!mouseLook.on);
+  if (e.key === 'c' || e.key === 'C') { mouseLook.tx = mouseLook.ty = 0; } });
+const _dir = new THREE.Vector3();
+function applyMouseLook(dt) {          // rotate the view around the body (walking) direction
+  const k = Math.min(1, dt * 8);
+  mouseLook.yaw += (mouseLook.tx - mouseLook.yaw) * k; mouseLook.pitch += (mouseLook.ty - mouseLook.pitch) * k;
+  _dir.subVectors(look, camera.position).normalize();
+  const A = Math.atan2(_dir.x, _dir.z) - mouseLook.yaw * Math.PI / 180;
+  const P = Math.max(-1.3, Math.min(1.3, Math.asin(Math.max(-1, Math.min(1, _dir.y))) + mouseLook.pitch * Math.PI / 180));
+  camera.lookAt(camera.position.x + Math.cos(P) * Math.sin(A) * 50, camera.position.y + Math.sin(P) * 50, camera.position.z + Math.cos(P) * Math.cos(A) * 50);
+  const y = Math.round(mouseLook.yaw), pt = Math.round(mouseLook.pitch);
+  document.getElementById('lookInd').textContent = (Math.abs(y) > 3 || Math.abs(pt) > 3)
+    ? `HEAD ${Math.abs(y)}° ${y > 0 ? 'R' : 'L'} · ${Math.abs(pt)}° ${pt > 0 ? 'UP' : 'DOWN'}` : 'HEAD CENTRED';
+}
+
 // =================== HUD widgets ===================
 const look = new THREE.Vector3();
 const cmp = document.getElementById('compass'), cctx = cmp.getContext('2d');
@@ -667,7 +702,7 @@ function buildMinimapBase() {
     img.data[q] = r; img.data[q + 1] = g; img.data[q + 2] = b; img.data[q + 3] = 255; }
   c.putImageData(img, 0, 0);
 }
-function heading() { return (Math.atan2(look.x - camera.position.x, -(look.z - camera.position.z)) * 180 / Math.PI + 360) % 360; }
+function heading() { camera.getWorldDirection(_dir); return (Math.atan2(_dir.x, -_dir.z) * 180 / Math.PI + 360) % 360; }
 function drawCompass(hdg) {
   const dpr = devicePixelRatio, W = cmp.clientWidth * dpr, H = cmp.clientHeight * dpr; if (cmp.width !== W) { cmp.width = W; cmp.height = H; }
   cctx.clearRect(0, 0, W, H); const span = 90, ppd = W / span;
@@ -750,7 +785,7 @@ function updateFP(dt) {
   const ahead = pointAtDist(P, Math.min(st.d + lookAhead, P.b.dist));
   const target = sim.t < P.b.time ? new THREE.Vector3(ahead.x, heightAt(ahead.x, ahead.z) + M.eye * 0.8, ahead.z) : look.clone();
   if (camera.position.distanceTo(target) > 3) look.lerp(target, Math.min(1, dt * 6));
-  camera.lookAt(look);
+  applyMouseLook(dt);
 
   const sup = supply(), tot = totals(st), hdg = heading();
   // consumables
