@@ -256,7 +256,7 @@
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
-<div id="vexNote" style="position:fixed;top:8px;right:14px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px">terrain height shown ×2 (display only; slopes and routes use true heights)</div>
+<div id="vexNote" style="position:fixed;top:8px;right:14px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px">terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)</div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
 
@@ -389,8 +389,17 @@ document.getElementById('assump').innerHTML =
 // =================== Three.js scene ===================
 const SIZE = (N - 1) * CELL;
 const wx = j => -SIZE / 2 + j * CELL, wz = i => -SIZE / 2 + i * CELL;
-const VEX = 2.0;                                  // display-only vertical exaggeration (routes, slopes and budgets stay true)
-function heightAt(x, z) { return heightRaw(x, z) * VEX; }
+let VEX = 2.0;                                    // display-only vertical exaggeration (routes, slopes and budgets stay true); 1 in the first-person EVA view
+// The Gale area slopes one way as a whole (the foot of Mount Sharp), so the map looked like a tilted slab.
+// For display only we subtract the best-fit plane: tilt(x, z) is that plane, heightAt() is the levelled and exaggerated height.
+// heightRaw(), the profile, the pitch/roll readout, slopes, routes and budgets all keep the TRUE heights.
+const TILT = (() => {
+  let sx = 0, sz = 0, qx = 0, qz = 0;                         // the grid is centred on 0, so x and z are orthogonal and the fit is simple
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const x = -SIZE / 2 + j * CELL, z = -SIZE / 2 + i * CELL, h = data.h[idx(i, j)]; sx += h * x; sz += h * z; qx += x * x; qz += z * z; }
+  return { b: sx / qx, c: sz / qz };
+})();
+const tilt = (x, z) => TILT.b * x + TILT.c * z;
+function heightAt(x, z) { return (heightRaw(x, z) - tilt(x, z)) * VEX; }
 function heightRaw(x, z) {
   const fj = Math.min(Math.max((x + SIZE / 2) / CELL, 0), N - 1.001), fi = Math.min(Math.max((z + SIZE / 2) / CELL, 0), N - 1.001);
   const i = Math.floor(fi), j = Math.floor(fj), u = fj - j, v = fi - i;
@@ -414,7 +423,7 @@ const sun = new THREE.DirectionalLight(0xfff0dd, 2.2); sun.position.set(-1200, 9
 
 const geo = new THREE.PlaneGeometry(SIZE, SIZE, N - 1, N - 1); geo.rotateX(-Math.PI / 2);
 const pos = geo.attributes.position;
-for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), data.h[idx(i, j)] * VEX);
+for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), (data.h[idx(i, j)] - tilt(wx(j), wz(i))) * VEX);
 geo.computeVertexNormals();
 const colors = new Float32Array(N * N * 3); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 const matVC = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
@@ -594,12 +603,22 @@ document.getElementById('showFrame').onchange = e => { document.getElementById('
 document.getElementById('previewBtn').onclick = () => { if (!plan) return; sim.preview = !sim.preview; crew.visible = true; set('previewBtn', sim.preview ? '⏸ Pause preview' : '▶ Preview traverse'); };
 document.getElementById('resetBtn').onclick = () => resetSim();
 
+// Change the display height scale (map view ×2, first-person EVA ×1) and move everything that sits on the terrain with it.
+function setVex(v) {
+  if (v === VEX) return; VEX = v;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), (data.h[idx(i, j)] - tilt(wx(j), wz(i))) * VEX);
+  pos.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingSphere();
+  hab.position.y = heightAt(hab.position.x, hab.position.z);
+  wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 : 225); if (o.beacon) o.beacon.position.y = y + 110; });
+  if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
+  set('vexNote', VEX === 1 ? 'terrain at true height ×1, overall tilt levelled (display only)' : 'terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)');
+}
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['left', 'right', 'frame', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
-  if (!plan) return; resetSim(); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
+  if (!plan) return; resetSim(); setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
@@ -610,7 +629,7 @@ document.getElementById('evaBtn').onclick = () => {
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
 };
 function exitFP() {
-  fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
+  setVex(2); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
   if (arLine) arLine.visible = false; wire.visible = layer !== 'img'; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
