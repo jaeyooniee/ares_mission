@@ -119,8 +119,24 @@
       document.getElementById('introSkip').textContent = 'Choose a landing site';
       const cards = [...intro.querySelectorAll('.siteCard:not(.soon)')], soon = intro.querySelector('.siteCard.soon');
       const gale = cards.find(c => c.dataset.site === 'gale') || cards[0];
-      const onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(cards.includes(document.activeElement) ? document.activeElement : gale); } };
-      const onClick = e => pick(e.currentTarget);
+      const onKey = e => { if (window.__cxOpen) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(cards.includes(document.activeElement) ? document.activeElement : gale); } };
+      const onClick = e => choose(e.currentTarget);
+      // Custom: the user's own data. The dialog builds (or loads) the site first; then the card goes on like Gale / Jezero.
+      let busy = false;
+      const custom = cards.find(c => c.dataset.site === 'custom');
+      if (custom) import('./custom/store.js?v=1').then(m => m.siteMeta()).then(m => { if (m) custom.querySelector('.sub').textContent = `Saved: ${m.name}`; }).catch(() => {});
+      async function choose(card) {
+        if (card.dataset.site !== 'custom') return pick(card);
+        if (busy) return; busy = true;
+        try {
+          const { openCustomDialog } = await import('./custom/dialog.js?v=2');
+          const r = await openCustomDialog();
+          if (!r) { card.focus({ preventScroll: true }); return; }
+          card.querySelector('.map').style.backgroundImage = `url(${r.thumbUrl})`; card.classList.add('ready');
+          card.querySelector('.sub').textContent = r.meta.name;
+          pick(card);
+        } finally { busy = false; }
+      }
       cards.forEach(c => { c.addEventListener('click', onClick); c.addEventListener('pointerenter', () => prefetch(c)); });
       function pick(card) {
         removeEventListener('keydown', onKey); cards.forEach(c => c.removeEventListener('click', onClick));

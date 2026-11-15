@@ -70,6 +70,8 @@
   #siteLoc.open #siteMenu{display:block}
   #siteMenu .mi.cur{background:rgba(55,224,255,.1)}
   #siteMenu .mi{position:relative;padding-right:40px}
+  #siteMenu .mi[hidden]{display:none}
+  #siteMenu #siteCustomNew{border-top:1px solid var(--line);border-radius:0 0 8px 8px;margin-top:4px;color:#bfefff}
   #siteMenu .mi.cur::after{content:"✓";position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;line-height:1;color:#37e0ff}
   #siteFade{position:fixed;inset:0;z-index:3000;background:#05080b;opacity:0;pointer-events:none;transition:opacity .35s ease;
     display:flex;align-items:center;justify-content:center;color:#cfe3ea;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
@@ -170,6 +172,17 @@
   /* ---------- 3D waypoint labels ---------- */
   .wlabel{position:fixed;transform:translate(-50%,-100%);font-size:11.5px;padding:3px 7px;border-radius:6px;white-space:nowrap;pointer-events:none;
     background:rgba(5,20,28,.7);border:1px solid rgba(55,224,255,.55);color:#dff9ff}
+  /* ---------- Curiosity ground truth (CheMin) layer ---------- */
+  .cmlabel{position:fixed;transform:translate(-50%,-100%);font-size:10.5px;padding:2px 6px;border-radius:5px;white-space:nowrap;pointer-events:none;
+    background:rgba(28,20,4,.72);border:1px solid rgba(245,200,80,.45);color:#f7e6b5}
+  .cmlabel.near{border-color:#ffd24a;color:#fff3c4;font-weight:600;box-shadow:0 0 8px rgba(255,200,60,.5)}
+  .hudmode .cmlabel{background:transparent;border:0;color:#ffe08a;text-shadow:0 0 6px rgba(255,190,40,.9);font-family:"SF Mono",Menlo,Consolas,monospace}
+  #cmPop{position:fixed;z-index:60;display:none;width:300px;max-height:70vh;overflow:auto;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.35;
+    background:rgba(16,12,6,.94);border:1px solid rgba(245,200,80,.6);color:#f4ecd8;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+  #cmPop h4{margin:0 0 2px;font-size:14px;color:#ffd970} #cmPop .cmsub{color:#c9b98f;font-size:11px;margin-bottom:6px}
+  #cmPop .row{display:flex;align-items:center;gap:6px;margin:2px 0} #cmPop .row span:first-child{width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #cmPop .bar{height:8px;border-radius:3px;background:#e0b84a} #cmPop .smp{margin-top:8px;font-weight:600;color:#ffe7a3}
+  #cmPop .note{margin-top:8px;color:#a99b78;font-size:10.5px} #cmPop .x{float:right;cursor:pointer;color:#c9b98f;font-size:14px;margin-left:8px}
   .wlabel.hab{border-color:rgba(255,255,255,.7)}
   #labels{transition:opacity .8s ease}
   body.flying #labels{opacity:0;transition:none}   /* map labels (Habitat, sites) stay hidden while the map grows in after the intro, then fade in */
@@ -278,7 +291,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<link rel="stylesheet" href="web/css/intro.css?v=20261115j"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
+<link rel="stylesheet" href="web/css/intro.css?v=20261115n"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
 </head>
 <body class="brand-hidden">
 <div id="intro" aria-hidden="true">
@@ -290,10 +303,11 @@
   <div id="introSites" role="group" aria-label="Choose a landing site">
     <button class="siteCard" data-site="gale" data-tex="web/data/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg?v=3d1)"></span><span class="name">GALE</span><span class="sub">Gale crater · Curiosity</span></button>
     <button class="siteCard" data-site="jezero" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Jezero crater · Perseverance</span></button>
+    <button class="siteCard custom" data-site="custom" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own Mars data</span></button>
   </div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro.js?v=20261115m"></script>
+<script src="web/js/intro.js?v=20261115n"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -338,6 +352,12 @@
       <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay (all)</label>
       <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
       <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Science value (Moon to Mars)</label>
+      <div id="cmBox" hidden>
+      <label class="chk" style="margin-top:8px"><input type="checkbox" id="showCm" autocomplete="off"> Curiosity drill sites (CheMin)</label>
+      <label class="chk"><input type="checkbox" id="showCmPath" autocomplete="off"> Curiosity rover traverse</label>
+      <div class="small" id="cmLegend" style="margin-top:3px;opacity:.85">Reference only, not used in route scoring: drill samples are ~2–6 cm, a CRISM pixel is ≈18 m.
+        <span style="color:#ffd24a">Gold</span> = within 200 m of the planned route. Click a pin for the measured minerals.</div>
+      </div>
     </div>
   </div>
   <div class="navitem">
@@ -354,6 +374,8 @@
     <div id="siteMenu" class="sub" role="menu">
       <button class="mi" data-site="gale" role="menuitem">Gale crater<small>Curiosity landing area · 4.78°S, 137.40°E</small></button>
       <button class="mi" data-site="jezero" role="menuitem">Jezero crater<small>Perseverance landing area · 18.48°N, 77.39°E</small></button>
+      <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
+      <button class="mi" data-site="custom-new" role="menuitem" id="siteCustomNew">Custom data…<small>Build a site from your own DEM, image and CRISM</small></button>
     </div>
   </div>
   <div class="spacer"></div>
@@ -529,6 +551,7 @@
 
 <script type="module">
 import * as THREE from 'three';
+import { loadSite, siteMeta } from './web/js/custom/store.js?v=1';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ==== LANDING SITES: each has its own data folder (same file names and formats) and its own source text
@@ -552,14 +575,37 @@ const SITES = {
   },
 };
 // the intro's site cards decide (intro.js: window.__site + 'site-chosen'); ?site=jezero picks directly; no intro = Gale
-const SITE_ID = await new Promise(res => {
+const SITE_ID0 = await new Promise(res => {
   const q = new URLSearchParams(location.search).get('site');
-  if (SITES[q]) return res(q);
-  if (SITES[window.__site]) return res(window.__site);
+  const ok = id => !!SITES[id] || id === 'custom';
+  if (ok(q)) return res(q);
+  if (ok(window.__site)) return res(window.__site);
   if (!document.getElementById('intro')) return res('gale');
-  addEventListener('site-chosen', e => res(SITES[e.detail] ? e.detail : 'gale'), { once: true });
+  addEventListener('site-chosen', e => res(ok(e.detail) ? e.detail : 'gale'), { once: true });
 });
-const SITE = SITES[SITE_ID];
+const escHtml = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// a custom site: the files the user built (or loaded) live in this browser (IndexedDB) and are read through blob URLs
+function customSite(pkg) {
+  const m = pkg.meta, urls = Object.fromEntries(Object.entries(pkg.files).map(([k, b]) => [k, URL.createObjectURL(b)]));
+  const nObs = (m.crism || []).length, dem = escHtml(m.dem?.file || 'your DEM');
+  return {
+    name: m.name || 'Custom site', rover: m.rover || '', data: '', urls, custom: true,
+    about: `Custom site built in this browser from <b>your data</b>: elevation from <b>${dem}</b> (shown on a 16 m grid). `
+      + `Imagery: ${escHtml(m.image)}. ${nObs ? `Minerals and science objectives from <b>${nObs} CRISM observation${nObs > 1 ? 's' : ''}</b>.` : 'No CRISM data: no mineral layer.'} `
+      + 'Routes are planned in the page with the same models as Gale and Jezero.',
+    elev: m.fromPackage ? escHtml(m.sourceText || 'from a site package') : `${dem} (${m.dem?.pixel_m ?? '?'} m/px source, shown at 16 m)`,
+    img: escHtml(m.image),
+    sci: `ARES MISSION custom builder, same rules as the team science.py: DEM (geology, reachability)${nObs ? ', CRISM summary parameters (life, water, resources, diversity)' : ''}`
+      + `${m.themis ? ', THEMIS thermal inertia (resources)' : ''}${m.traverse ? `, ${escHtml(m.traverse)} traverse (novelty)` : ''}; scored against NASA Moon to Mars objectives`,
+    credit: `Custom site · data supplied by the user (${dem})${nObs ? ' · CRISM: NASA/JPL/JHU-APL' : ''}${m.traverse && !m.fromPackage ? ' · rover traverse: NASA MMGIS' : ''}`,
+  };
+}
+let SITE_ID = SITE_ID0, SITE = SITES[SITE_ID0];
+if (SITE_ID0 === 'custom') {
+  const pkg = await loadSite();
+  if (pkg) SITE = customSite(pkg);
+  else { SITE_ID = 'gale'; SITE = SITES.gale; console.warn('[custom] no custom site saved in this browser: opening Gale'); }
+}
 { // site text: About, Data sources, credit, page title
   const put = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
   put('aboutNote', SITE.about); put('srcElev', SITE.elev); put('srcImg', SITE.img); put('srcSci', SITE.sci);
@@ -570,6 +616,7 @@ const hemi = (lat, lon, d = 4) => `${Math.abs(lat).toFixed(d)}°${lat < 0 ? 'S' 
 
 // ==== DATA + MODEL (values come from the Python pipeline: <site folder>/terrain.json and route_*.json)
 const DATA = SITE.data;
+const url = f => SITE.urls ? (SITE.urls[f] || 'data:,') : DATA + f;   // a site file: server folder (Gale, Jezero) or blob (custom)
 function showFatal(msg) {
   const d = document.createElement('div');
   d.style.cssText = 'position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);background:#3a0d0d;color:#fff;padding:16px 22px;border:1px solid #f66;border-radius:10px;z-index:2000;max-width:520px;font:14px sans-serif;line-height:1.5';
@@ -578,8 +625,8 @@ function showFatal(msg) {
 }
 let TERRAIN, ROUTES = {};
 try {
-  TERRAIN = await (await fetch(DATA + 'terrain.json')).json();
-  const rs = await Promise.all(['route_walk.json', 'route_rover.json'].map(f => fetch(DATA + f).then(r => r.json())));
+  TERRAIN = await (await fetch(url('terrain.json'))).json();
+  const rs = await Promise.all(['route_walk.json', 'route_rover.json'].map(f => fetch(url(f)).then(r => r.json())));
   ROUTES.suit = rs[0]; ROUTES.rover = rs[1];
 } catch (err) { showFatal(String(err)); throw err; }
 
@@ -749,7 +796,7 @@ function smoothReturn(cells, start) {
 // ==== COMPUTE END
 
 // =================== shared state ===================
-const demRaw = new Float32Array(await (await fetch(DATA + 'dem.bin')).arrayBuffer());
+const demRaw = new Float32Array(await (await fetch(url('dem.bin'))).arrayBuffer());
 if (demRaw.length !== N * N) { showFatal(`dem.bin has ${demRaw.length} values, expected ${N * N}`); throw new Error('dem.bin size mismatch'); }
 const data = { h: demRaw, soft: new Float32Array(N * N), boulders: [], rock: { suit: new Uint8Array(N * N), rover: new Uint8Array(N * N) } };   // no soil / boulder data in the pipeline yet
 const slope = computeSlope(data.h);
@@ -810,7 +857,7 @@ geo.computeVertexNormals();
 const colors = new Float32Array(N * N * 3); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 const matVC = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 });
 let texDone; const texReady = new Promise(r => texDone = r);
-const imgTex = new THREE.TextureLoader().load(DATA + TERRAIN.texture.file, () => texDone(), undefined, () => texDone());
+const imgTex = new THREE.TextureLoader().load(url(TERRAIN.texture.file), () => texDone(), undefined, () => texDone());
 imgTex.colorSpace = THREE.SRGBColorSpace; imgTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 { const rx = SIZE / TERRAIN.texture.covers_m[0], ry = SIZE / TERRAIN.texture.covers_m[1]; imgTex.repeat.set(rx, ry); imgTex.offset.set(0, 1 - ry); }   // the image covers 3546 × 3558 m, the mesh 3544 m
 const matImg = new THREE.MeshStandardMaterial({ map: imgTex, roughness: 0.95, metalness: 0 });
@@ -822,7 +869,7 @@ scene.add(terrain);
 // The export can be dropped in as it is; without minerals.json the older 4-class block in terrain.json is used.
 let MIN = TERRAIN.minerals || null;
 try {
-  const r = await fetch(DATA + 'minerals.json');
+  const r = await fetch(url('minerals.json'));
   if (r.ok) {
     const M = await r.json(), low = new Set(M.low_confidence || []), g = M.grid;
     MIN = {
@@ -835,7 +882,7 @@ try {
     };
   }
 } catch (e) { console.warn('[minerals] minerals.json not loaded, using terrain.json', e); }
-const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(DATA + file); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(url(file)); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const rx = SIZE / cover[0], ry = SIZE / cover[1]; t.repeat.set(rx, ry); t.offset.set(0, 1 - ry); return t; };
 const minTex = MIN ? areaTex(MIN.file, MIN.covers_m) : null;
 // the same minerals.png read as pixels, to list which minerals are at a place (each mineral has exactly one colour in the image)
@@ -863,7 +910,7 @@ if (MIN) {
     MINPX = { w: im.width, h: im.height, d: g.getImageData(0, 0, im.width, im.height).data };
     dispatchEvent(new Event('minerals-ready'));
   };
-  im.src = DATA + MIN.file;
+  im.src = url(MIN.file);
 }
 // minerals detected within rM metres of (x, y) (m from the north-west corner), most pixels first; null while the image loads
 function mineralsAt(xm, ym, rM = 50) {
@@ -964,6 +1011,98 @@ const wpViz = WPS.map((w, n) => {
   const el = document.createElement('div'); el.className = 'wlabel' + (w.id === 'H' ? ' hab' : ''); labelsEl.appendChild(el);
   return { w, beacon, el, anchor: new THREE.Vector3(x, y + (w.id === 'H' ? 60 * SC : 225 * SC), z), ground: new THREE.Vector3(x, y, z) };
 });
+// CheMin drill sites + Curiosity traverse: ground truth for Gale only (web/data/chemin.json, from the ui-1 build)
+let CHEMIN = null;
+if (SITE_ID === 'gale') { try { CHEMIN = await (await fetch('web/data/chemin.json')).json(); } catch (e) { console.warn('[chemin] not loaded', e); } }
+document.getElementById('cmBox').hidden = !CHEMIN;
+// =================== Curiosity ground truth layer (CheMin drill sites + traverse) ===================
+// Reference only: these points do NOT feed the CRISM categories or the route (scale: cm samples vs 18 m pixels).
+/*LONG LINE 837 len 34404*/
+const CM_NEAR_M = 200;
+const cmToXZ = (lon, lat) => {           // same equirectangular grid as the pipeline: x east, y south from the NW corner
+  const [W, S, E, Nn] = TERRAIN.area_lonlat_W_S_E_N, R = 3396190, k = Math.cos((S + Nn) / 2 * Math.PI / 180);
+  return [-SIZE / 2 + R * k * (lon - W) * Math.PI / 180, -SIZE / 2 + R * (Nn - lat) * Math.PI / 180];
+};
+const cmInside = (x, z) => Math.abs(x) <= SIZE / 2 && Math.abs(z) <= SIZE / 2;
+const cmGroup = new THREE.Group(); cmGroup.visible = false; scene.add(cmGroup);
+const cmMatData = new THREE.MeshBasicMaterial({ color: 0xe8c45a }), cmMatNear = new THREE.MeshBasicMaterial({ color: 0xffd24a }), cmMatNo = new THREE.MeshBasicMaterial({ color: 0x9a9384 });
+const cmSites = (CHEMIN?.sites || []).map(s => {
+  const [x, z] = cmToXZ(s.lon, s.lat); if (!cmInside(x, z)) return null;
+  const has = s.samples.length > 0, g = new THREE.Group();
+  const stick = new THREE.Mesh(new THREE.CylinderGeometry(1.6 * SC, 1.6 * SC, 70 * SC, 8), has ? cmMatData : cmMatNo); stick.position.y = 35 * SC;
+  const head = new THREE.Mesh(new THREE.OctahedronGeometry(9 * SC), has ? cmMatData : cmMatNo); head.position.y = 76 * SC;
+  g.add(stick, head); cmGroup.add(g);
+  const el = document.createElement('div'); el.className = 'cmlabel'; el.style.display = 'none'; labelsEl.appendChild(el);
+  const o = { s, x, z, has, g, stick, head, el, near: false, routeM: null };
+  stick.userData.cm = head.userData.cm = o; return o;
+}).filter(Boolean);
+let cmPath = null;
+function cmRefresh() {                    // heights follow the display exaggeration (2× map, 1× first person)
+  for (const o of cmSites) o.g.position.set(o.x, heightAt(o.x, o.z), o.z);
+  if (cmPath) { scene.remove(cmPath); cmPath.traverse(m => m.geometry && m.geometry.dispose()); }
+  cmPath = new THREE.Group(); cmPath.visible = document.getElementById('showCmPath').checked;
+  for (const seg of CHEMIN?.traverse || []) {
+    const pts = seg.map(([lon, lat]) => { const [x, z] = cmToXZ(lon, lat); return new THREE.Vector3(x, heightAt(x, z) + 3 * SC, z); }).filter(p => cmInside(p.x, p.z));
+    if (pts.length < 2) continue;
+    cmPath.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(pts.length * 2, 2400), 2.2 * SC, 5, false),
+      new THREE.MeshBasicMaterial({ color: 0xf2efe6, transparent: true, opacity: 0.75 })));
+  }
+  scene.add(cmPath);
+}
+function cmNear() {                       // distance from each drill site to the current planned route (ground plane)
+  const pts = plan && plan.pts ? plan.pts : [];
+  for (const o of cmSites) {
+    let best = Infinity; for (let n = 0; n < pts.length; n += 2) { const d = Math.hypot(pts[n].x - o.x, pts[n].z - o.z); if (d < best) best = d; }
+    o.routeM = isFinite(best) ? best : null; o.near = o.routeM !== null && o.routeM <= CM_NEAR_M;
+    const m = o.near ? cmMatNear : (o.has ? cmMatData : cmMatNo); o.stick.material = o.head.material = m;
+    o.head.scale.setScalar(o.near ? 1.6 : 1);
+  }
+}
+function cmLabels() {
+  const on = cmGroup.visible;
+  for (const o of cmSites) {
+    if (!on) { o.el.style.display = 'none'; continue; }
+    const g = new THREE.Vector3(o.x, o.g.position.y + (fp ? 25 : 95 * SC), o.z), sp = g.clone().project(camera), dist = camera.position.distanceTo(g);
+    const show = !(sp.z > 1 || sp.z < -1) && (fp ? dist < 800 : (o.near || camera.position.y < 2200 * SC));
+    o.el.style.display = show ? 'block' : 'none'; if (!show) continue;
+    o.el.className = 'cmlabel' + (o.near ? ' near' : '');
+    o.el.style.left = `${(sp.x * 0.5 + 0.5) * innerWidth}px`; o.el.style.top = `${(-sp.y * 0.5 + 0.5) * innerHeight}px`;
+    const nm = o.s.name.split(' / ')[0];
+    o.el.textContent = fp ? `▲ CheMin ${nm} · ${dist.toFixed(0)} m` : `▲ ${nm}${o.has ? '' : ' (no CheMin)'}`;
+  }
+}
+const cmPop = document.createElement('div'); cmPop.id = 'cmPop'; document.body.appendChild(cmPop);
+function cmShow(o, cx, cy) {
+  const s = o.s, esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  let h = `<span class="x" id="cmX">✕</span><h4>${esc(s.name)}</h4><div class="cmsub">Curiosity drill site · first drilled sol ${s.sol} · ${Math.abs(s.lat).toFixed(4)}°S ${s.lon.toFixed(4)}°E` +
+          (o.routeM !== null ? `<br>${o.routeM.toFixed(0)} m from the planned route${o.near ? ' (nearby)' : ''}` : '') + `</div>`;
+  if (!o.has) h += `<div>Drill target with no CheMin mineral table in PDS (attempt or sample not analysed).</div>`;
+  for (const smp of s.samples) {
+    const top = smp.min.slice(0, 7), mx = Math.max(...top.map(m => m[1]));
+    h += `<div class="smp">${esc(smp.name)}</div>`;
+    if (smp.clay != null) h += `<div class="row"><span>Clay (bulk)</span><div class="bar" style="width:${smp.clay / 40 * 150}px;background:#d65a4a"></div><span>${smp.clay} wt%</span></div>`;
+    for (const [m, v] of top) h += `<div class="row"><span>${esc(m)}</span><div class="bar" style="width:${v / mx * 150}px"></div><span>${v.toFixed(1)}</span></div>`;
+  }
+  h += `<div class="note">CheMin X-ray diffraction of drilled powder (~2–6 cm deep). Bars: crystalline phases, wt% of the crystalline part (clay and amorphous material are not in the PDS tables)` +
+       `${s.samples.some(x => x.clay != null) ? '; clay bulk wt% from Thorpe et al. 2022' : ''}. Sources: NASA PDS CheMin RDR, PDS Analyst's Notebook. Reference only, not used in route scoring.</div>`;
+  cmPop.innerHTML = h; cmPop.style.display = 'block';
+  const w = 300, hgt = Math.min(cmPop.offsetHeight, innerHeight * 0.7);
+  cmPop.style.left = `${Math.min(innerWidth - w - 16, cx + 14)}px`; cmPop.style.top = `${Math.max(10, Math.min(innerHeight - hgt - 10, cy - 20))}px`;
+  document.getElementById('cmX').onclick = () => { cmPop.style.display = 'none'; };
+}
+{
+  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let down = null;
+  renderer.domElement.addEventListener('pointerdown', e => { down = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', e => {
+    if (!down || fp || !cmGroup.visible) return; const moved = Math.hypot(e.clientX - down[0], e.clientY - down[1]); down = null; if (moved > 5) return;
+    ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, camera);
+    const hit = ray.intersectObjects(cmGroup.children, true).find(h => h.object.userData.cm);
+    if (hit) cmShow(hit.object.userData.cm, e.clientX, e.clientY); else cmPop.style.display = 'none';
+  });
+}
+cmRefresh();
+document.getElementById('showCm').onchange = e => { cmGroup.visible = e.target.checked; if (!e.target.checked) cmPop.style.display = 'none'; };
+document.getElementById('showCmPath').onchange = e => { if (cmPath) cmPath.visible = e.target.checked; };
 // crew marker
 const crew = new THREE.Group();
 crew.add(new THREE.Mesh(new THREE.SphereGeometry(8, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })));
@@ -1035,7 +1174,7 @@ document.getElementById('showMin').onchange = e => setAllMinerals(e.target.check
 // and is ranked by V = mean(picked scores) × R. Nothing picked = all six with equal weight (science.py "Balanced").
 let SCI = null, SCIB = null, REACH = null;
 try {
-  const rs = await Promise.all(['science.json', 'science.bin', 'reach.bin'].map(f => fetch(DATA + f)));
+  const rs = await Promise.all(['science.json', 'science.bin', 'reach.bin'].map(f => fetch(url(f))));
   if (rs.every(r => r.ok)) { SCI = await rs[0].json(); SCIB = new Uint8Array(await rs[1].arrayBuffer()); REACH = new Uint8Array(await rs[2].arrayBuffer()); }
 } catch (e) { console.warn('[science] data missing', e); }
 if (SCI && (SCIB.length !== SCI.criteria.length * SCI.meshW * SCI.meshH || REACH.length !== SCI.meshW * SCI.meshH)) { console.warn('[science] bin size mismatch'); SCI = null; }
@@ -1324,7 +1463,7 @@ function stopIdxFor(rows) {                // index of the route point nearest t
 function recompute() {
   const P = params[mode], R = ROUTES[mode], sup = supply();
   cost = blockHabitat(computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft));
-  if (sciRouteKey === 'none') { clearRoute(); return; }
+  if (sciRouteKey === 'none') { clearRoute(); cmNear(); return; }
   const sr = sciRouteKey === 'science' ? scienceRoute() : null;
   if (sciRouteKey === 'science' && !sr) {
     setPriority('none', true);
@@ -1355,7 +1494,7 @@ function recompute() {
   document.getElementById('gnWhy').innerHTML = `Safety factor <b>×${sf.toFixed(2)}</b> (limited by ${lim})<br>${(b.dist / 1000).toFixed(2)} km · ${fmtT(b.time)} · max ${b.maxSlope.toFixed(0)}°`;
   document.getElementById('evaBtn').disabled = false; document.getElementById('previewBtn').disabled = false;
   set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
-  resetSim(); paint(); drawProfile();
+  resetSim(); paint(); drawProfile(); cmNear();                       // CheMin pins within 200 m of the new route turn gold
 }
 
 // no route yet (start, or no place meets the picked objectives): only the habitat, and the panels say what to do
@@ -1434,7 +1573,7 @@ function setVex(v) {
   if (v === VEX) return; VEX = v;
   for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), (data.h[idx(i, j)] - tilt(wx(j), wz(i))) * VEX);
   pos.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingSphere();
-  seatHabitat();
+  seatHabitat(); cmRefresh();
   wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 * SC : 225 * SC); if (o.beacon) o.beacon.position.y = y + 110 * SC; });
   if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
 }
@@ -1701,6 +1840,7 @@ function updateLabels() {
       v.el.textContent = fp ? `◆ ${v.w.short} · ${dist.toFixed(0)} m` : (v.w.id === 'H' ? 'Habitat' : v.w.name); }
   }
   updateSciLabels();
+  cmLabels();
 }
 function advance(dt, mult) {
   const P = sim.active; if (!P) return null;
@@ -1938,14 +2078,26 @@ document.addEventListener('pointerdown', e => { if (!e.target.closest('.navitem'
   const loc = document.getElementById('siteLoc'), tog = document.getElementById('siteToggle');
   const setOpen = on => { loc.classList.toggle('open', on); tog.setAttribute('aria-expanded', on); };
   document.querySelectorAll('#siteMenu .mi').forEach(b => b.classList.toggle('cur', b.dataset.site === SITE_ID));
-  loc.addEventListener('click', e => {
+  siteMeta().then(m => {                                              // the custom site saved in this browser, if any
+    if (!m) return;
+    const b = document.getElementById('siteCustom'); b.hidden = false;
+    b.firstChild.textContent = m.name || 'Custom site';
+    b.querySelector('small').textContent = `Custom · ${Math.abs(m.centre?.[0] ?? 0).toFixed(2)}°${(m.centre?.[0] ?? 0) < 0 ? 'S' : 'N'}, ${(m.centre?.[1] ?? 0).toFixed(2)}°E · saved in this browser`;
+  }).catch(() => {});
+  loc.addEventListener('click', async e => {
     const item = e.target.closest('#siteMenu .mi');
     if (!item) { closeMenus(); setOpen(!loc.classList.contains('open')); return; }
     setOpen(false);
-    if (item.dataset.site === SITE_ID) return;
+    let target = item.dataset.site;
+    if (target === 'custom-new') {                                     // build or load a custom site, then open it
+      const { openCustomDialog } = await import('./web/js/custom/dialog.js?v=2');
+      const r = await openCustomDialog(); if (!r) return;
+      target = 'custom';
+    }
+    else if (target === SITE_ID) return;
     const f = document.createElement('div'); f.id = 'siteFade'; f.textContent = `Loading ${item.firstChild.textContent.trim()}…`;
     document.body.appendChild(f); void f.offsetWidth; f.classList.add('on');
-    setTimeout(() => { location.href = `${location.pathname}?intro=0&site=${item.dataset.site}`; }, 380);
+    setTimeout(() => { location.href = `${location.pathname}?intro=0&site=${target}`; }, 380);
   });
   document.addEventListener('pointerdown', e => { if (!e.target.closest('#siteLoc')) setOpen(false); });
   addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
