@@ -54,10 +54,10 @@
     if (skipped) return res();
     const t = setTimeout(res, ms); waiters.push(() => { clearTimeout(t); res(); });
   });
-  const whenSiteReady = () => new Promise(res => {   // wait for the 3D app, but never longer than 20 s
+  const whenSiteReady = () => new Promise(res => {   // wait for the 3D app (it starts loading at the pick), but never longer than 60 s
     if (window.__siteReady || skipped) return res();
     const done = () => { removeEventListener('site-ready', done); res(); };
-    addEventListener('site-ready', done); setTimeout(done, 20000); waiters.push(done);
+    addEventListener('site-ready', done); setTimeout(done, 60000); waiters.push(done);
   });
 
   // hand-over: the logo and title keep their look and simply shrink while they move onto the top-bar brand
@@ -99,30 +99,47 @@
     setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, land + 300);
   }
 
-  // landing-site choice: logo + title move up, two cards appear; Gale enters the app (Jezero is not in this build yet).
-  // From here on a click or key no longer skips: a site has to be picked (Enter / Space = Gale).
+  // landing-site choice: logo + title move up, two cards appear; the picked site's data is then loaded by the app.
+  // From here on a click or key no longer skips: a site has to be picked (Enter / Space = the focused card, else Gale).
+  // Hovering a card starts downloading that site's map image, so it is ready sooner.
+  function prefetch(card) {
+    if (card.dataset.pre || !card.dataset.tex) return; card.dataset.pre = '1';
+    const im = new Image(); im.crossOrigin = 'anonymous'; im.src = card.dataset.tex;
+  }
+  // resolves when the element's running CSS transitions have really ended (the page may be busy loading a site,
+  // which starts them late), but never later than `max` ms (a hidden tab may not run them at all)
+  const settled = (el, max = 2500) => Promise.race([
+    Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))),
+    new Promise(r => setTimeout(r, max)),
+  ]);
   function chooseSite() {
     return new Promise(res => {
       removeEventListener('keydown', skipNow); intro.removeEventListener('pointerdown', skipNow);
       intro.removeAttribute('aria-hidden'); intro.classList.add('select');
       document.getElementById('introSkip').textContent = 'Choose a landing site';
-      const gale = intro.querySelector('.siteCard[data-site="gale"]'), soon = intro.querySelector('.siteCard.soon');
-      const onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } };
-      function pick() {
-        removeEventListener('keydown', onKey); window.__site = 'gale';
-        const r = gale.getBoundingClientRect();
-        gale.style.setProperty('--toCentre', (innerWidth / 2 - (r.left + r.width / 2)) + 'px');   // slide to the middle of the screen
-        gale.classList.add('picked'); intro.classList.add('picked'); gale.blur();
-        setTimeout(() => intro.classList.add('open'), reduce ? 0 : 820);   // arrived in the centre: frame and text go, the map brightens
+      const cards = [...intro.querySelectorAll('.siteCard:not(.soon)')], soon = intro.querySelector('.siteCard.soon');
+      const gale = cards.find(c => c.dataset.site === 'gale') || cards[0];
+      const onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(cards.includes(document.activeElement) ? document.activeElement : gale); } };
+      const onClick = e => pick(e.currentTarget);
+      cards.forEach(c => { c.addEventListener('click', onClick); c.addEventListener('pointerenter', () => prefetch(c)); });
+      function pick(card) {
+        removeEventListener('keydown', onKey); cards.forEach(c => c.removeEventListener('click', onClick));
+        prefetch(card);
+        window.__site = card.dataset.site; window.dispatchEvent(new CustomEvent('site-chosen', { detail: card.dataset.site }));   // the app starts loading this site
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--toCentre', (innerWidth / 2 - (r.left + r.width / 2)) + 'px');   // slide to the middle of the screen
+
         if (!window.__siteReady) {                                     // still loading: say so under the map
           document.getElementById('introSkip').textContent = 'Loading terrain…'; intro.classList.add('wait');
           addEventListener('site-ready', () => intro.classList.remove('wait'), { once: true });
         }
-        res({ card: gale, t: performance.now() });
+        card.classList.add('picked'); intro.classList.add('picked'); card.blur();
+        settled(card).then(() => intro.classList.add('open'));         // arrived in the centre: frame and text go, the map brightens
+        res({ card, t: performance.now() });
       }
-      gale.addEventListener('click', pick, { once: true }); addEventListener('keydown', onKey);
+      addEventListener('keydown', onKey);
       if (soon) soon.addEventListener('click', () => { soon.classList.remove('nudge'); void soon.offsetWidth; soon.classList.add('nudge'); });
-      setTimeout(() => gale.focus({ preventScroll: true }), reduce ? 0 : 900);
+      setTimeout(() => { if (!intro.classList.contains('picked')) gale.focus({ preventScroll: true }); }, reduce ? 0 : 900);
     });
   }
 
@@ -156,11 +173,20 @@
                                                                        //    it slides to the centre, the other fades, only its map stays
     skipped = false; await whenSiteReady();                            // 5. the 3D map must be loaded for the hand-over
     await sleep(Math.max(0, 820 - (performance.now() - t)));           //    (the card first slides to the centre as it is)
+    await settled(card);                                               //    measure it only once it has really arrived
     handOver(card);                                                    // 6. the real 3D map is put exactly under the card's map, seen from above;
                                                                        //    while the card brightens it blends into a picture of that 3D map
     await sleep(Math.max(0, 2000 - (performance.now() - t)));
-    intro.classList.add('reveal'); await sleep(650);                   // 7. the dark background and stars fade: the map is now on the 3D view
-    intro.classList.add('handed'); await sleep(380);                   //    the card (now identical to the 3D map) goes away
+    const m = card.querySelector('.map'), sn = card.querySelector('.snap');   // ...and the brightening / blend has really finished
+    await Promise.all([m && settled(m), sn && settled(sn)]);
+    // 7. the card now shows exactly what the 3D view shows under it. Open a window in the dark background where the card is,
+    //    so the card can go without any change on screen, THEN fade the background: the square card edge and the real
+    //    (slightly uneven, relief + perspective) edge of the 3D map are never on screen together
+    const r = m.getBoundingClientRect(), hole = `polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, `
+      + `${r.left}px ${r.top}px, ${r.right}px ${r.top}px, ${r.right}px ${r.bottom}px, ${r.left}px ${r.bottom}px, ${r.left}px ${r.top}px)`;
+    for (const id of ['introBg', 'introStars']) document.getElementById(id).style.clipPath = hole;
+    intro.classList.add('handed'); await sleep(380);                   //    the card (identical to the 3D map under it) goes away
+    intro.classList.add('reveal'); await sleep(650);                   //    the dark background and stars fade: the whole 3D map shows
     dock();                                                            // 8. the map grows, tilts and turns into the start view; the logo docks
   }
 

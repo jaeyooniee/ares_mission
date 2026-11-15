@@ -26,3 +26,17 @@ Route files: `columns = [x, y, z, dist_m, slope_deg, t_min, o2_kg, rover_wh]`. `
 - All oxygen, time and energy values come from simplified models and have not been validated against real rover data.
 
 Source: USGS Astrogeology, *Mars MSL Gale Merged Orthophoto Mosaic 25cm* (colour version by T. Parker and F. J. Calef III); NASA/JPL-Caltech/University of Arizona (HiRISE); NASA/JPL/ JHU-APL CRISM team (MTRDR summary parameters).
+
+## jezero/: the second landing site
+
+`web/data/jezero/` has **the same files in the same formats** as above (the page picks the folder from the intro's site card, or `?site=jezero`), for a **10 × 10 km** area of Jezero crater around the Perseverance landing site (77.3058–77.4834°E, 18.3916–18.5600°N).
+
+| File | Jezero source |
+|---|---|
+| `dem.bin`, `terrain.json` | HiRISE DTM `JEZ_hirise_soc_006` (1 m, Mars 2020 landing-site product) → 4 m → every 4th cell (16 m), **624 × 624**, same pipeline (`pipeline_min.py`) as Gale |
+| `route_walk.json`, `route_rover.json` | same pipeline + smoothing (`run_smooth10.py`), H → Carbonate-2 → Clay-1 → H (Mg carbonate + Fe/Mg clay: the lake-sediment / habitability pair closest to the habitat) |
+| `texture_color.jpg` | Jezero visible mosaic (HiRISE, CTX, HRSC), cropped to the area. **Greyscale, tinted to a Mars colour for display**: the colour is not measured |
+| `minerals.json`, `minerals.png` | CRISM MTRDR summary parameters, 4 FRT + 1 HRL observations (95.8% coverage), robust z per observation; 6 classes (Mg carbonate, olivine, Fe/Mg clay, hydrated, low-/high-Ca pyroxene) |
+| `science.json`, `science.bin`, `reach.bin` | team `science.py` with the Jezero rows of `Min_trial/category_minerals_by_site.txt` (see `web.jezero_mapping` in `science.json`); novelty from the Perseverance traverse (NASA MMGIS `M20_traverse.json`) |
+
+Not included for Jezero: `cost.png` (the page draws the cost map itself).
