@@ -598,7 +598,7 @@ document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#layers button').forEach(x => x.classList.remove('on')); b.classList.add('on'); layer = b.dataset.l; paint(); });
 
 // =================== route computation ===================
-let plan = null, straight = null, optTube = null, strTube = null, arLine = null;
+let plan = null, straight = null, optTube = null, retTube = null, strTube = null, arLine = null;   // optTube = way out (cyan), retTube = way back (violet)
 const toPts = (p, lift = 2.5) => p.map(k => new THREE.Vector3(wx(k % N), data.h[k] + lift, wz(Math.floor(k / N))));
 function makeTube(pts, color) {
   const curve = new THREE.CatmullRomCurve3(pts);
@@ -645,12 +645,15 @@ function recompute() {
   cost = computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft);
   straight = seriesFrom(R.straight, R.summary.straight, mode);
   plan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
-  [optTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = arLine = null;
+  [optTube, retTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = retTube = arLine = null;
   strTube = makeTube(straight.pts, 0xff5a4d); strTube.visible = document.getElementById('showStraight').checked;
   const sb = straight.b;
   set('sD', `${(sb.dist / 1000).toFixed(2)} km`); set('sS', `${sb.maxSlope.toFixed(0)}°`); set('sT', fmtT(sb.time));
   set('sO', `${(100 * sb.o2 / sup.o2).toFixed(0)}%`); set('sE', `${(100 * sb.wh / sup.wh).toFixed(0)}%`); set('sB', `${sb.blocked} ⚠`);
-  optTube = makeTube(plan.pts, 0x37e0ff);
+  // way out (start -> WP2, cyan) and way back (WP2 -> habitat, violet) get different colours; they share the WP2 point
+  const iBack = plan.stopIdx[2];
+  optTube = makeTube(plan.pts.slice(0, iBack + 1), 0x37e0ff);
+  retTube = makeTube(plan.pts.slice(iBack), 0xc58bff);
   arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(plan.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: 0x5dff9d }));
   arLine.visible = false; scene.add(arLine);
   const b = plan.b;
@@ -737,7 +740,7 @@ const panels = ['left', 'right', 'frameLbl'].map(id => document.getElementById(i
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
-  paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
+  paint('img'); optTube.visible = retTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
@@ -747,7 +750,7 @@ document.getElementById('evaBtn').onclick = () => {
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
 };
 function exitFP() {
-  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
+  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
   if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
