@@ -38,7 +38,7 @@
   },
   {
    "key": "novelty",
-   "label": "Novelty (distance from Curiosity traverse)",
+   "label": "Novelty (distance from the Curiosity traverse, full at 1 km)",
    "objectives": [
     "SE-4LM"
    ]
@@ -157,7 +157,7 @@
    "water": "max(BD1900R2, SINDEX2, BD2100_2)",
    "resource": "max(SINDEX2, BD2100_2, BD1900R2) x THEMIS firm ground",
    "geology": "(max(BD860_2, BD530_2, HCPINDEX2, OLINDEX3) + relief) / 2",
-   "novelty": "distance from the Curiosity traverse (1 at >= 300 m)",
+   "novelty": "distance from the Curiosity traverse / 1 km, capped at 1 (full from 1 km on)",
    "diversity": "share of the clay (D2300, BD2290) / sulfate (SINDEX2, BD2100_2) / hematite (BD860_2, BD530_2) families scoring >= 0.6 within 100 m"
   },
   "excluded": {

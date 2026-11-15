@@ -48,8 +48,8 @@
   .sub .mi small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
 
   /* the app UI waits under the intro, then fades in while the logo docks */
-  #topnav,#gonogo,#layerBox,#frame,#credit{transition:opacity .9s ease .15s}
-  body.intro-pending #topnav,body.intro-pending #gonogo,body.intro-pending #layerBox,body.intro-pending #frame,body.intro-pending #credit{opacity:0}
+  #topnav,#gonogo,#leftDock,#layerBox,#frame,#credit{transition:opacity .9s ease .15s}
+  body.intro-pending #topnav,body.intro-pending #gonogo,body.intro-pending #leftDock,body.intro-pending #layerBox,body.intro-pending #frame,body.intro-pending #credit{opacity:0}
   body.brand-hidden #brandLogo,body.brand-hidden #brandName{visibility:hidden}
   #topnav .spacer{flex:1}
   #topnav .seg{margin-right:8px}
@@ -59,11 +59,26 @@
 
   /* ---------- drawer (menu content) ---------- */
   #drawer{top:140px;right:24px;width:340px;max-height:calc(100% - 164px);display:none;z-index:15}
+  #siteLoc{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.25);
+    font-size:12.5px;color:var(--dim);white-space:nowrap;letter-spacing:.04em}
+  #siteLoc b{color:#fff;font-weight:600}
+  #leftDock{position:fixed;top:84px;left:24px;width:340px;max-height:calc(100% - 108px);
+   overflow-y:auto;display:flex;flex-direction:column;gap:10px;z-index:15;pointer-events:none}
+  #leftDock .dockCard{position:relative;max-height:none;overflow:visible;flex:none;pointer-events:auto}
+  #leftDock .dockCard[hidden]{display:none}
+  .dockCard .dhead{cursor:pointer;justify-content:flex-start;gap:2px} .dockCard .dhead h2{margin-right:auto} .dockCard .dfold{font-size:15px;padding:2px 6px}
+  .dockCard.folded .sec{display:none} .dockCard.folded .dhead{margin-bottom:0}
+  @keyframes dockFlash{from{box-shadow:0 0 0 2px rgba(55,224,255,.7)}to{box-shadow:0 0 30px rgba(55,224,255,.06) inset}}
+  .dockCard.flash{animation:dockFlash .9s ease-out}
   #drawer.open{display:block}
   .dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
   .dhead h2{margin:0}
   .xbtn{background:none;border:0;color:var(--dim);font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
   .xbtn:hover{color:#fff}
+  #drFold{display:none;font-size:15px;padding:2px 6px}
+  #drawer.fold-able #drFold{display:block} #drawer.fold-able #drClose{display:none}   /* Science value: fold instead of close */
+  #drawer.fold-able .dhead{cursor:pointer}
+  #drawer.folded .sec{display:none} #drawer.folded .dhead{margin-bottom:0}
   .sec{display:none} .sec.on{display:block}
 
   /* ---------- always-visible: readiness badge + layers ---------- */
@@ -77,15 +92,15 @@
   .itab{text-align:left;background:none;border:0;color:#cfe3ea;font-size:13px;padding:9px 12px;border-radius:8px;cursor:pointer}
   .itab:hover{background:rgba(255,255,255,.06)}
   .itab.on{background:#174052;color:#fff}
-  #infoBody{padding:22px 30px;overflow-y:auto}
-  .ipane{display:none;max-width:760px} .ipane.on{display:block}
+  #infoBody{padding:22px 36px;overflow-y:auto;min-width:0}
+  .ipane{display:none} .ipane.on{display:block}
   .ipane h1{font-size:18px;margin:0 0 4px;letter-spacing:.04em}
   .ipane p{font-size:13px;line-height:1.6;color:#cfe3ea}
   .ipane .steps{font-size:13px} .ipane .steps li{padding:7px 0}
   .ipane .small{font-size:12.5px;line-height:1.65}
   .ipane .src{font-size:12.5px} .ipane .src td{padding:6px 4px}
 
-  @media (max-width:980px){
+  @media (max-width:980px){ #siteLoc .k{display:none} 
     .navbtn{padding:8px 8px;letter-spacing:.04em}
     #drawer{width:calc(100% - 48px)} #infoView{grid-template-columns:150px minmax(0,1fr)}
   }
@@ -100,6 +115,8 @@
   .note{font-size:11.5px;color:#ffd9a3;background:rgba(255,170,60,.12);border-radius:8px;padding:6px 8px;line-height:1.45}
   .wp{display:flex;gap:8px;font-size:12.3px;margin:6px 0;line-height:1.35}
   .wp .dot{flex:0 0 20px;height:20px;border-radius:50%;border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:10.5px;color:var(--cyan)}
+  .sec[data-sec="mission"] .wp{position:relative}
+  .sec[data-sec="mission"] .wp:not(:last-child)::before{content:"";position:absolute;left:10px;top:21px;bottom:-7px;width:1px;background:#fff}   /* line to the next stop */
   .wp small{color:var(--dim)}
   .seg{display:flex;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
   .seg button{flex:1;border:0;background:transparent;color:var(--dim);padding:7px 4px;border-radius:7px;font-size:12px;cursor:pointer}
@@ -171,9 +188,11 @@
   #arrow{position:absolute;bottom:23%;left:50%;width:64px;height:64px;transform:translateX(-50%)}
   #minimap{position:absolute;right:9%;top:15%;width:150px;height:150px;border-radius:50%;border:1px solid rgba(120,240,255,.5);background:rgba(0,20,28,.4)}
   #swx{font-size:11.5px}   /* third box of the left column (#hLeft), same 10 px gap as the others */
+  #leak{position:absolute;top:19%;left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center}
   #sep{position:absolute;top:27%;left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center}
   #arrive{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#9dffb0;display:none;text-align:center;text-shadow:0 0 10px rgba(80,255,140,.8)}
   #arrive small{font-size:13px;display:block;margin-top:4px}
+  #arrive.fail{color:#ffd0cc;background:rgba(70,8,6,.85);border:1px solid #ff5a4d;border-radius:10px;padding:10px 18px;text-shadow:0 0 8px rgba(255,60,40,.8)}   /* a reserve ran out */
   #dash{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);display:none;gap:22px;align-items:center;padding:8px 18px;border:1px solid rgba(120,240,255,.4);border-radius:12px;background:rgba(0,25,35,.55)}
   #hud.rover #dash{display:flex}
   #dash .k{font-size:10px;letter-spacing:.14em;opacity:.8} #dash .v{font-size:20px}
@@ -187,6 +206,8 @@
   #hud.rover #dash{bottom:64px} #hud.rover #instr{bottom:calc(15% + 100px)} #hud.rover #arrow{bottom:calc(23% + 100px)}
   #hudCtl button{pointer-events:auto;background:rgba(0,40,55,.75);border:1px solid rgba(120,240,255,.5);color:#bff7ff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
   #hudCtl button.danger{border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.7)}
+  #hudCtl button.start{border-color:rgba(98,242,154,.85);color:#d8ffe6;background:rgba(10,60,30,.8);font-weight:600;min-width:130px}
+  #hudCtl button.start.running{border-color:rgba(120,240,255,.5);color:#bff7ff;background:rgba(0,40,55,.75);font-weight:500}
   #toast{position:fixed;top:84px;z-index:30;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
   ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(120,230,255,.25);border-radius:3px}
 
@@ -215,6 +236,18 @@
   #sciSites{list-style:none;margin:4px 0 0;padding:0}
   #sciSites li{display:grid;grid-template-columns:22px 1fr auto;column-gap:9px;row-gap:2px;align-items:center;padding:8px 6px;border-radius:8px;cursor:pointer;border-bottom:1px dashed var(--line)}
   #sciSites li:hover{background:rgba(253,231,37,.07)}
+  /* CRISM legend = per-mineral switches */
+  #minLegend .minItem{--c:#888;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:6px;
+    padding:2px 7px;margin:0 -2px;color:#fff;font-size:11px;cursor:pointer;white-space:nowrap;transition:opacity .15s,background .15s,border-color .15s}
+  #minLegend .minItem i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;background:var(--c);box-shadow:0 0 6px 1px var(--c);transition:background .15s,box-shadow .15s}
+  #minLegend .minItem:hover{border-color:rgba(255,255,255,.35)}
+  /* unlit: switched off, or the whole overlay is off */
+  #minLegend .minItem.off,#minLegend.muted .minItem{background:none;border-color:transparent;color:var(--dim);opacity:.6}
+  #minLegend .minItem.off i,#minLegend.muted .minItem i{background:transparent;box-shadow:none;outline:1px solid var(--c);outline-offset:-1px}
+  #minLegend .minItem.off:hover,#minLegend.muted .minItem:hover{opacity:.9;border-color:var(--line)}
+  #minLegend .minCtl{font-size:11px;color:var(--dim);padding:2px 4px}
+  #minLegend .minCtl button{background:none;border:0;color:var(--cyan);cursor:pointer;padding:0;font-size:11px}
+  #minLegend .minCtl button:hover{text-decoration:underline}
   #sciSites li.empty{display:block;cursor:default;font-size:11.5px;line-height:1.45;color:var(--dim);border-bottom:0}   /* message row, not a 3-column site row */
   #sciSites li.empty:hover{background:none}
   #sciSites .rk{grid-row:span 3;align-self:start;width:20px;height:20px;border-radius:50%;background:#fde725;color:#1b1a05;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -231,7 +264,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<link rel="stylesheet" href="web/css/intro.css">
+<link rel="stylesheet" href="web/css/intro.css?v=20261115h"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
 </head>
 <body class="brand-hidden">
 <div id="intro" aria-hidden="true">
@@ -239,9 +272,14 @@
   <canvas id="introStars"></canvas>
   <div id="introLogo"><img src="web/img/logo_base.png" alt="ARES MISSION logo" draggable="false"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 32) scale(1.36) translate(-32 -32)"><path id="introRoute" d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/><circle id="introStart" class="introDot" cx="17" cy="45" r="3.6" fill="#37e0ff"/><circle id="introEnd" class="introDot" cx="47" cy="17" r="2.6" fill="#0a161e" stroke="#37e0ff" stroke-width="2"/></g></svg></div>
   <div id="introTitle"><span id="introGhost"></span><span id="introText"></span><span id="introCursor"></span></div>
+  <!-- landing-site choice: shown after the title is typed (Gale enters the app; Jezero is not in this build yet) -->
+  <div id="introSites" role="group" aria-label="Choose a landing site">
+    <button class="siteCard" data-site="gale" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg)"></span><span class="name">GALE</span><span class="sub">Gale crater · Curiosity</span></button>
+    <button class="siteCard soon" data-site="jezero" type="button" aria-disabled="true"><span class="map" style="background-image:url(web/img/site_jezero.jpg)"></span><span class="name">JEZERO</span><span class="sub">Jezero crater · Perseverance</span><span class="tag">Coming soon</span></button>
+  </div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro.js"></script>
+<script src="web/js/intro.js?v=20261115h"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -269,8 +307,7 @@
   <div class="navitem">
     <button class="navbtn">CREW<span class="car">▼</span></button>
     <div class="sub">
-      <button class="mi" data-sec="track">Crew track<small>Preview the traverse on the map</small></button>
-      <button class="mi" data-sec="track">First-person EVA<small>Helmet HUD or rover windshield HUD</small></button>
+      <button class="mi" data-sec="track">Crew track<small>Preview the traverse, then start the first-person EVA</small></button>
     </div>
   </div>
   <div class="navitem">
@@ -284,7 +321,7 @@
         <button class="btn" data-l="cost">Cost map</button>
       </div>
       <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
-      <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay</label>
+      <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay (all)</label>
       <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
       <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Science value (Moon to Mars)</label>
     </div>
@@ -293,12 +330,12 @@
     <button class="navbtn" id="infoNavBtn">INFO<span class="car">▼</span></button>
     <div class="sub">
       <button class="mi" data-info="about">About this build</button>
-      <button class="mi" data-info="pipeline">Pipeline</button>
-      <button class="mi" data-info="assump">Model assumptions</button>
       <button class="mi" data-info="sources">Data sources</button>
       <button class="mi" data-info="controls">Map controls</button>
     </div>
   </div>
+  <div class="spacer"></div>
+  <div id="siteLoc" title="–"><span class="k">Location:</span> <b id="siteName">Gale crater</b></div>
   <div class="spacer"></div>
   <div class="seg" id="modeSeg">
     <button data-m="suit" class="on">🧑‍🚀 On foot</button>
@@ -312,14 +349,13 @@
 
 <!-- ================= DRAWER (menu content) ================= -->
 <div id="drawer" class="panel glass">
-  <div class="dhead"><h2 id="drTitle">–</h2><button class="xbtn" id="drClose" aria-label="Close">×</button></div>
+  <div class="dhead"><h2 id="drTitle">–</h2><button class="xbtn" id="drFold" aria-label="Fold the panel" title="Fold / unfold">▲</button><button class="xbtn" id="drClose" aria-label="Close">×</button></div>
 
   <div class="sec" data-sec="mission">
     <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><small>Departure / return point</small></div></div>
     <div class="wp"><div class="dot">1</div><div><b id="wp1Name">WP1</b><br><small id="wp1Txt">–</small></div></div>
     <div class="wp"><div class="dot">2</div><div><b id="wp2Name">WP2</b><br><small id="wp2Txt">–</small></div></div>
     <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
-    <div class="note" style="margin-top:10px">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). <span id="stopSrc">Stops are one clay and one sulfate patch picked from CRISM.</span> See Info → About this build.</div>
   </div>
 
   <div class="sec" data-sec="compare">
@@ -348,9 +384,7 @@
 
   <div class="sec" data-sec="conditions">
     <div class="row"><span>On foot (suit) · slope limit</span><b id="limWalk">–</b></div>
-    <div class="row"><span>Pressurized rover · slope limit</span><b id="limRover">–</b></div>
-    <div class="small" style="margin-top:6px">Routes are precomputed by the Python pipeline from the real DEM (cost = 1 + w·slope + k·roughness; cells over the limit are blocked). The route sliders of the synthetic demo were removed — switch the travel mode at the top to load the other route.</div>
-  </div>
+    <div class="row"><span>Pressurized rover · slope limit</span><b id="limRover">–</b></div>  </div>
 
   <div class="sec" data-sec="profile">
     <canvas id="profile"></canvas>
@@ -370,13 +404,14 @@
   </div>
 </div>
 
+<!-- MISSION / ROUTE / CREW panels: cards in the left column, each stays open until its × is pressed -->
+<div id="leftDock"></div>
+
 <!-- ================= INFO TAB ================= -->
 <div id="infoView" class="panel glass">
   <div id="infoNav">
     <h2 style="margin:4px 12px 10px">Info</h2>
     <button class="itab" data-info="about">About this build</button>
-    <button class="itab" data-info="pipeline">Pipeline</button>
-    <button class="itab" data-info="assump">Model assumptions</button>
     <button class="itab" data-info="sources">Data sources</button>
     <button class="itab" data-info="controls">Map controls</button>
     <div style="flex:1"></div>
@@ -388,21 +423,6 @@
       <div class="sub">Habitat transparent display → helmet / rover HUD</div>
       <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
       <p>Plan an EVA on the map: pick a travel mode, check the route and the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. Use the menus at the top for details; switch data layers and the CRISM minerals overlay at the bottom left.</p>
-    </div>
-    <div class="ipane" data-info="pipeline">
-      <h1>Pipeline</h1>
-      <ol class="steps">
-        <li>① Crop the Gale DEM <span class="tag py">Python</span> <span class="small">HiRISE 1 m → 2 m grid (rasterio)</span></li>
-        <li>② Slope · roughness <span class="tag py">Python</span> <span class="small">gradient + 5×5 window</span></li>
-        <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·roughness; over the limit = blocked</span></li>
-        <li>④ Destinations + optimal route <span class="tag py">Python</span> <span class="small">CRISM mineral patches → one clay + one sulfate stop; H → stops → H, smoothed</span></li>
-        <li>⑤ Time · O₂ · energy <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (Mars gravity) / rover energy model</span></li>
-        <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">16 m mesh, route tubes, AR line, HUD</span></li>
-      </ol>
-    </div>
-    <div class="ipane" data-info="assump">
-      <h1>Model assumptions</h1>
-      <div class="small" id="assump"></div>
     </div>
     <div class="ipane" data-info="controls">
       <h1>Map controls</h1>
@@ -452,6 +472,7 @@
   <div id="instr"><div class="main" id="hInstr">–</div><div class="warn" id="hWarn"></div></div>
   <canvas id="minimap" width="300" height="300"></canvas>
   <canvas id="navmap" width="760" height="480"></canvas>
+  <div id="leak">💨 SUIT O₂ LEAK<br><span id="leakSub" style="font-size:12px">press ABORT to route home</span></div>
   <div id="sep">☢ SEP EVENT DETECTED — elevated proton flux<br><span style="font-size:12px">Shelter recommended · press ABORT to route home</span></div>
   <div id="arrive"></div>
   <div id="dash">
@@ -462,10 +483,12 @@
   </div>
 </div>
 <div id="hudCtl">
+  <button id="goBtn" class="start">▶ Start EVA</button>
   <button id="speedBtn">Sim speed ×15</button>
   <button id="lookBtn">🖱 Mouse look: ON</button>
   <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
   <button id="sepBtn">☢ Inject SEP alert</button>
+  <button id="leakBtn" class="danger">💨 Inject suit leak</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
@@ -512,11 +535,15 @@ const WPS0 = WPS.map(w => ({ ...w, cell: [...w.cell] }));   // the pipeline's EV
 const HAB = WPS[0].cell;
 const KCOL = { clay: [220, 60, 60], poly_sulf: [60, 200, 90], mono_sulf: [70, 120, 240], hematite: [255, 150, 30] };
 const DEST = TERRAIN.destinations || [];
+{ // "Location" box in the top bar: the area shown, from terrain.json
+  const [w, s_, e, n] = TERRAIN.area_lonlat_W_S_E_N, km = (TERRAIN.nx * TERRAIN.cell_m / 1000).toFixed(0);
+  document.getElementById('siteName').textContent = 'Gale crater';
+  document.getElementById('siteLoc').title = `${km} km area · centre ${Math.abs((s_ + n) / 2).toFixed(2)}°S, ${((w + e) / 2).toFixed(2)}°E`;
+}
 function fillStops() {
   if (WPS[1].off) {                                   // no route yet: only the habitat
     document.getElementById('wp1Name').textContent = '—'; document.getElementById('wp1Txt').textContent = 'Pick objectives in Science value';
     document.getElementById('wp2Name').textContent = '—'; document.getElementById('wp2Txt').textContent = '';
-    document.getElementById('stopSrc').textContent = 'No stops yet: pick the objectives in Science value and the route is planned through the best sites.';
     return;
   }
   for (const [id, nid, k] of [['wp1Txt', 'wp1Name', 1], ['wp2Txt', 'wp2Name', 2]]) {
@@ -529,9 +556,6 @@ function fillStops() {
     const c = document.createElement('span'); c.style.whiteSpace = 'nowrap'; c.textContent = pos;
     if (el.textContent) el.appendChild(document.createElement('br')); el.appendChild(c);
   }
-  document.getElementById('stopSrc').textContent = WPS[1].site
-    ? `Stops are the best ${WPS[2].dup ? 'site' : 'two sites'} for ${sciPickText()} in the science value layer.`
-    : 'Stops are one clay and one sulfate patch picked from CRISM.';
 }
 fillStops();
 
@@ -544,6 +568,7 @@ const SUIT_BAT_WH = AS.suit_battery_wh, SUIT_BASE_W = AS.suit_base_w, ROVER_BAT_
 const ROVER_SPEED = TERRAIN.rover.speed_ms, ROVER_WH_PER_KM = TERRAIN.rover.wh_per_km;
 const O2_PER_J = 1 / 20100 * 1.429e-3;           // 20.1 kJ per litre O2, 1.429 g per litre → kg per joule
 const SF_GO = 1.5;
+const LEAK_DRAIN_MIN = 50;    // contingency: a suit leak (rover: power fault) that by itself would empty the remaining reserve in this many minutes
 const MODES = {
   suit:  { name: 'On foot (EVA suit)', limit: TERRAIN.walk.slope_limit_deg,  wSlope: 0.25, wSoft: 0, eye: 1.7 },
   rover: { name: 'Pressurized rover',  limit: TERRAIN.rover.slope_limit_deg, wSlope: 0.10, wSoft: 0, eye: 3.2 },
@@ -677,10 +702,6 @@ let hMin = Infinity, hMax = -Infinity; for (const z of data.h) { hMin = Math.min
 let mode = 'suit', layer = 'img', cost = null;
 const params = { suit: { ...MODES.suit }, rover: { ...MODES.rover } };
 const supply = () => mode === 'suit' ? { o2: SUIT_O2_KG, wh: SUIT_BAT_WH } : { o2: ROVER_O2_KG, wh: ROVER_BAT_WH };
-document.getElementById('assump').innerHTML =
-  `From the Python pipeline: distances, times, slope and O₂ use (Tobler walking speed × ${SUIT_SPEED}; Pandolf metabolic rate at ${G_MARS} m/s², body ${W_BODY} kg + suit ${L_SUIT} kg; ${SUIT_O2_KG} kg O₂ capacity; walking slope limit ${MODES.suit.limit}°; rover ${ROVER_SPEED} m/s, ${ROVER_WH_PER_KM} Wh/km, slope limit ${MODES.rover.limit}°). ` +
-  `Assumed in this demo, not from the pipeline: suit battery ${SUIT_BAT_WH} Wh with ${SUIT_BASE_W} W base load; rover battery ${ROVER_BAT_WH / 1000} kWh, ${CREW} crew, ${ROVER_O2_KG} kg cabin O₂ (rover life-support load is not included). No science stops are included. GO when safety factor ≥ ${SF_GO}. All values illustrative.`;
-
 // =================== Three.js scene ===================
 const SIZE = (N - 1) * CELL;
 const SC = SIZE / 3544;                           // scene scale: sizes below were tuned for the 3.5 km area
@@ -757,11 +778,21 @@ try {
 } catch (e) { console.warn('[minerals] minerals.json not loaded, using terrain.json', e); }
 const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(DATA + file); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const rx = SIZE / cover[0], ry = SIZE / cover[1]; t.repeat.set(rx, ry); t.offset.set(0, 1 - ry); return t; };
-const costTex = MIN ? areaTex(MIN.cost_file, MIN.covers_m) : null;
-const matCost = new THREE.MeshStandardMaterial({ map: costTex, roughness: 0.95, metalness: 0 });
 const minTex = MIN ? areaTex(MIN.file, MIN.covers_m) : null;
 // the same minerals.png read as pixels, to list which minerals are at a place (each mineral has exactly one colour in the image)
-const MINCOL = MIN ? Object.fromEntries(Object.entries(MIN.classes).map(([k, c]) => [c.color.join(','), k])) : {};
+// colour → mineral. Reading the PNG through a canvas can shift a channel by ±1 on its semi-transparent pixels (premultiplied
+// alpha: e.g. 220,60,60 comes back as 221,60,60), so a pixel belongs to the mineral with the nearest colour, not only an exact match
+const MIN_CLS = MIN ? Object.entries(MIN.classes).map(([k, c]) => [k, c.color]) : [];
+const minKeyCache = new Map();
+function mineralKeyOf(r, g, b) {
+  const key = (r << 16) | (g << 8) | b; let k = minKeyCache.get(key);
+  if (k === undefined) {
+    k = null; let best = 3 * 8 * 8;
+    for (const [kk, c] of MIN_CLS) { const dd = (r - c[0]) ** 2 + (g - c[1]) ** 2 + (b - c[2]) ** 2; if (dd <= best) { best = dd; k = kk; } }
+    minKeyCache.set(key, k);
+  }
+  return k;
+}
 const MIN_SHORT = { hematite: 'Hematite', clay: 'Fe/Mg clay', clay_oh: 'Fe/Mg-OH clay', poly_sulf: 'Poly. sulfate', mono_sulf: 'Mono. sulfate',
   ferric_sulfate: 'Ferric sulfate*', hydrated: 'Hydrated (H₂O)', fine_hematite: 'Fine hematite*', olivine: 'Olivine', fe_olivine: 'Fe-olivine', hcp: 'High-Ca pyroxene' };
 let MINPX = null;
@@ -783,12 +814,43 @@ function mineralsAt(xm, ym, rM = 50) {
     for (let x = Math.max(0, Math.floor(cx - rx)); x <= Math.min(w - 1, Math.ceil(cx + rx)); x++) {
       if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1) continue;
       const q = (y * w + x) * 4; if (!d[q + 3]) continue;
-      const k = MINCOL[`${d[q]},${d[q + 1]},${d[q + 2]}`]; if (k) cnt[k] = (cnt[k] || 0) + 1;
+      const k = mineralKeyOf(d[q], d[q + 1], d[q + 2]); if (k) cnt[k] = (cnt[k] || 0) + 1;
     }
   return Object.entries(cnt).sort((a, b) => b[1] - a[1]).map(([k]) => k);
 }
 if (minTex) { minTex.magFilter = THREE.NearestFilter; }
 const minMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: minTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+// per-mineral switches: the overlay is redrawn from minerals.png keeping only the minerals that are on (same colours, the rest transparent)
+const minOn = new Set();          // minerals shown in the overlay; none at start
+let minFiltTex = null, minClassIdx = null;
+function renderMineralFilter() {
+  if (!MINPX || !MIN) return;                         // until the image has been read the overlay shows every mineral
+  const { w, h, d } = MINPX, keys = Object.keys(MIN.classes), n = w * h;
+  if (!minClassIdx) {                                 // which mineral each pixel is (255 = none), worked out once
+    minClassIdx = new Uint8Array(n).fill(255);
+    for (let p = 0, q = 0; p < n; p++, q += 4) if (d[q + 3]) { const k = mineralKeyOf(d[q], d[q + 1], d[q + 2]); if (k) minClassIdx[p] = keys.indexOf(k); }
+  }
+  if (!minFiltTex) {                                  // same placement as areaTex()
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    minFiltTex = new THREE.CanvasTexture(cv); minFiltTex.colorSpace = THREE.SRGBColorSpace; minFiltTex.magFilter = THREE.NearestFilter;
+    minFiltTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    const rx = SIZE / MIN.covers_m[0], ry = SIZE / MIN.covers_m[1]; minFiltTex.repeat.set(rx, ry); minFiltTex.offset.set(0, 1 - ry);
+  }
+  const on = keys.map(k => minOn.has(k)), g = minFiltTex.image.getContext('2d'), img = g.createImageData(w, h), o = img.data;
+  for (let p = 0, q = 0; p < n; p++, q += 4) { const ci = minClassIdx[p]; if (ci !== 255 && on[ci]) { o[q] = d[q]; o[q + 1] = d[q + 1]; o[q + 2] = d[q + 2]; o[q + 3] = d[q + 3]; } }
+  g.putImageData(img, 0, 0); minFiltTex.needsUpdate = true;
+  minMesh.material.map = minFiltTex; minMesh.material.needsUpdate = true;
+}
+function afterMineralChange() {
+  document.querySelectorAll('#minLegend .minItem').forEach(b => b.classList.toggle('off', !minOn.has(b.dataset.k)));
+  renderMineralFilter();
+  const all = MIN ? Object.keys(MIN.classes).length : 0, cb = document.getElementById('showMin');
+  cb.checked = minOn.size === all && all > 0; cb.indeterminate = minOn.size > 0 && minOn.size < all;   // ☑ all · ☐ none · – some
+  minMesh.visible = minOn.size > 0 && !fp;            // nothing lit = nothing drawn (never in the first-person view)
+}
+function toggleMineral(k) { if (minOn.has(k)) minOn.delete(k); else minOn.add(k); afterMineralChange(); }
+function setAllMinerals(all) { minOn.clear(); if (all) Object.keys(MIN.classes).forEach(k => minOn.add(k)); afterMineralChange(); }
+if (MIN) addEventListener('minerals-ready', renderMineralFilter);
 minMesh.visible = false; scene.add(minMesh);       // the CRISM overlay starts switched off; the checkbox turns it on
 const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x37e0ff, wireframe: true, transparent: true, opacity: 0.025 }));
 scene.add(wire);
@@ -800,7 +862,38 @@ const hab = new THREE.Group(); const white = new THREE.MeshStandardMaterial({ co
 const base = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 8, 32), white); base.position.y = 4; hab.add(base);
 const dome = new THREE.Mesh(new THREE.SphereGeometry(14, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); dome.position.y = 8; hab.add(dome);
 const tubeH = new THREE.Mesh(new THREE.BoxGeometry(26, 6, 6), white); tubeH.position.set(20, 3, 0); hab.add(tubeH);
-{ const hx = wx(HAB[1]) - 22, hz = wz(HAB[0]) + 22; hab.position.set(hx, heightAt(hx, hz), hz); } hab.scale.setScalar(SC); scene.add(hab);
+// foundation pad: the habitat stands on a levelled pad that reaches down to the lowest ground under it (no gap on sloping ground)
+const padMat = new THREE.MeshStandardMaterial({ color: 0x8b7766, roughness: 1, metalness: 0 });
+const padDome = new THREE.Mesh(new THREE.CylinderGeometry(15.5, 15.5, 1, 40).translate(0, -0.5, 0), padMat); hab.add(padDome);     // top at y = 0
+const padTube = new THREE.Mesh(new THREE.BoxGeometry(27, 1, 8).translate(20, -0.5, 0), padMat); hab.add(padTube);
+// sit the habitat on the ground under its whole footprint: floor = highest ground (nothing is buried), pad = down to the lowest ground
+function seatHabitat() {
+  const k = hab.scale.x, cx = hab.position.x, cz = hab.position.z, hs = [];
+  const at = (lx, lz) => hs.push(heightAt(cx + lx * k, cz + lz * k));
+  for (const r of [0, 5, 10, 15.5]) for (let a = 0; a < 24; a++) { at(Math.cos(a / 24 * 2 * Math.PI) * r, Math.sin(a / 24 * 2 * Math.PI) * r); if (!r) break; }   // dome + pad ring
+  for (let lx = 7; lx <= 33.5; lx += 2) for (const lz of [-4, 0, 4]) at(lx, lz);                                                                // tunnel + pad
+  const top = Math.max(...hs), low = Math.min(...hs);
+  hab.position.y = top;
+  const depth = Math.max(0.5, (top - low) / k + 1.5);              // in the model's own units (it is scaled by k); 1.5 sinks the pad's edge into the ground
+  padDome.scale.y = padTube.scale.y = depth;
+}
+{ const hx = wx(HAB[1]) - 22, hz = wz(HAB[0]) + 22; hab.position.set(hx, heightAt(hx, hz), hz); } hab.scale.setScalar(SC); seatHabitat(); scene.add(hab);
+// habitat keep-out: no route may cross the dome or the tunnel (as drawn, scale SC) or come within HAB_MARGIN of them.
+// Every route starts and ends at the airlock, just outside the tunnel end (the tunnel points east, +x).
+const HAB_MARGIN = 12, HAB_C = { x: hab.position.x, z: hab.position.z };
+const HAB_R = 14 * SC + HAB_MARGIN, HAB_TX = [7 * SC, 33 * SC + HAB_MARGIN], HAB_TW = 3 * SC + HAB_MARGIN;
+const inHabitat = (x, z) => { const dx = x - HAB_C.x, dz = z - HAB_C.z; return dx * dx + dz * dz < HAB_R * HAB_R || (dx > HAB_TX[0] && dx < HAB_TX[1] && Math.abs(dz) < HAB_TW); };
+const HAB_CELLS = [];
+for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (inHabitat(wx(j), wz(i))) HAB_CELLS.push(idx(i, j));
+const HAB_DOOR = (() => {            // first open cell east of the tunnel end, on the tunnel axis
+  for (let d = HAB_TX[1]; d < HAB_TX[1] + 10 * CELL; d += CELL / 2) { const k = cellAt(HAB_C.x + d, HAB_C.z); if (!inHabitat(wx(k % N), wz(Math.floor(k / N)))) return [Math.floor(k / N), k % N]; }
+  return HAB;
+})();
+function blockHabitat(c) {           // applied to every cost map used for routing (planned route, ABORT, live return estimate)
+  for (const k of HAB_CELLS) c[k] = Infinity;
+  const d = idx(HAB_DOOR[0], HAB_DOOR[1]); if (!isFinite(c[d])) c[d] = 1;
+  return c;
+}
 // waypoint beacons + labels
 const labelsEl = document.getElementById('labels');
 const wpViz = WPS.map((w, n) => {
@@ -831,12 +924,18 @@ function elevShade(k) {
   return Math.max(0.6, Math.min(1.25, 0.92 + 0.77 * (dzdx + dzdy)));      // slopes facing north-west are lit, the others shaded
 }
 const SLOPE = [[0, [0.18, 0.62, 0.3]], [0.45, [0.95, 0.85, 0.2]], [0.75, [0.97, 0.5, 0.12]], [1, [0.85, 0.12, 0.1]]];
+const COSTR = [[0, [0.27, 0.0, 0.33]], [0.25, [0.23, 0.32, 0.55]], [0.5, [0.13, 0.57, 0.55]], [0.75, [0.37, 0.79, 0.38]], [1, [0.99, 0.91, 0.15]]];   // viridis; red = blocked
 const css = st => 'linear-gradient(90deg,' + st.map(([t, c]) => `rgb(${c.map(v => v * 255 | 0)}) ${t * 100}%`).join(',') + ')';
 function paint(force) {
   const L = force || layer, P = params[mode], lgEl = document.getElementById('legend');
-  if (L === 'cost') {
-    terrain.material = matCost; wire.visible = false; lgEl.style.background = 'linear-gradient(90deg,#440154,#3b528b,#21918c,#5ec962,#fde725)';
-    document.getElementById('lg0').textContent = 'easy'; document.getElementById('lg1').textContent = 'hard · yellow = no-go (walk)'; return;
+  if (L === 'cost') {   // the cost map the routes are planned on, for the current travel mode (slope, roughness, blocked cells, habitat keep-out)
+    if (!cost) return;
+    const fin = []; for (let k = 0; k < N * N; k += 7) if (isFinite(cost[k])) fin.push(cost[k]);
+    fin.sort((a, b) => a - b); const hi = Math.max(1.01, fin[Math.floor(fin.length * 0.98)] || 2);
+    for (let k = 0; k < N * N; k++) colors.set(isFinite(cost[k]) ? ramp(COSTR, (cost[k] - 1) / (hi - 1)) : [0.85, 0.12, 0.1], k * 3);
+    geo.attributes.color.needsUpdate = true; terrain.material = matVC; wire.visible = false;
+    lgEl.style.background = css(COSTR);
+    document.getElementById('lg0').textContent = 'easy'; document.getElementById('lg1').textContent = `hard · red = blocked (${mode === 'suit' ? 'on foot' : 'rover'})`; return;
   }
   if (L === 'img') {
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
@@ -852,13 +951,21 @@ function paint(force) {
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
 if (MIN) {
-  // legend: colour · name · area %; * = low-confidence detection (hover for the CRISM index and threshold)
-  const cls = Object.values(MIN.classes).sort((a, b) => (b.area_pct ?? 0) - (a.area_pct ?? 0)), lowAny = cls.some(c => c.low);   // largest area first
-  document.getElementById('minLegend').innerHTML = cls.map(c => `<span style="white-space:nowrap" title="${c.index}${c.threshold != null ? ` · robust z ≥ ${c.threshold}` : ''}${c.low ? ' · low confidence' : ''}"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:rgb(${c.color.join(',')})"></i>${c.label}${c.low ? '*' : ''} ${c.area_pct}%</span>`).join('')
-    + (lowAny ? '<span style="opacity:.7">* low confidence</span>' : '');
+  // legend = per-mineral switches (largest area first): colour · name · area %; * = low-confidence detection; click to show / hide
+  const ents = Object.entries(MIN.classes).sort((a, b) => (b[1].area_pct ?? 0) - (a[1].area_pct ?? 0)), lowAny = ents.some(([, c]) => c.low);
+  const leg = document.getElementById('minLegend'); leg.innerHTML = '';
+  for (const [k, c] of ents) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = minOn.has(k) ? 'minItem' : 'minItem off'; b.dataset.k = k;   // all unlit at start
+    b.title = `${c.index}${c.threshold != null ? ` · robust z ≥ ${c.threshold}` : ''}${c.low ? ' · low confidence' : ''} · click to show / hide`;
+    const dot = document.createElement('i'); b.style.setProperty('--c', `rgb(${c.color.join(',')})`);
+    b.append(dot, `${c.label}${c.low ? '*' : ''} ${c.area_pct}%`); b.onclick = () => toggleMineral(k); leg.appendChild(b);
+  }
+  const ctl = document.createElement('span'); ctl.className = 'minCtl';
+  ctl.innerHTML = 'Show <button type="button" data-all="1">all</button> · <button type="button" data-all="0">none</button>' + (lowAny ? ' · * low confidence' : '');
+  ctl.querySelectorAll('button').forEach(b => b.onclick = () => setAllMinerals(b.dataset.all === '1')); leg.appendChild(ctl);
   document.getElementById('srcMin').textContent = MIN.source;
 } else { document.getElementById('showMin').parentElement.style.display = 'none'; }
-document.getElementById('showMin').onchange = e => { minMesh.visible = e.target.checked; };
+document.getElementById('showMin').onchange = e => setAllMinerals(e.target.checked);   // select-all box: all on / all off
 
 // ===================== SCIENCE VALUE layer =====================
 // Data from Min_trial/science.py (same config and grid as the pipeline):
@@ -1047,6 +1154,7 @@ function toggleObjective(key) {
   if (sciPick.has(key)) sciPick.delete(key); else sciPick.add(key);
   document.querySelectorAll('#sciObj .btn').forEach(b => b.classList.toggle('on', sciPick.has(b.dataset.k)));
   sciRender();
+  if (drawerEl.classList.contains('folded')) setFolded(true);       // keep the folded title's objective list current
   // colours only while objectives are picked (they then mark the qualifying places); nothing picked = the plain brown map
   if (document.getElementById('showSci').checked !== sciPick.size > 0) { document.getElementById('showSci').checked = sciPick.size > 0; sciSync(); }
   setPriority(sciSitesNow.length ? 'science' : 'none');         // the route always matches what the drawer shows
@@ -1064,7 +1172,7 @@ function scienceRoute() {
     }
     return best;
   };
-  const stops = [0, 1, 2].map(n => flat(WPS[n].cell)); if (stops.some(c => !c)) return null;
+  const stops = [flat(HAB_DOOR), flat(WPS[1].cell), flat(WPS[2].cell)]; if (stops.some(c => !c)) return null;   // start / end = the airlock
   const legs = [[0, 1], [1, 2], [2, 0]], at = n => ({ x: wx(stops[n][1]), z: wz(stops[n][0]) });
   const pts = [], stopIdx = [0], keep = cost;
   cost = c2;                                           // smoothReturn() checks walkability on the global cost map
@@ -1156,7 +1264,7 @@ function stopIdxFor(rows) {                // index of the route point nearest t
 
 function recompute() {
   const P = params[mode], R = ROUTES[mode], sup = supply();
-  cost = computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft);
+  cost = blockHabitat(computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft));
   if (sciRouteKey === 'none') { clearRoute(); return; }
   const sr = sciRouteKey === 'science' ? scienceRoute() : null;
   if (sciRouteKey === 'science' && !sr) {
@@ -1204,9 +1312,10 @@ function clearRoute() {
 }
 
 // =================== simulation state (shared by preview + first-person) ===================
-const sim = { active: null, t: 0, base: { t: 0, o2: 0, wh: 0 }, aborted: false, sep: false, preview: false, lastStop: 0, ret: null, retClock: 0, arriveUntil: 0 };
+const sim = { active: null, t: 0, base: { t: 0, o2: 0, wh: 0 }, aborted: false, sep: false, preview: false, lastStop: 0, ret: null, retClock: 0, arriveUntil: 0,
+  running: false, resetAt: 0, leak: null, out: null };   // leak = injected suit leak / power fault; out = a reserve ran out (EVA failed)   // first person: time only runs after ▶ Start; resetAt = when to go back to the start state after returning home
 function resetSim() {
-  sim.active = plan; sim.t = 0; sim.base = { t: 0, o2: 0, wh: 0 }; sim.aborted = false; sim.preview = false; sim.lastStop = 0; sim.ret = null; sim.retClock = 0;
+  sim.active = plan; sim.t = 0; sim.base = { t: 0, o2: 0, wh: 0 }; sim.aborted = false; sim.preview = false; sim.lastStop = 0; sim.ret = null; sim.retClock = 0; sim.leak = null; sim.out = null;
   crew.visible = false; set('previewBtn', '▶ Preview traverse'); set('trkP', '0%'); set('trkS', 'At habitat');
 }
 function stateAt(P, t) {               // position + cumulative values at sim time t
@@ -1223,13 +1332,15 @@ function pointAtDist(P, d) {
   const t = Math.min(1, Math.max(0, (d - cd[n - 1]) / (cd[n] - cd[n - 1] || 1)));
   return P.pts[n - 1].clone().lerp(P.pts[n] || P.pts[n - 1], t);
 }
-function totals(st) { return { t: sim.base.t + sim.t, o2: sim.base.o2 + st.o2, wh: sim.base.wh + st.wh }; }
+// extra loss since a leak was injected: constant rate (kg/s or Wh/s) x time
+function leakExtra() { const L = sim.leak, e = { o2: 0, wh: 0 }; if (L) e[L.res] = L.rate * Math.max(0, sim.t - L.t0); return e; }
+function totals(st) { const e = leakExtra(); return { t: sim.base.t + sim.t, o2: sim.base.o2 + st.o2 + e.o2, wh: sim.base.wh + st.wh + e.wh }; }
 function nextStop(P, n) { for (let k = 1; k < P.stopIdx.length; k++) if (P.stopIdx[k] >= n && (k > sim.lastStop)) return k; return P.stopIdx.length - 1; }
 
 // live return-to-habitat estimate (re-planned A* from current cell)
 function updateReturn(p) {
   const k = cellAt(p.x, p.z), here = [Math.floor(k / N), k % N];
-  const path = astar(cost, here, HAB);
+  const path = astar(cost, here, HAB_DOOR);
   sim.ret = path ? budget(path, data.h, data.soft, slope, cost, mode, params[mode].limit) : null;
 }
 
@@ -1264,30 +1375,53 @@ function setVex(v) {
   if (v === VEX) return; VEX = v;
   for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) pos.setY(idx(i, j), (data.h[idx(i, j)] - tilt(wx(j), wz(i))) * VEX);
   pos.needsUpdate = true; geo.computeVertexNormals(); geo.computeBoundingSphere();
-  hab.position.y = heightAt(hab.position.x, hab.position.z);
+  seatHabitat();
   wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 * SC : 225 * SC); if (o.beacon) o.beacon.position.y = y + 110 * SC; });
   if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
 }
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
-const panels = ['topnav', 'drawer', 'infoView', 'gonogo', 'credit'].map(id => document.getElementById(id));
+const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
-  if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
-  setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
+  if (!plan) return; setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; controls.enabled = false; crew.visible = false;
   if (mouseLook.on) flashLookHint();
-  paint('img'); optTube.visible = retTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false; sciSync();
+  paint('img'); optTube.visible = retTube.visible = strTube.visible = false; wire.visible = false; minMesh.visible = false; sciSync();
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
-  const st = stateAt(sim.active, 0); look.copy(pointAtDist(sim.active, 30)); camera.position.set(st.p.x, heightAt(st.p.x, st.p.z) + params[mode].eye, st.p.z);
-  document.getElementById('sep').style.display = 'none'; sim.sep = false; set('swxTxt', '☢ No SEP alert · dose rate nominal');
-  document.getElementById('swx').style.borderColor = ''; document.getElementById('arrive').style.display = 'none';
+  fpStartState(); document.getElementById('arrive').style.display = 'none'; sim.arriveUntil = 0;
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
 };
+// the first-person start state: at the habitat, looking along the planned route, fresh consumables, no SEP alert, paused until ▶ Start
+// (used when entering the view and again after every return to the habitat, normal or ABORT)
+function fpStartState() {
+  resetSim(); sim.running = false; sim.resetAt = 0;
+  setArLine(plan, 0x5dff9d);       // the planned route line again (an ABORT had replaced it with the amber return line)
+  const st = stateAt(sim.active, 0), a = pointAtDist(sim.active, 30);
+  camera.position.set(st.p.x, heightAt(st.p.x, st.p.z) + params[mode].eye, st.p.z);
+  look.set(a.x, heightAt(a.x, a.z) + params[mode].eye * 0.8, a.z);
+  mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0;
+  document.getElementById('sep').style.display = 'none'; sim.sep = false; set('swxTxt', '☢ No SEP alert · dose rate nominal');
+  document.getElementById('swx').style.borderColor = '';
+  document.getElementById('leak').style.display = 'none'; set('leakBtn', mode === 'suit' ? '💨 Inject suit leak' : '⚡ Inject power fault');
+  document.getElementById('arrive').classList.remove('fail');
+  updateGoBtn();
+}
+function updateGoBtn() {
+  const b = document.getElementById('goBtn'), what = mode === 'suit' ? 'EVA' : 'drive';
+  b.textContent = sim.out ? `↺ Restart ${what}` : sim.running ? '⏸ Pause' : sim.t > 0 || sim.aborted ? `▶ Resume ${what}` : `▶ Start ${what}`;
+  b.classList.toggle('running', sim.running);
+}
+document.getElementById('goBtn').onclick = () => {
+  if (!fp || !sim.active || sim.resetAt) return;          // ignored while the "back at habitat" summary is on screen
+  if (sim.out) { fpStartState(); document.getElementById('arrive').style.display = 'none'; return; }   // after a failed EVA: back to the start
+  sim.running = !sim.running; updateGoBtn();
+};
 function exitFP() {
+  sim.running = false; sim.resetAt = 0;
   setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
-  if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; sciSync(); hudEl.style.display = 'none'; hudCtl.style.display = 'none';
+  if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && minOn.size > 0; sciSync(); hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
@@ -1296,6 +1430,19 @@ document.getElementById('exitBtn').onclick = exitFP;
 document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
 document.getElementById('sepBtn').onclick = () => { sim.sep = true; document.getElementById('sep').style.display = 'block';
   set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)'; };
+// contingency scenario: suit O2 leak (on foot) / power fault (rover): an extra constant loss that alone would empty the reserve in LEAK_DRAIN_MIN
+document.getElementById('leakBtn').onclick = () => {
+  if (!fp || !sim.active || sim.leak || sim.out) return;
+  const st = stateAt(sim.active, sim.t), res = mode === 'suit' ? 'o2' : 'wh';
+  const left = supply()[res] - totals(st)[res];
+  sim.leak = { res, rate: Math.max(0, left) / (LEAK_DRAIN_MIN * 60), t0: sim.t };
+  sim.retClock = 0;                       // re-plan the way home on the next frame
+  const el = document.getElementById('leak');
+  el.innerHTML = (mode === 'suit' ? `💨 SUIT O₂ LEAK — reserve drains in ~${LEAK_DRAIN_MIN} min` : `⚡ ROVER POWER FAULT — battery drains in ~${LEAK_DRAIN_MIN} min`)
+    + '<br><span id="leakSub" style="font-size:12px">checking the way home…</span>';
+  el.style.display = 'block';
+  toast(mode === 'suit' ? `Suit leak: remaining O₂ would last ~${LEAK_DRAIN_MIN} min` : `Power fault: battery would last ~${LEAK_DRAIN_MIN} min`);
+};
 // (re)build the 3D route line the helmet shows: green for the planned route, amber for the ABORT route
 function setArLine(P, colour) {
   if (arLine) { scene.remove(arLine); arLine.geometry.dispose(); }
@@ -1303,13 +1450,13 @@ function setArLine(P, colour) {
   arLine.visible = fp; scene.add(arLine);
 }
 document.getElementById('abortBtn').onclick = () => {
-  if (!sim.active || sim.aborted) return;
+  if (!sim.active || sim.aborted || sim.out) return;
   const st = stateAt(sim.active, sim.t), k = cellAt(st.p.x, st.p.z), here = [Math.floor(k / N), k % N];
-  const path = astar(cost, here, HAB); if (!path) { toast('No safe return route found!'); return; }
+  const path = astar(cost, here, HAB_DOOR); if (!path) { toast('No safe return route found!'); return; }
   // inside the habitat's own grid cell the way home is a single point: nothing to walk, so do not start an ABORT
   // (this used to give NaN values and an instant "abort complete" with no way to continue)
   if (path.length < 2) { toast('You are already at the habitat: nothing to abort'); return; }
-  sim.base = totals(st); sim.t = 0; sim.aborted = true; sim.lastStop = 0;
+  sim.base = totals(st); sim.t = 0; sim.aborted = true; sim.lastStop = 0; if (sim.leak) sim.leak.t0 = 0;   // the leak loss so far is in base now
   const smooth = smoothReturn(path, st.p);                              // straight shortcuts + rounded corners, starting exactly where the crew stands
   const P = { path, stopIdx: [0, smooth.length - 1], dwell: new Set(), stops: [null, 0], b: budgetPts(smooth, mode) };
   P.pts = smooth.map(q => new THREE.Vector3(q.x, heightRaw(q.x, q.z) + 2.5, q.z));
@@ -1498,7 +1645,7 @@ function updateLabels() {
 }
 function advance(dt, mult) {
   const P = sim.active; if (!P) return null;
-  sim.t = Math.min(sim.t + dt * mult, P.b.time);
+  sim.t = Math.min(sim.t + (sim.out ? 0 : dt * mult), P.b.time);   // frozen once a reserve is gone
   const st = stateAt(P, sim.t);
   // waypoint arrival events
   const ns = nextStop(P, st.n);
@@ -1523,15 +1670,19 @@ function updateMapPreview(dt) {
 }
 
 function updateFP(dt) {
-  const r = advance(dt, speedUp); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
+  const r = advance(dt, sim.running ? speedUp : 0); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
   // draw only the leg ahead (current position -> next stop), so the way home is not drawn as a second line beside the way out
   if (arLine) { const cnt = arLine.geometry.attributes.position.count, a = Math.max(0, st.n - 1), z = Math.min(cnt - 1, P.stopIdx[ns] + 1); arLine.geometry.setDrawRange(a, Math.max(2, z - a + 1)); }
-  const p = st.p, moving = sim.t < P.b.time && !st.dwelling;
+  const p = st.p, moving = sim.running && sim.t < P.b.time && !st.dwelling;
   const bob = moving && mode === 'suit' ? Math.sin(sim.t * 3.5) * 0.04 : 0;
   camera.position.set(p.x, heightAt(p.x, p.z) + M.eye + bob, p.z);
   const lookAhead = 35 + Math.min(150, (st.spd || 0) * speedUp * 0.35);   // look further ahead at high sim speed
-  const ahead = pointAtDist(P, Math.min(st.d + lookAhead, P.b.dist));
-  const target = sim.t < P.b.time ? new THREE.Vector3(ahead.x, heightAt(ahead.x, ahead.z) + M.eye * 0.8, ahead.z) : look.clone();
+  let ahead = pointAtDist(P, Math.min(st.d + lookAhead, P.b.dist));
+  if (P.b.dist - st.d < lookAhead) {   // near the end the point ahead is under our feet: keep looking the way the route was heading
+    const a = pointAtDist(P, Math.max(0, P.b.dist - lookAhead)), e = pointAtDist(P, P.b.dist), dir = e.clone().sub(a).setY(0);
+    if (dir.lengthSq() > 1) { dir.normalize(); ahead = new THREE.Vector3(p.x + dir.x * lookAhead, 0, p.z + dir.z * lookAhead); }
+  }
+  const target = new THREE.Vector3(ahead.x, heightAt(ahead.x, ahead.z) + M.eye * 0.8, ahead.z);
   if (camera.position.distanceTo(target) > 3) look.lerp(target, Math.min(1, dt * 6));
   applyMouseLook(dt);
 
@@ -1541,7 +1692,8 @@ function updateFP(dt) {
   const o2Left = 100 * (1 - tot.o2 / sup.o2), whLeft = 100 * (1 - tot.wh / sup.wh);
   const o2Rate = mode === 'suit' ? (P.b.time > 0 ? P.b.o2 / P.b.time : 0) : CREW * O2_PP_KGH / 3600;   // kg/s
   const whRate = P.b.time > 0 ? P.b.wh / P.b.time : 0;                                                    // Wh/s
-  const o2Sec = o2Rate > 0 ? (sup.o2 - tot.o2) / o2Rate : Infinity, whSec = whRate > 0 ? (sup.wh - tot.wh) / whRate : Infinity;
+  const lkO = sim.leak && sim.leak.res === 'o2' ? sim.leak.rate : 0, lkE = sim.leak && sim.leak.res === 'wh' ? sim.leak.rate : 0;
+  const o2Sec = o2Rate + lkO > 0 ? (sup.o2 - tot.o2) / (o2Rate + lkO) : Infinity, whSec = whRate + lkE > 0 ? (sup.wh - tot.wh) / (whRate + lkE) : Infinity;
   const showRes = (tId, pId, barId, sec, pct) => { set(tId, fmtLeft(sec)); set(pId, `${Math.max(0, pct).toFixed(1)}%`); document.getElementById(barId).style.width = `${Math.max(0, pct)}%`; };
   if (mode === 'suit') { showRes('hO2', 'hO2p', 'hO2bar', o2Sec, o2Left); showRes('hBat', 'hBatp', 'hBatbar', whSec, whLeft); }
   else { showRes('hO2', 'hO2p', 'hO2bar', whSec, whLeft); showRes('hBat', 'hBatp', 'hBatbar', o2Sec, o2Left); }   // rover: battery first, then cabin O2
@@ -1551,7 +1703,8 @@ function updateFP(dt) {
   if (now - sim.retClock > (N > 500 ? 1500 : 700)) { sim.retClock = now; updateReturn(p); }
   if (sim.ret) {
     const needO2 = sim.ret.o2, needWh = sim.ret.wh;
-    const sfO = needO2 > 1e-6 ? (sup.o2 - tot.o2) / needO2 : 99, sfE = needWh > 1e-6 ? (sup.wh - tot.wh) / needWh : 99;
+    const xO = lkO * sim.ret.time, xE = lkE * sim.ret.time;        // a leak also drains on the way home
+    const sfO = needO2 > 1e-6 ? (sup.o2 - tot.o2) / (needO2 + xO) : 99, sfE = needWh > 1e-6 ? (sup.wh - tot.wh) / (needWh + xE) : 99;
     sim.sf = Math.min(sfO, sfE);       // not shown on the HUD any more; still drives the low-reserve / ABORT warnings below
   } else { sim.sf = 0; }
   // waypoint / instruction
@@ -1568,15 +1721,47 @@ function updateFP(dt) {
   const dir = Math.abs(turn) < 12 ? 'Continue straight' : `Bear ${turn > 0 ? 'right' : 'left'} ${Math.abs(turn).toFixed(0)}°`;
   const done = sim.t >= P.b.time;
   set('hInstr', done ? (sim.aborted ? '✓ Back inside habitat airlock (abort complete)' : '✓ EVA complete · back at habitat')
+    : !sim.running ? (sim.t === 0 && !sim.aborted ? `Ready at habitat · press ▶ Start ${mode === 'suit' ? 'EVA' : 'drive'} below to set off` : 'Paused · press ▶ Resume below')
     : st.dwelling ? `Science stop at ${WPS[P.stops[sim.lastStop]].short} · ${fmtClock(P.b.cumT[st.n] - sim.t)} left`
     : `${dir} · ${remain.toFixed(0)} m to ${w.short}${sim.aborted ? ' (ABORT route)' : ''}`);
+  const empty = tot.o2 >= sup.o2 || tot.wh >= sup.wh;
+  if (!sim.out && !done && empty) {                                    // a reserve ran out before the habitat: the EVA has failed
+    const homeM = sim.aborted ? Math.max(0, P.b.dist - st.d) : (sim.ret ? sim.ret.dist : NaN);
+    sim.out = { res: tot.o2 >= sup.o2 ? 'O₂' : 'battery', homeM, t: tot.t }; sim.running = false; updateGoBtn();
+  }
+  if (sim.leak) {                                                      // leak alert: what the way home needs vs what is left
+    const L = sim.leak, cap = L.res === 'o2' ? sup.o2 : sup.wh, used = L.res === 'o2' ? tot.o2 : tot.wh, left = Math.max(0, 100 * (1 - used / cap));
+    const need = sim.ret ? 100 * ((L.res === 'o2' ? sim.ret.o2 : sim.ret.wh) + L.rate * sim.ret.time) / cap : NaN, lk = document.getElementById('leakSub');
+    document.getElementById('leak').style.display = done || sim.out ? 'none' : 'block';   // the summary takes over at the end
+    if (lk) lk.textContent = done ? `${left.toFixed(0)}% left` : sim.aborted ? `Returning home · ${left.toFixed(0)}% left`
+      : `Way home needs ${isFinite(need) ? need.toFixed(0) : '?'}% · ${left.toFixed(0)}% left → ${sim.sf >= SF_GO ? 'margin OK' : sim.sf >= 1 ? 'turn back now' : 'ABORT now'}`;
+  }
   const warn = [];
   if (moving && gmax > M.limit * 0.7) warn.push(`⚠ ${gmax.toFixed(0)}° slope in ${gat.toFixed(0)} m — ${mode === 'suit' ? 'shorten stride' : 'reduce speed'}`);
-  if (sim.sf !== undefined && sim.sf < SF_GO && !done) warn.push(sim.sf < 1.15 ? '⛔ Reserve critical — ABORT now' : '⚠ Return reserve below ×1.5 — consider turning back');
+  if (sim.sf !== undefined && sim.sf < SF_GO && !done) warn.push(sim.aborted ? (sim.sf < 1 ? '⛔ Reserve may not last to the habitat — keep going, request rescue' : '⚠ Low reserve — heading home')
+    : sim.sf < 1.15 ? '⛔ Reserve critical — ABORT now' : '⚠ Return reserve below ×1.5 — consider turning back');
   if (sim.sep && !sim.aborted) warn.push('☢ SEP alert — return to shelter');
+  if (sim.leak && !sim.aborted && !done) warn.unshift(sim.sf >= SF_GO ? '💨 Leak — reserve still OK, plan early return' : '💨 Leak — ABORT now');
+  if (!done && empty) warn.unshift(`✖ ${tot.o2 >= sup.o2 ? 'O₂' : 'battery'} depleted before reaching the habitat`);
   set('hWarn', warn.join('   '));
-  if (done) showArrive(sim.aborted ? '✓ Safe return' : '✓ EVA complete', `${((sim.base.t + P.b.time) / 3600).toFixed(1)} h · O₂ ${(100 * tot.o2 / sup.o2).toFixed(0)}% · battery ${(100 * tot.wh / sup.wh).toFixed(0)}% used`);
-  else if (performance.now() > sim.arriveUntil) document.getElementById('arrive').style.display = 'none';
+  const spare = (() => { if (!sim.leak) return ''; const L = sim.leak, left = (L.res === 'o2' ? sup.o2 - tot.o2 : sup.wh - tot.wh), base = P.b.time > 0 ? P.b[L.res] / P.b.time : 0, m = Math.max(0, Math.floor(left / (L.rate + base) / 60));
+    return ` — ${m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m} min`} of ${L.res === 'o2' ? 'O₂' : 'battery'} to spare`; })();
+  if (done) showArrive(empty ? '✖ Reserve ran out' : sim.leak ? (sim.aborted ? `✓ Safe return after leak${spare}` : `✓ Back home despite leak${spare}`) : sim.aborted ? '✓ Safe return' : '✓ EVA complete',
+    `${((sim.base.t + P.b.time) / 3600).toFixed(1)} h · O₂ ${(100 * tot.o2 / sup.o2).toFixed(0)}% · battery ${(100 * tot.wh / sup.wh).toFixed(0)}% used`);
+  else if (!sim.out && performance.now() > sim.arriveUntil) document.getElementById('arrive').style.display = 'none';
+  document.getElementById('arrive').classList.toggle('fail', !!sim.out);
+  if (sim.out) {                                                       // failed: stays on screen until ↺ Restart or Back to map
+    const km = isFinite(sim.out.homeM) ? `${(sim.out.homeM / 1000).toFixed(2)} km from the habitat` : 'away from the habitat';
+    showArrive(`✖ ${sim.out.res} depleted — EVA failed`, `${km} · ${fmtClock(sim.out.t)} into the EVA · rescue rover / buddy O₂ needed`);
+    set('hInstr', `✖ ${sim.out.res} depleted ${km} — the crew could not get back alone`); set('hWarn', 'Lesson: turn back when the return check says so');
+  }
+  // back at the habitat: stop, show the summary for 3 s, then return to the start state (paused, ready for ▶ Start)
+  if (done && sim.running) { sim.running = false; sim.resetAt = performance.now() + 3000; updateGoBtn(); }
+  if (sim.resetAt && performance.now() > sim.resetAt) {
+    const el = document.getElementById('arrive'), summary = el.innerHTML;
+    fpStartState(); el.innerHTML = summary; el.style.display = 'block'; sim.arriveUntil = performance.now() + 4000;   // the summary stays a little longer
+    return;
+  }
   // rover dashboard
   if (mode === 'rover') {
     set('dSpd', `${moving ? (st.spd * 3.6).toFixed(1) : '0.0'} km/h`);
@@ -1602,22 +1787,49 @@ function keepOnMap() {
 recompute(); buildMinimapBase();
 
 // ---- intro hand-over: the camera flies in from space once the intro screen has finished ----
-const FLY = { active: false, pending: false, t0: 0, dur: 3600, tgt: controls.target.clone(), end: new THREE.Spherical(), from: new THREE.Spherical() };
+const FLY = { active: false, pending: false, t0: 0, dur: 3600, tgt: controls.target.clone(), tgtFrom: controls.target.clone(), end: new THREE.Spherical(), from: new THREE.Spherical(), maxD: 0 };
 function setFly(e) {
   const r = FLY.from.radius + (FLY.end.radius - FLY.from.radius) * e, ph = FLY.from.phi + (FLY.end.phi - FLY.from.phi) * e, th = FLY.from.theta + (FLY.end.theta - FLY.from.theta) * e;
-  camera.position.setFromSpherical(new THREE.Spherical(r, ph, th)).add(FLY.tgt); controls.update();
+  const tgt = FLY.tgtFrom.clone().lerp(FLY.tgt, e);                   // the look-at point slides from the card position to the map centre
+  controls.target.copy(tgt); camera.position.setFromSpherical(new THREE.Spherical(r, ph, th)).add(tgt); controls.update();
 }
 function startFly() { if (!FLY.pending) return; FLY.pending = false; FLY.active = true; FLY.t0 = performance.now(); }
 function stepFly() {
   if (!FLY.active) return;
   const t = Math.min(1, (performance.now() - FLY.t0) / FLY.dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-  setFly(e); if (t >= 1) { FLY.active = false; controls.enabled = true; }
+  setFly(e); if (t >= 1) {
+    FLY.active = false; controls.enabled = true;
+    if (FLY.maxD) { controls.maxDistance = FLY.maxD; FLY.maxD = 0; }
+    if (FLY.far) { camera.far = FLY.far; FLY.far = 0; camera.updateProjectionMatrix(); }
+  }
 }
 if (!window.__introDone && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
   FLY.end.setFromVector3(camera.position.clone().sub(controls.target));
   FLY.from.set(FLY.end.radius * 2.3, Math.max(0.2, FLY.end.phi * 0.5), FLY.end.theta + 0.9);
   setFly(0); controls.enabled = false; FLY.pending = true;
   addEventListener('intro-done', startFly, { once: true }); setTimeout(startFly, 30000);   // failsafe
+  // a site card was picked: start straight above the map with the map exactly the size and place of the card (north up),
+  // so the card's map grows, tilts and turns into the 3D start view
+  addEventListener('site-pick', ev => {
+    if (!FLY.pending) return;
+    const c = ev.detail, H = innerHeight, size = Math.min(c.w, c.h);
+    const vis = SIZE * H / size;                                         // world height on screen when the map is `size` px tall
+    const R = vis / (2 * Math.tan(camera.fov * Math.PI / 360)), wpp = vis / H;
+    const dx = c.x + c.w / 2 - innerWidth / 2, dy = c.y + c.h / 2 - H / 2;   // card centre relative to the screen centre (px)
+    FLY.from.set(R, 0.02, 0);                                            // nearly straight down; theta 0 keeps north up
+    FLY.tgtFrom.set(FLY.tgt.x - dx * wpp, 0, FLY.tgt.z - dy * wpp);      // move the look-at point so the map centre lands on the card
+    FLY.maxD = controls.maxDistance; controls.maxDistance = Math.max(controls.maxDistance, R * 1.05);
+    FLY.far = camera.far; camera.far = Math.max(camera.far, R * 1.4); camera.updateProjectionMatrix();   // far enough to see the whole map from up there
+    FLY.dur = 3400; setFly(0);
+    // hand the intro a picture of exactly what the 3D view now shows under the card, so the card can blend into it
+    try {
+      renderer.render(scene, camera);
+      const cv = renderer.domElement, k = cv.width / (cv.clientWidth || innerWidth), o = document.createElement('canvas');
+      o.width = Math.round(c.w * k); o.height = Math.round(c.h * k);
+      o.getContext('2d').drawImage(cv, c.x * k, c.y * k, c.w * k, c.h * k, 0, 0, o.width, o.height);
+      c.snap = o.toDataURL('image/jpeg', 0.92);
+    } catch (e) { /* no picture: the card just fades */ }
+  });
 }
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), tt = performance.now();
@@ -1662,13 +1874,41 @@ navItems.forEach(n => {
   });
 });
 document.addEventListener('pointerdown', e => { if (!e.target.closest('.navitem')) closeMenus(); });
-function closeDrawer() { drawerEl.classList.remove('open'); }
+function closeDrawer() {
+  if (SCI && !fp) { openSection('science'); setFolded(true); return; }   // Science value stays reachable: folded, not closed
+  drawerEl.classList.remove('open'); document.body.classList.remove('drawer-open');
+}
 function closeInfo() { infoEl.classList.remove('open'); document.getElementById('infoNavBtn').classList.remove('on'); }
+// MISSION / ROUTE / CREW sections become cards in the left column (built once from the drawer's sections); Science value stays on the right
+const dockEl = document.getElementById('leftDock'), dockCards = {};
+for (const id of Object.keys(SEC_TITLE)) {
+  if (id === 'science') continue;
+  const sec = drawerEl.querySelector(`.sec[data-sec="${id}"]`); if (!sec) continue;
+  const card = document.createElement('div'); card.className = 'panel glass dockCard'; card.hidden = true; card.dataset.card = id;
+  card.innerHTML = '<div class="dhead"><h2></h2><button class="xbtn dfold" title="Fold / unfold" aria-label="Fold">▲</button><button class="xbtn dclose" title="Close" aria-label="Close">×</button></div>';
+  card.querySelector('h2').textContent = SEC_TITLE[id];
+  sec.classList.add('on'); card.appendChild(sec);
+  card.querySelector('.dhead').addEventListener('click', e => {
+    if (e.target.classList.contains('dclose')) { card.hidden = true; return; }
+    const f = card.classList.toggle('folded'); card.querySelector('.dfold').textContent = f ? '▼' : '▲';
+    if (!f && id === 'profile') drawProfile();
+  });
+  dockCards[id] = card; dockEl.appendChild(card);
+}
 function openSection(id) {
   closeInfo(); closeMenus();
-  document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
-  set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open');
-  if (id === 'profile') drawProfile();
+  const card = dockCards[id];
+  if (card) {                                          // left column: opened cards stay until their × is pressed
+    if (card.hidden) { card.hidden = false; dockEl.appendChild(card); }
+    card.classList.remove('folded'); card.querySelector('.dfold').textContent = '▲';
+    card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+    if (id === 'profile') drawProfile();
+    return;
+  }
+  drawerEl.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
+  set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open'); document.body.classList.add('drawer-open');
+  drawerEl.classList.toggle('fold-able', id === 'science'); setFolded(false);
 }
 function openInfo(id) {
   closeMenus(); closeDrawer(); infoEl.classList.add('open'); document.getElementById('infoNavBtn').classList.add('on');
@@ -1678,6 +1918,17 @@ function openInfo(id) {
 document.querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => openSection(b.dataset.sec)));
 document.querySelectorAll('button[data-info]').forEach(b => b.addEventListener('click', () => openInfo(b.dataset.info)));
 document.getElementById('drClose').onclick = closeDrawer;
+// Science value folds up to its title bar (▼ to unfold) instead of closing, so it can always be brought back
+function setFolded(f) {
+  drawerEl.classList.toggle('folded', f);
+  set('drFold', f ? '▼' : '▲'); document.getElementById('drFold').setAttribute('aria-label', f ? 'Unfold the panel' : 'Fold the panel');
+  const sci = drawerEl.classList.contains('fold-able');
+  if (sci) set('drTitle', f && typeof sciPickText === 'function' && SCI ? `Science value · ${sciPick.size ? sciPickText() : 'pick objectives'}` : SEC_TITLE.science);
+}
+document.querySelector('#drawer .dhead').addEventListener('click', e => {
+  if (!drawerEl.classList.contains('fold-able') || e.target.id === 'drClose') return;
+  setFolded(!drawerEl.classList.contains('folded'));
+});
 document.getElementById('infoClose').onclick = closeInfo;
 document.getElementById('gonogo').onclick = () => openSection(plan ? 'compare' : 'science');
 document.getElementById('evaTop').onclick = () => {

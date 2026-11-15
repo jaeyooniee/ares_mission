@@ -60,8 +60,9 @@
     addEventListener('site-ready', done); setTimeout(done, 20000); waiters.push(done);
   });
 
-  // hand-over (ported from index2.html): freeze the logo and title where they are, then fly them onto the top-bar brand.
-  // The 3D camera starts its fly-in as soon as the logo starts to move.
+  // hand-over: the logo and title keep their look and simply shrink while they move onto the top-bar brand
+  // (one transform each, same timing), then cross-fade into the real brand. The 3D camera starts its fly-in at the same moment.
+  const DOCK_MS = 1150, EASE = 'cubic-bezier(.65,0,.25,1)';
   function dock() {
     if (finished) return; finished = true;
     removeEventListener('keydown', skipNow); intro.removeEventListener('pointerdown', skipNow);
@@ -73,25 +74,75 @@
       return;
     }
     textEl.textContent = TEXT; route.style.strokeDashoffset = 0;
-    const rL = logo.getBoundingClientRect(), rT = textEl.getBoundingClientRect(), fsT = parseFloat(getComputedStyle(title).fontSize);
-    const tL = brandLogo.getBoundingClientRect(), tN = brandName.getBoundingClientRect(), cs = getComputedStyle(brandName);
-    Object.assign(logo.style, { transition: 'none', transform: 'none', left: rL.left + 'px', top: rL.top + 'px', width: rL.width + 'px', height: rL.height + 'px', opacity: 1 });
-    Object.assign(title.style, { transition: 'none', left: rT.left + 'px', top: (rT.top + rT.height / 2) + 'px', fontSize: fsT + 'px' });
+    const rL = logo.getBoundingClientRect(), rT = title.getBoundingClientRect(), csT = getComputedStyle(title);
+    const tL = brandLogo.getBoundingClientRect(), tN = brandName.getBoundingClientRect(), csB = getComputedStyle(brandName);
+    // freeze both exactly where they are, with no transform (so the move below is a single transform from here)
+    Object.assign(logo.style, { transition: 'none', transformOrigin: '0 0', transform: 'none', left: rL.left + 'px', top: rL.top + 'px', width: rL.width + 'px', height: rL.height + 'px', opacity: 1 });
+    Object.assign(title.style, { transition: 'none', transformOrigin: '0 50%', transform: 'none', left: rT.left + 'px', top: rT.top + 'px', fontSize: csT.fontSize, letterSpacing: csT.letterSpacing });
     intro.classList.add('dock');
+    void logo.offsetWidth;                                            // commit the frozen state
+    const k = tL.width / rL.width;                                    // logo: shrink to the brand logo, top-left corner onto its corner
+    const s = parseFloat(csB.fontSize) / parseFloat(csT.fontSize);    // title: letters shrink to the brand's size, left edge and middle line onto the brand name
+    const dx = tN.left - rT.left, dy = (tN.top + tN.height / 2) - (rT.top + rT.height / 2);
+    const lsTo = (parseFloat(csB.letterSpacing) / s) + 'px';          // letter spacing eases to the brand's (in the unscaled title's units)
+    const tr = p => `${p} ${DOCK_MS}ms ${EASE}`;
+    logo.style.transition = `${tr('transform')}, filter ${DOCK_MS}ms ease, opacity .25s ease`;
+    title.style.transition = `${tr('transform')}, ${tr('letter-spacing')}, opacity .25s ease`;
+    Object.assign(logo.style, { transform: `translate(${tL.left - rL.left}px, ${tL.top - rL.top}px) scale(${k})`, filter: 'drop-shadow(0 0 0 rgba(55,224,255,0))' });
+    Object.assign(title.style, { transform: `translate(${dx}px, ${dy}px) scale(${s})`, letterSpacing: lsTo });
     body.classList.remove('intro-pending');                           // top bar and panels fade in while the logo flies
     window.__introDone = true; window.dispatchEvent(new Event('intro-done'));
-    void logo.offsetWidth;                                            // commit the frozen position
-    intro.classList.add('fly'); logo.style.transition = title.style.transition = '';
-    Object.assign(logo.style, { left: tL.left + 'px', top: tL.top + 'px', width: tL.width + 'px', height: tL.height + 'px', filter: 'drop-shadow(0 0 0 rgba(55,224,255,0))' });
-    Object.assign(title.style, { left: tN.left + 'px', top: (tN.top + tN.height / 2) + 'px', fontSize: cs.fontSize, letterSpacing: cs.letterSpacing, textShadow: cs.textShadow });
-    setTimeout(() => {                                                // land: show the real brand, remove the intro
-      body.classList.remove('brand-hidden'); cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove();
-    }, reduce ? 50 : 1250);
+    const land = reduce ? 0 : DOCK_MS - 200;
+    setTimeout(() => {                                                // nearly there: the real brand appears underneath, the flying copy fades
+      body.classList.remove('brand-hidden'); logo.style.opacity = title.style.opacity = 0;
+    }, land);
+    setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, land + 300);
+  }
+
+  // landing-site choice: logo + title move up, two cards appear; Gale enters the app (Jezero is not in this build yet).
+  // From here on a click or key no longer skips: a site has to be picked (Enter / Space = Gale).
+  function chooseSite() {
+    return new Promise(res => {
+      removeEventListener('keydown', skipNow); intro.removeEventListener('pointerdown', skipNow);
+      intro.removeAttribute('aria-hidden'); intro.classList.add('select');
+      document.getElementById('introSkip').textContent = 'Choose a landing site';
+      const gale = intro.querySelector('.siteCard[data-site="gale"]'), soon = intro.querySelector('.siteCard.soon');
+      const onKey = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } };
+      function pick() {
+        removeEventListener('keydown', onKey); window.__site = 'gale';
+        const r = gale.getBoundingClientRect();
+        gale.style.setProperty('--toCentre', (innerWidth / 2 - (r.left + r.width / 2)) + 'px');   // slide to the middle of the screen
+        gale.classList.add('picked'); intro.classList.add('picked'); gale.blur();
+        setTimeout(() => intro.classList.add('open'), reduce ? 0 : 820);   // arrived in the centre: frame and text go, the map brightens
+        if (!window.__siteReady) {                                     // still loading: say so under the map
+          document.getElementById('introSkip').textContent = 'Loading terrain…'; intro.classList.add('wait');
+          addEventListener('site-ready', () => intro.classList.remove('wait'), { once: true });
+        }
+        res({ card: gale, t: performance.now() });
+      }
+      gale.addEventListener('click', pick, { once: true }); addEventListener('keydown', onKey);
+      if (soon) soon.addEventListener('click', () => { soon.classList.remove('nudge'); void soon.offsetWidth; soon.classList.add('nudge'); });
+      setTimeout(() => gale.focus({ preventScroll: true }), reduce ? 0 : 900);
+    });
+  }
+
+  // hand-over: the 3D view puts the real map exactly where the picked card is (seen from straight above, north up);
+  // when the intro fades, that map grows and turns into the 3D start view (the camera fly in index.html, on 'intro-done')
+  // The 3D view answers with a picture of what it now shows there (detail.snap): it is laid over the card's map and fades in
+  // while the map brightens, so at the end the card already looks exactly like the 3D map under it.
+  function handOver(card) {
+    const m = card.querySelector('.map') || card, r = m.getBoundingClientRect();   // the map itself (inside the 1 px border)
+    const detail = { x: r.left, y: r.top, w: r.width, h: r.height };
+    window.dispatchEvent(new CustomEvent('site-pick', { detail }));
+    if (!detail.snap) return;
+    const s = document.createElement('span'); s.className = 'snap'; s.style.backgroundImage = `url(${detail.snap})`;
+    s.style.filter = getComputedStyle(m).filter;                       // start exactly as bright as the map is right now
+    m.after(s); void s.offsetWidth; s.style.filter = ''; card.classList.add('snapped');
   }
 
   async function run() {
     intro.classList.add('on');
-    if (reduce) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await whenSiteReady(); return dock(); }
+    if (reduce) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await chooseSite(); skipped = false; await whenSiteReady(); intro.classList.add('reveal', 'handed'); return dock(); }
     await sleep(350);  intro.classList.add('logo');                    // 1. logo appears in the centre, route line draws itself
     await sleep(2100); intro.classList.add('lift');                    // 2. logo slides left and shrinks, cursor starts blinking to its right
     await sleep(950);
@@ -100,9 +151,17 @@
       await sleep(i === 1 ? 180 : 80 + Math.random() * 60);
     }
     textEl.textContent = TEXT;
-    await sleep(1100);                                                 // 4. hold, then fade into the app
-    await whenSiteReady();
-    dock();
+    await sleep(700);
+    const { card, t } = await chooseSite();                            // 4. title moves up, pick a landing site:
+                                                                       //    it slides to the centre, the other fades, only its map stays
+    skipped = false; await whenSiteReady();                            // 5. the 3D map must be loaded for the hand-over
+    await sleep(Math.max(0, 820 - (performance.now() - t)));           //    (the card first slides to the centre as it is)
+    handOver(card);                                                    // 6. the real 3D map is put exactly under the card's map, seen from above;
+                                                                       //    while the card brightens it blends into a picture of that 3D map
+    await sleep(Math.max(0, 2000 - (performance.now() - t)));
+    intro.classList.add('reveal'); await sleep(650);                   // 7. the dark background and stars fade: the map is now on the 3D view
+    intro.classList.add('handed'); await sleep(380);                   //    the card (now identical to the 3D map) goes away
+    dock();                                                            // 8. the map grows, tilts and turns into the start view; the logo docks
   }
 
   intro.addEventListener('pointerdown', skipNow); addEventListener('keydown', skipNow);
