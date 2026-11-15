@@ -56,3 +56,19 @@ Same files and formats as `jezero/` (`?site=mawrth`, `?site=meridiani`). Each ar
 | THEMIS TI | `00N300E` tile | `30S300E` tile |
 
 Honest notes: Meridiani's plains are under basaltic sand, so CRISM signals there are weak; on their own, Habitability and Resources have no place scoring ≥ 0.6, and the page says so. The proposed rows are documented in each `science.json` under `web.<site>_mapping`.
+
+## columbia/ and melas/: Columbia Hills and East Melas
+
+Same files and formats. Both are **10 km squares** (624 × 624 at 16 m) built with the same team code.
+
+| | Columbia Hills | East Melas |
+|---|---|---|
+| Area | centre 14.583°S, 175.502°E: Spirit's landing site to Home Plate | centre 13.26°S, 70.26°W (eastern Melas Chasma). The CRISM observation's own centre was 34 % outside the DEM strip, so the square sits at the nearest gap-free spot |
+| DEM | Columbia Hills DEM mosaic (HiRISE, CTX and HRSC, USGS 2018, ~1 m) | CTX stereo DEM D18_034250_1676 / D21_035450_1674 (24 m) |
+| Texture | HiRISE greyscale mosaic (25 cm), tinted for display | **no image in the data folder**: shaded relief computed from the DEM (sun from the north-west), tinted; shape only, not colour |
+| CRISM | 4 FRT MTRDR, 99 % coverage, robust z | 1 FRT MTRDR, 46 % coverage, robust z |
+| Science rows | **proposed**: habitability from hydrated silica (Home Plate), Mg-Fe carbonate (Comanche) and sulfate; diversity = silica, carbonate, olivine | **proposed**: habitability from layered sulfate, hydrated silica and clay; diversity = sulfate, silica, clay |
+| Novelty | Spirit traverse (PDS Analyst's Notebook `MERA_traverse.csv`, x / y in an equirectangular projection centred at 175.5°E) | none (no rover) |
+| THEMIS TI | `30S120E` tile | `30S240E` tile |
+
+Honest notes: at Columbia Hills no reachable place scores ≥ 0.6 for Sample diversity (the mineral families are never strong within 100 m of each other) and Habitability is strong only in a tiny patch; at East Melas, Resources has no strong place. The page says so instead of drawing a route.

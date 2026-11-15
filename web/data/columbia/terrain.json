@@ -1,0 +1,167 @@
+{
+ "source": "Columbia Hills DEM mosaic (HiRISE, CTX and HRSC, USGS 2018, ~1 m) cropped to a 9.98 km square that the DEM covers completely, resampled to 4 m by the Python pipeline, then every 4th cell (16 m)",
+ "nx": 624,
+ "ny": 624,
+ "cell_m": 16.0,
+ "z_min": -1951.77,
+ "z_max": -1831.32,
+ "area_lonlat_W_S_E_N": [
+  175.41498,
+  -14.66722,
+  175.58902,
+  -14.49878
+ ],
+ "origin": "x east, y south, metres from the north-west corner of the area; row 0 = north",
+ "dropped_last_row": true,
+ "dropped_last_col": false,
+ "texture": {
+  "file": "texture_color.jpg",
+  "source": "HiRISE_ColumbiaHills image cropped to the area: greyscale, tinted to a Mars colour for display, the colour is NOT measured",
+  "covers_m": [
+   9984.0,
+   9988.0
+  ],
+  "px": [
+   8189,
+   8189
+  ]
+ },
+ "walk": {
+  "slope_limit_deg": 18.0,
+  "o2_capacity_kg": 1.2,
+  "body_kg": 75,
+  "suit_kg": 60,
+  "suit_speed_factor": 0.6
+ },
+ "rover": {
+  "slope_limit_deg": 28.0,
+  "speed_ms": 4.1667,
+  "wh_per_km": 250
+ },
+ "assumptions_kept_from_demo": {
+  "suit_battery_wh": 450,
+  "suit_base_w": 60,
+  "rover_battery_wh": 40000,
+  "rover_cabin_o2_kg": 4,
+  "crew": 2,
+  "o2_per_person_kg_h": 0.035
+ },
+ "minerals": {
+  "file": "minerals.png",
+  "covers_m": [
+   9984.0,
+   9988.0
+  ],
+  "source": "MRO CRISM MTRDR summary parameters: frt0000cda5, frt00008ce1, frt000168f3, frt0001c48a (99.1% coverage), robust z per observation",
+  "classes": {
+   "carbonate": {
+    "label": "Mg/Fe carbonate",
+    "index": "BD2500_2",
+    "color": [
+     255,
+     230,
+     90
+    ],
+    "area_pct": 0.27
+   },
+   "silica": {
+    "label": "Hydrated silica (opal)",
+    "index": "MIN2250",
+    "color": [
+     240,
+     240,
+     160
+    ],
+    "area_pct": 0.27
+   },
+   "poly_sulf": {
+    "label": "Polyhydrated sulfate",
+    "index": "SINDEX2",
+    "color": [
+     60,
+     200,
+     90
+    ],
+    "area_pct": 0.47
+   },
+   "mono_sulf": {
+    "label": "Monohydrated sulfate",
+    "index": "BD2100_2",
+    "color": [
+     70,
+     120,
+     240
+    ],
+    "area_pct": 1.25
+   },
+   "hydrated": {
+    "label": "Hydrated minerals (H2O)",
+    "index": "BD1900R2",
+    "color": [
+     140,
+     230,
+     255
+    ],
+    "area_pct": 1.38
+   },
+   "clay": {
+    "label": "Fe/Mg clay (smectite)",
+    "index": "D2300",
+    "color": [
+     220,
+     60,
+     60
+    ],
+    "area_pct": 0.08
+   },
+   "hematite": {
+    "label": "Crystalline hematite",
+    "index": "BD860_2",
+    "color": [
+     255,
+     150,
+     30
+    ],
+    "area_pct": 0.16
+   },
+   "hcp": {
+    "label": "High-Ca pyroxene",
+    "index": "HCPINDEX2",
+    "color": [
+     255,
+     105,
+     180
+    ],
+    "area_pct": 9.94
+   },
+   "olivine": {
+    "label": "Olivine",
+    "index": "OLINDEX3",
+    "color": [
+     20,
+     170,
+     150
+    ],
+    "area_pct": 4.02
+   }
+  }
+ },
+ "destinations": [
+  {
+   "name": "Silica-1",
+   "kind": "silica",
+   "label": "Hydrated silica (opal)",
+   "index": "MIN2250",
+   "peak_index": 0.0098,
+   "area_m2": 7632
+  },
+  {
+   "name": "Carbonate-1",
+   "kind": "carbonate",
+   "label": "Mg/Fe carbonate",
+   "index": "BD2500_2",
+   "peak_index": 0.0015,
+   "area_m2": 11232
+  }
+ ]
+}

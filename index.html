@@ -378,6 +378,8 @@
     <button class="siteCard" data-site="jezero" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Perseverance rover</span></button>
     <button class="siteCard" data-site="mawrth" data-tex="web/data/mawrth/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_mawrth.jpg?v=3d1)"></span><span class="name">MAWRTH</span><span class="sub">Clay-rich valley</span></button>
     <button class="siteCard" data-site="meridiani" data-tex="web/data/meridiani/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_meridiani.jpg?v=3d1)"></span><span class="name">MERIDIANI</span><span class="sub">Opportunity rover</span></button>
+    <button class="siteCard" data-site="columbia" data-tex="web/data/columbia/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_columbia.jpg?v=3d1)"></span><span class="name">COLUMBIA</span><span class="sub">Spirit rover</span></button>
+    <button class="siteCard" data-site="melas" data-tex="web/data/melas/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_melas.jpg?v=3d1)"></span><span class="name">EAST MELAS</span><span class="sub">Valles Marineris</span></button>
     <button class="siteCard custom" data-site="custom" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own data</span></button>
   </div>
   <div id="introSkip">click or press any key to skip</div>
@@ -399,7 +401,9 @@
           <button class="mi" data-site="jezero" role="menuitem">Jezero crater<small>Perseverance landing area · 18.48°N, 77.39°E</small></button>
           <button class="mi" data-site="mawrth" role="menuitem">Mawrth Vallis<small>Clay-rich layered terrain · 23.04°N, 18.46°W</small></button>
           <button class="mi" data-site="meridiani" role="menuitem">Meridiani Planum<small>Opportunity, Victoria crater · 2.02°S, 5.48°W</small></button>
-          <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
+          <button class="mi" data-site="columbia" role="menuitem">Columbia Hills<small>Spirit, Home Plate · 14.58°S, 175.50°E</small></button>
+      <button class="mi" data-site="melas" role="menuitem">East Melas<small>Valles Marineris layered deposits · 13.26°S, 70.26°W</small></button>
+      <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
           <button class="mi" data-site="custom-new" role="menuitem" id="siteCustomNew">Custom data…<small>Build a site from your own DEM, image and CRISM</small></button>
         </div></div>
     </div>
@@ -572,7 +576,7 @@
       <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
       <div class="sub">Habitat transparent display → helmet / rover HUD</div>
       <div class="note" id="aboutNote">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
-      <p>Pick a landing site on the start screen (Gale, Jezero, Mawrth Vallis, Meridiani Planum, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
+      <p>Pick a landing site on the start screen (Gale, Jezero, Mawrth Vallis, Meridiani Planum, Columbia Hills, East Melas, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
     </div>
     <div class="ipane" data-info="controls">
       <h1>Map controls</h1>
@@ -580,7 +584,7 @@
         <li><b>Left-drag</b> — move the map position</li>
         <li><b>Right-drag</b> — tilt and rotate the view</li>
         <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
-        <li><b>Location ▼</b> (top bar) — switch to Gale, Jezero, Mawrth Vallis, Meridiani Planum or your custom site</li>
+        <li><b>Location ▼</b> (top bar) — switch to Gale, Jezero, Mawrth Vallis, Meridiani Planum, Columbia Hills, East Melas or your custom site</li>
         <li><b>Click a drill-site pin</b> (Gale, LAYERS → Curiosity drill sites) — its measured minerals</li>
       </ul>
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
@@ -716,6 +720,26 @@ const SITES = {
     img: 'HiRISE PSP_006755_2030 red ortho image (25 cm) — greyscale, tinted to a Mars colour for display',
     sci: 'Team science.py: HiRISE DTM (geology, reachability), CRISM summary parameters with Mawrth rows (Fe/Mg + Al clays, hydrated silica; proposed, not in the team table), THEMIS thermal inertia (resources); no rover traverse (no novelty); scored against NASA Moon to Mars objectives',
     credit: 'Data: NASA/JPL-Caltech/University of Arizona (HiRISE DTM and image) · CRISM: NASA/JPL/JHU-APL · greyscale image tinted for display, not true colour',
+  },
+  columbia: {
+    name: 'Columbia Hills', rover: 'Spirit', data: 'web/data/columbia/',
+    about: 'Terrain: <b>DEM mosaic</b> of the Columbia Hills (HiRISE, CTX and HRSC, 2018) over a <b>10 km square</b> from Spirit\'s landing site to Home Plate, shown on a 16 m grid. '
+      + 'Spirit explored here in 2004–2010 and found opaline silica by Home Plate, Mg-Fe carbonate in the Comanche outcrop and sulfate-rich soils. Novelty uses the Spirit traverse. '
+      + 'Imagery: <b>HiRISE mosaic</b> (25 cm), greyscale <b>tinted</b> to a Mars colour for display.',
+    elev: 'Columbia Hills DEM mosaic (HiRISE, CTX and HRSC, ~1 m), 10 km square shown at 16 m',
+    img: 'HiRISE greyscale mosaic of the Columbia Hills (25 cm) — tinted to a Mars colour for display',
+    sci: 'Team science.py: DEM mosaic (geology, reachability), CRISM summary parameters with Columbia Hills rows (hydrated silica, carbonate, sulfate; proposed, not in the team table), THEMIS thermal inertia (resources), Spirit traverse from the PDS Analyst\'s Notebook (novelty), scored against NASA Moon to Mars objectives',
+    credit: 'Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · DEM mosaic from HiRISE, CTX (NASA/JPL/MSSS) and HRSC (ESA/DLR/FU Berlin) · CRISM: NASA/JPL/JHU-APL · Spirit traverse: PDS Geosciences Node · greyscale image tinted for display, not true colour',
+  },
+  melas: {
+    name: 'East Melas', rover: '', data: 'web/data/melas/',
+    about: 'Terrain: <b>CTX stereo DEM</b> (D18_034250_1676 / D21_035450_1674, 24 m) over a <b>10 km square</b> in eastern Melas Chasma, Valles Marineris, shown on a 16 m grid. '
+      + 'Layered sulfate, hydrated silica and clay deposits of a closed basin; CRISM covers about half of the square. No rover has been here, so there is no Novelty objective. '
+      + 'Imagery: <b>none in the data folder</b>, so the map shows <b>shaded relief</b> of the DEM, tinted to a Mars colour (the shape of the ground, not its colour).',
+    elev: 'CTX stereo DEM D18_034250_1676 / D21_035450_1674 (24 m), 10 km square shown at 16 m',
+    img: 'No image in the data folder: shaded relief computed from the DEM (sun from the north-west), tinted to a Mars colour',
+    sci: 'Team science.py: CTX DEM (geology, reachability), CRISM summary parameters with East Melas rows (sulfate, hydrated silica, clay; proposed, not in the team table; CRISM covers 46% of the area), THEMIS thermal inertia (resources); no rover traverse (no novelty); scored against NASA Moon to Mars objectives',
+    credit: 'Data: CTX stereo DEM (CTX images: NASA/JPL/MSSS) · CRISM: NASA/JPL/JHU-APL · map shading computed from the DEM, not an image',
   },
   meridiani: {
     name: 'Meridiani Planum', rover: 'Opportunity', data: 'web/data/meridiani/',
@@ -2134,7 +2158,7 @@ const scrubFrac = e => { const r = scrubBar.getBoundingClientRect(); return Math
 const endScrub = e => { if (!scrubbing) return; scrubbing = false; scrubBar.classList.remove('drag'); try { scrubBar.releasePointerCapture(e.pointerId); } catch (_) {} };
 scrubBar.addEventListener('pointerdown', e => {
   if (!fp || !sim.active || sim.resetAt) return;
-  scrubbing = true; scrubBar.classList.add('drag'); scrubBar.setPointerCapture(e.pointerId); seekTo(scrubFrac(e)); e.preventDefault();
+  scrubbing = true; scrubBar.classList.add('drag'); try { scrubBar.setPointerCapture(e.pointerId); } catch (_) {} seekTo(scrubFrac(e)); e.preventDefault();
 });
 scrubBar.addEventListener('pointermove', e => { if (scrubbing && sim.active) seekTo(scrubFrac(e)); });
 scrubBar.addEventListener('pointerup', endScrub); scrubBar.addEventListener('pointercancel', endScrub); scrubBar.addEventListener('lostpointercapture', endScrub);

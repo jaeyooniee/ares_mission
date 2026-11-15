@@ -1,0 +1,173 @@
+{
+ "version": 1,
+ "meshW": 624,
+ "meshH": 625,
+ "nodata": 255,
+ "criteria": [
+  {
+   "key": "life",
+   "label": "Habitability: layered sulfate, hydrated silica, clay (lake deposits)",
+   "objectives": [
+    "LPS-4M"
+   ]
+  },
+  {
+   "key": "water",
+   "label": "Water & volatile record",
+   "objectives": [
+    "LPS-3LM",
+    "SE-3LM"
+   ]
+  },
+  {
+   "key": "geology",
+   "label": "Geology: pyroxene, olivine, hematite + exposed strata",
+   "objectives": [
+    "LPS-1LM",
+    "LPS-2LM"
+   ]
+  },
+  {
+   "key": "resource",
+   "label": "ISRU resource potential",
+   "objectives": [
+    "AS-3LM",
+    "MI-4M",
+    "OP-3LM"
+   ]
+  },
+  {
+   "key": "diversity",
+   "label": "Sample diversity: sulfate, silica, clay within 100 m",
+   "objectives": [
+    "SE-4LM",
+    "SE-5LM"
+   ]
+  }
+ ],
+ "presets": {
+  "balanced": {
+   "life": 1,
+   "water": 1,
+   "geology": 1,
+   "resource": 1,
+   "diversity": 1
+  },
+  "astrobiology": {
+   "life": 3,
+   "water": 2,
+   "geology": 1,
+   "resource": 0,
+   "diversity": 1
+  },
+  "resources": {
+   "life": 0,
+   "water": 2,
+   "geology": 0,
+   "resource": 3,
+   "diversity": 0
+  },
+  "geology": {
+   "life": 1,
+   "water": 1,
+   "geology": 3,
+   "resource": 0,
+   "diversity": 1
+  }
+ },
+ "defaultPreset": "balanced",
+ "overlay": {
+  "covers_m": [
+   9984.0,
+   9988.0
+  ],
+  "note": "same placement as minerals.png: covers_m from the area's north-west corner"
+ },
+ "reach": {
+  "mode": "walk",
+  "limit": 0.72,
+  "unit": "kg O2",
+  "o2_capacity_kg": 1.2,
+  "reserve_frac": 0.6,
+  "max_eva_h": 8.0,
+  "stop_min": 20,
+  "calibration": "route.json과 비교: 산소 ×1.000, 시간 ×1.000 (1에 가까우면 pipeline과 일치)"
+ },
+ "formula": "V = S x R; S = weighted mean of criterion scores (0-1); R = 1 - 0.5 * roundtrip_O2 / limit, 0 if over limit, blocked, protected or over max EVA time",
+ "sources": {
+  "dem": {
+   "file": "C:\\Users\\comac\\OneDrive - The University of Manchester\\Hyeonu Kim's files - NASA Space Apps Challenge\\Data\\EastMelas\\DEM\\CTX_DEM_12S290E_24mp_D18_034250_1676_D21_035450_1674.tif",
+   "coverage": 1.0
+  },
+  "crism": {
+   "files": [
+    "frt000136d3_07_sr164j_mtr3.img"
+   ],
+   "params": {
+    "life": [
+     "SINDEX2",
+     "BD2100_2",
+     "MIN2250",
+     "D2300"
+    ],
+    "water": [
+     "BD1900R2",
+     "SINDEX2",
+     "BD2100_2",
+     "MIN2250"
+    ],
+    "resource": [
+     "BD1900R2",
+     "SINDEX2",
+     "BD2100_2"
+    ],
+    "geology": [
+     "HCPINDEX2",
+     "OLINDEX3",
+     "LCPINDEX2",
+     "BD860_2"
+    ],
+    "_sulfate": [
+     "SINDEX2",
+     "BD2100_2"
+    ],
+    "_silica": [
+     "MIN2250"
+    ],
+    "_clay": [
+     "D2300",
+     "BD2290"
+    ]
+   },
+   "normalize": "robust z per observation",
+   "z_full": 8.0
+  },
+  "themis": {
+   "file": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Mars/Odyssey/THEMIS-Global-Thermal-Inertia-Mosaic/Quantitative-32-Bit/THEMIS_TI_Mosaic_Quant_30S240E_100mpp.cub",
+   "note": "100 m/px, broad trend only"
+  }
+ },
+ "notes": [
+  "Criterion scores are normalised within this area (2nd-98th percentile), so they rank sites relative to each other, not on an absolute scale.",
+  "Round-trip O2 uses the steepest local slope, so it is conservative.",
+  "THEMIS thermal inertia is 100 m/px and only reflects broad trends.",
+  "Novelty = distance from the rover traverse, not from sampled targets."
+ ],
+ "web": {
+  "bins": {
+   "science.bin": "Uint8 [criteria x meshH x meshW], 0-254 = score 0-1, 255 = no data, criteria in the order of \"criteria\"",
+   "reach.bin": "Uint8 [meshH x meshW], R x 254 (0 = cannot reach)"
+  },
+  "site_rule": "a site must score >= 0.6 (science.py high_score) in every picked objective; ranked by mean(picked scores) x R; sites >= 150 m apart",
+  "melas_mapping": {
+   "life": "SINDEX2, BD2100_2, MIN2250, D2300",
+   "water": "BD1900R2, SINDEX2, BD2100_2, MIN2250",
+   "resource": "BD1900R2, SINDEX2, BD2100_2",
+   "geology": "HCPINDEX2, OLINDEX3, LCPINDEX2, BD860_2",
+   "_sulfate": "SINDEX2, BD2100_2",
+   "_silica": "MIN2250",
+   "_clay": "D2300, BD2290",
+   "note": "proposed East Melas rows (the team table has Gale and Jezero only): habitability from layered sulfate, hydrated silica and clay; robust z per observation as in the team code; no rover traverse (no novelty)"
+  }
+ }
+}

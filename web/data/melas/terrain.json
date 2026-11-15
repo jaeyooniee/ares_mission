@@ -1,0 +1,157 @@
+{
+ "source": "CTX stereo DEM D18_034250_1676 / D21_035450_1674 (24 m) cropped to a 9.98 km square that the DEM covers completely, resampled to 4 m by the Python pipeline, then every 4th cell (16 m)",
+ "nx": 624,
+ "ny": 624,
+ "cell_m": 16.0,
+ "z_min": -3441.2,
+ "z_max": -2533.97,
+ "area_lonlat_W_S_E_N": [
+  -70.34652,
+  -13.34422,
+  -70.17348,
+  -13.17578
+ ],
+ "origin": "x east, y south, metres from the north-west corner of the area; row 0 = north",
+ "dropped_last_row": true,
+ "dropped_last_col": false,
+ "texture": {
+  "file": "texture_color.jpg",
+  "source": "no image in the data folder: shaded relief computed from the DEM (sun from the north-west), tinted to a Mars colour; shows shape only, not colour or albedo",
+  "covers_m": [
+   9984.0,
+   9988.0
+  ],
+  "px": [
+   2496,
+   2497
+  ]
+ },
+ "walk": {
+  "slope_limit_deg": 18.0,
+  "o2_capacity_kg": 1.2,
+  "body_kg": 75,
+  "suit_kg": 60,
+  "suit_speed_factor": 0.6
+ },
+ "rover": {
+  "slope_limit_deg": 28.0,
+  "speed_ms": 4.1667,
+  "wh_per_km": 250
+ },
+ "assumptions_kept_from_demo": {
+  "suit_battery_wh": 450,
+  "suit_base_w": 60,
+  "rover_battery_wh": 40000,
+  "rover_cabin_o2_kg": 4,
+  "crew": 2,
+  "o2_per_person_kg_h": 0.035
+ },
+ "minerals": {
+  "file": "minerals.png",
+  "covers_m": [
+   9984.0,
+   9988.0
+  ],
+  "source": "MRO CRISM MTRDR summary parameters: frt000136d3 (46.2% coverage), robust z per observation",
+  "classes": {
+   "poly_sulf": {
+    "label": "Polyhydrated sulfate",
+    "index": "SINDEX2",
+    "color": [
+     60,
+     200,
+     90
+    ],
+    "area_pct": 2.12
+   },
+   "mono_sulf": {
+    "label": "Monohydrated sulfate",
+    "index": "BD2100_2",
+    "color": [
+     70,
+     120,
+     240
+    ],
+    "area_pct": 0.84
+   },
+   "silica": {
+    "label": "Hydrated silica (opal)",
+    "index": "MIN2250",
+    "color": [
+     240,
+     240,
+     160
+    ],
+    "area_pct": 1.22
+   },
+   "clay": {
+    "label": "Fe/Mg clay (smectite)",
+    "index": "D2300",
+    "color": [
+     220,
+     60,
+     60
+    ],
+    "area_pct": 0.4
+   },
+   "hydrated": {
+    "label": "Hydrated minerals (H2O)",
+    "index": "BD1900R2",
+    "color": [
+     140,
+     230,
+     255
+    ],
+    "area_pct": 2.42
+   },
+   "hematite": {
+    "label": "Crystalline hematite",
+    "index": "BD860_2",
+    "color": [
+     255,
+     150,
+     30
+    ],
+    "area_pct": 0.0
+   },
+   "hcp": {
+    "label": "High-Ca pyroxene",
+    "index": "HCPINDEX2",
+    "color": [
+     255,
+     105,
+     180
+    ],
+    "area_pct": 1.13
+   },
+   "olivine": {
+    "label": "Olivine",
+    "index": "OLINDEX3",
+    "color": [
+     20,
+     170,
+     150
+    ],
+    "area_pct": 0.57
+   }
+  }
+ },
+ "destinations": [
+  {
+   "name": "PolySulf-1",
+   "kind": "poly_sulf",
+   "label": "Polyhydrated sulfate",
+   "index": "SINDEX2",
+   "peak_index": 0.0221,
+   "area_m2": 115920
+  },
+  {
+   "name": "Silica-1",
+   "kind": "silica",
+   "label": "Hydrated silica (opal)",
+   "index": "MIN2250",
+   "peak_index": 659.6667,
+   "area_m2": 40464
+  }
+ ]
+}
