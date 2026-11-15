@@ -397,6 +397,53 @@ function budget(path, h, soft, slope, cost, mode) {
   }
   return r;
 }
+// the same model as budget(), but along a list of world points {x, z} (used for the smoothed ABORT route)
+function budgetPts(pts, mode) {
+  const r = { dist: 0, time: 0, o2: 0, wh: 0, maxSlope: 0, blocked: 0, cumD: [0], cumT: [0], cumO: [0], cumE: [0], seg: [0], spd: [0] };
+  for (let n = 1; n < pts.length; n++) {
+    const a = pts[n - 1], b = pts[n], hz = Math.hypot(b.x - a.x, b.z - a.z);
+    if (hz < 1e-6) { r.cumD.push(r.dist); r.cumT.push(r.time); r.cumO.push(r.o2); r.cumE.push(r.wh); r.seg.push(0); r.spd.push(0); continue; }
+    const dz = heightRaw(b.x, b.z) - heightRaw(a.x, a.z), s = Math.atan2(dz, hz) * 180 / Math.PI, sg = Math.hypot(hz, dz);
+    let v, dt, o2, wh;
+    if (mode === 'suit') { v = walkSpeed(s); dt = sg / v; const M = pandolfW(v, 100 * dz / hz); o2 = M * dt * O2_PER_J; wh = (SUIT_BASE_W + 0.03 * M) * dt / 3600; }
+    else { v = ROVER_SPEED * Math.max(0.3, 1 - Math.abs(s) / 40); dt = sg / v; o2 = CREW * O2_PP_KGH * dt / 3600; wh = ROVER_WH_PER_KM / 1000 * sg * (1 + Math.max(s, 0) / 10); }
+    r.dist += sg; r.time += dt; r.o2 += o2; r.wh += wh; r.maxSlope = Math.max(r.maxSlope, Math.abs(s));
+    r.cumD.push(r.dist); r.cumT.push(r.time); r.cumO.push(r.o2); r.cumE.push(r.wh); r.seg.push(Math.max(Math.abs(s), slope[cellAt(b.x, b.z)] * 0.5)); r.spd.push(v);
+  }
+  return r;
+}
+// Smooth the ABORT route. A* moves in 45-degree steps on the 16 m grid, so first cut straight shortcuts where the terrain allows it
+// (line of sight), then round the corners with a moving average. Every point stays on a walkable cell (not blocked, not next to a blocked cell).
+function smoothReturn(cells, start) {
+  const walkable = (x, z) => {
+    const k = cellAt(x, z), i = Math.floor(k / N), j = k % N;
+    return isFinite(cost[k]) && (i < 1 || isFinite(cost[k - N])) && (i >= N - 1 || isFinite(cost[k + N])) && (j < 1 || isFinite(cost[k - 1])) && (j >= N - 1 || isFinite(cost[k + 1]));
+  };
+  const chordOk = (a, b) => {
+    const L = Math.hypot(b.x - a.x, b.z - a.z), m = Math.max(1, Math.ceil(L / (CELL * 0.5)));
+    for (let s = 1; s < m; s++) if (!walkable(a.x + (b.x - a.x) * s / m, a.z + (b.z - a.z) * s / m)) return false;
+    return true;
+  };
+  const pts = cells.map(k => ({ x: wx(k % N), z: wz(Math.floor(k / N)) }));
+  pts[0] = { x: start.x, z: start.z };                       // begin exactly where the crew stands
+  const keep = [pts[0]]; let i = 0;
+  while (i < pts.length - 1) { let j = pts.length - 1; while (j > i + 1 && !chordOk(pts[i], pts[j])) j--; keep.push(pts[j]); i = j; }
+  const dense = [keep[0]];                                    // a point about every 8 m along the shortcut line
+  for (let q = 1; q < keep.length; q++) {
+    const a = keep[q - 1], b = keep[q], L = Math.hypot(b.x - a.x, b.z - a.z), m = Math.max(1, Math.round(L / 8));
+    for (let s = 1; s <= m; s++) dense.push({ x: a.x + (b.x - a.x) * s / m, z: a.z + (b.z - a.z) * s / m });
+  }
+  const n = dense.length, out = dense.map(p => ({ x: p.x, z: p.z }));
+  for (let q = 1; q < n - 1; q++) {
+    for (const w0 of [8, 5, 3, 2, 1]) {                       // widest smoothing that still lands on a walkable cell
+      const w = Math.min(w0, q, n - 1 - q); if (w < 1) break;
+      let sx = 0, sz = 0; for (let d = -w; d <= w; d++) { sx += dense[q + d].x; sz += dense[q + d].z; }
+      const cx = sx / (2 * w + 1), cz = sz / (2 * w + 1);
+      if (walkable(cx, cz)) { out[q] = { x: cx, z: cz }; break; }
+    }
+  }
+  return out;
+}
 // ==== COMPUTE END
 
 // =================== shared state ===================
@@ -512,7 +559,15 @@ ring.rotation.x = -Math.PI / 2; crew.add(ring); crew.visible = false; crew.scale
 // =================== layers ===================
 const lerp3 = (c0, c1, t) => [c0[0] + (c1[0] - c0[0]) * t, c0[1] + (c1[1] - c0[1]) * t, c0[2] + (c1[2] - c0[2]) * t];
 function ramp(stops, t) { t = Math.min(1, Math.max(0, t)); for (let s = 1; s < stops.length; s++) if (t <= stops[s][0]) { const [t0, c0] = stops[s - 1], [t1, c1] = stops[s]; return lerp3(c0, c1, (t - t0) / (t1 - t0)); } return stops[stops.length - 1][1]; }
-const ELEV = [[0, [0.28, 0.12, 0.07]], [0.5, [0.62, 0.32, 0.18]], [1, [0.88, 0.66, 0.46]]];
+const ELEV = [[0, [0.12, 0.05, 0.04]], [0.3, [0.45, 0.21, 0.12]], [0.62, [0.74, 0.42, 0.24]], [1, [0.98, 0.84, 0.64]]];   // darker lows, brighter highs
+// the colour ramp is stretched between the 2nd and 98th percentile of the heights, and a soft hillshade (light from the north-west) shows the bumps
+let ELEV_RANGE = null;
+function elevRange() { if (!ELEV_RANGE) { const s = Float32Array.from(data.h).sort(); ELEV_RANGE = [s[Math.floor(N * N * 0.02)], s[Math.floor(N * N * 0.98)]]; } return ELEV_RANGE; }
+function elevShade(k) {
+  const i = Math.floor(k / N), j = k % N, jl = Math.max(j - 1, 0), jr = Math.min(j + 1, N - 1), iu = Math.max(i - 1, 0), id = Math.min(i + 1, N - 1);
+  const dzdx = (data.h[idx(i, jr)] - data.h[idx(i, jl)]) / ((jr - jl) * CELL), dzdy = (data.h[idx(id, j)] - data.h[idx(iu, j)]) / ((id - iu) * CELL);
+  return Math.max(0.6, Math.min(1.25, 0.92 + 0.77 * (dzdx + dzdy)));      // slopes facing north-west are lit, the others shaded
+}
 const SLOPE = [[0, [0.18, 0.62, 0.3]], [0.45, [0.95, 0.85, 0.2]], [0.75, [0.97, 0.5, 0.12]], [1, [0.85, 0.12, 0.1]]];
 const css = st => 'linear-gradient(90deg,' + st.map(([t, c]) => `rgb(${c.map(v => v * 255 | 0)}) ${t * 100}%`).join(',') + ')';
 function paint(force) {
@@ -525,9 +580,12 @@ function paint(force) {
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
     document.getElementById('lg0').textContent = 'HiRISE colour mosaic'; document.getElementById('lg1').textContent = 'USGS · processed colour'; return;
   }
-  for (let k = 0; k < N * N; k++) colors.set(L === 'elev' ? ramp(ELEV, (data.h[k] - hMin) / (hMax - hMin)) : ramp(SLOPE, slope[k] / P.limit), k * 3);
-  geo.attributes.color.needsUpdate = true; terrain.material = matVC; wire.visible = true;
-  const lg = { elev: [ELEV, `${(hMin + mean).toFixed(0)} m`, `${(hMax + mean).toFixed(0)} m`], slope: [SLOPE, '0°', `${P.limit}°+ (blocked)`] }[L];
+  for (let k = 0; k < N * N; k++) {
+    if (L === 'elev') { const [lo, hi] = elevRange(), c = ramp(ELEV, (data.h[k] - lo) / (hi - lo)), sh = elevShade(k); colors.set([Math.min(1, c[0] * sh), Math.min(1, c[1] * sh), Math.min(1, c[2] * sh)], k * 3); }
+    else colors.set(ramp(SLOPE, slope[k] / P.limit), k * 3);
+  }
+  geo.attributes.color.needsUpdate = true; terrain.material = matVC; wire.visible = L !== 'elev';   // the cyan grid overlay tinted the dark parts of the elevation layer teal
+  const lg = { elev: [ELEV, `${(elevRange()[0] + mean).toFixed(0)} m`, `${(elevRange()[1] + mean).toFixed(0)} m`], slope: [SLOPE, '0°', `${P.limit}°+ (blocked)`] }[L];
   lgEl.style.background = css(lg[0]);
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
@@ -614,13 +672,16 @@ function resetSim() {
   crew.visible = false; set('previewBtn', '▶ Preview traverse'); set('trkP', '0%'); set('trkS', 'At habitat');
 }
 function stateAt(P, t) {               // position + cumulative values at sim time t
-  const T = P.b.cumT; let n = 1; while (n < T.length - 1 && T[n] < t) n++;
+  const T = P.b.cumT;
+  if (T.length < 2) return { n: 1, f: 0, p: P.pts[0].clone(), d: 0, o2: 0, wh: 0, spd: 0, dwelling: false };   // a one-point route has no length (this used to give NaN)
+  let n = 1; while (n < T.length - 1 && T[n] < t) n++;
   const f = Math.min(1, Math.max(0, (t - T[n - 1]) / (T[n] - T[n - 1] || 1)));
   const L = arr => arr[n - 1] + (arr[n] - arr[n - 1]) * f;
   return { n, f, p: P.pts[n - 1].clone().lerp(P.pts[n] || P.pts[n - 1], f), d: L(P.b.cumD), o2: L(P.b.cumO), wh: L(P.b.cumE), spd: P.b.spd[n] || 0, dwelling: P.dwell && P.dwell.has(n) && f < 1 };
 }
 function pointAtDist(P, d) {
-  const cd = P.b.cumD; let n = 1; while (n < cd.length - 1 && cd[n] < d) n++;
+  const cd = P.b.cumD; if (cd.length < 2) return P.pts[0].clone();
+  let n = 1; while (n < cd.length - 1 && cd[n] < d) n++;
   const t = Math.min(1, Math.max(0, (d - cd[n - 1]) / (cd[n] - cd[n - 1] || 1)));
   return P.pts[n - 1].clone().lerp(P.pts[n] || P.pts[n - 1], t);
 }
@@ -675,6 +736,7 @@ const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('
 const panels = ['left', 'right', 'frameLbl'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
+  setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
   paint('img'); optTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
@@ -686,7 +748,7 @@ document.getElementById('evaBtn').onclick = () => {
 };
 function exitFP() {
   setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
-  if (arLine) arLine.visible = false; wire.visible = layer === 'elev' || layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
+  if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
@@ -695,16 +757,25 @@ document.getElementById('exitBtn').onclick = exitFP;
 document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
 document.getElementById('sepBtn').onclick = () => { sim.sep = true; document.getElementById('sep').style.display = 'block';
   set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)'; };
+// (re)build the 3D route line the helmet shows: green for the planned route, amber for the ABORT route
+function setArLine(P, colour) {
+  if (arLine) { scene.remove(arLine); arLine.geometry.dispose(); }
+  arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(P.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: colour }));
+  arLine.visible = fp; scene.add(arLine);
+}
 document.getElementById('abortBtn').onclick = () => {
   if (!sim.active || sim.aborted) return;
   const st = stateAt(sim.active, sim.t), k = cellAt(st.p.x, st.p.z), here = [Math.floor(k / N), k % N];
   const path = astar(cost, here, HAB); if (!path) { toast('No safe return route found!'); return; }
+  // inside the habitat's own grid cell the way home is a single point: nothing to walk, so do not start an ABORT
+  // (this used to give NaN values and an instant "abort complete" with no way to continue)
+  if (path.length < 2) { toast('You are already at the habitat: nothing to abort'); return; }
   sim.base = totals(st); sim.t = 0; sim.aborted = true; sim.lastStop = 0;
-  const P = { path, stopIdx: [0, path.length - 1], dwell: new Set(), stops: [null, 0], b: budget(path, data.h, data.soft, slope, cost, mode, params[mode].limit) };
-  P.pts = toPts(path); sim.active = P;
-  if (arLine) { scene.remove(arLine); arLine.geometry.dispose(); }
-  arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(P.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: 0xffb347 }));
-  scene.add(arLine); toast(`ABORT: re-routed to habitat · ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}`);
+  const smooth = smoothReturn(path, st.p);                              // straight shortcuts + rounded corners, starting exactly where the crew stands
+  const P = { path, stopIdx: [0, smooth.length - 1], dwell: new Set(), stops: [null, 0], b: budgetPts(smooth, mode) };
+  P.pts = smooth.map(q => new THREE.Vector3(q.x, heightRaw(q.x, q.z) + 2.5, q.z));
+  sim.active = P; setArLine(P, 0xffb347);
+  toast(`ABORT: re-routed to habitat · ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}`);
 };
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = 'none', 3500); }
 
@@ -769,8 +840,9 @@ function drawMinimap(p, hdg) {
   mctx.translate(W / 2, W / 2); mctx.rotate(-hdg * Math.PI / 180);
   const s = W / 70, ci = (p.z + SIZE / 2) / CELL, cj = (p.x + SIZE / 2) / CELL; mctx.scale(s, s); mctx.translate(-cj, -ci);
   mctx.globalAlpha = 0.9; mctx.drawImage(mmBase, 0, 0); mctx.globalAlpha = 1;
-  const path = sim.active.path; mctx.strokeStyle = sim.aborted ? '#ffb347' : '#5dff9d'; mctx.lineWidth = 0.8; mctx.beginPath();
-  path.forEach((k, n) => { const x = k % N, y = Math.floor(k / N); n ? mctx.lineTo(x, y) : mctx.moveTo(x, y); }); mctx.stroke();
+  // draw the real route points (not the grid cells they fall in), so the minimap line is as smooth as the route itself
+  mctx.strokeStyle = sim.aborted ? '#ffb347' : '#5dff9d'; mctx.lineWidth = 0.8; mctx.beginPath();
+  sim.active.pts.forEach((q, n) => { const x = (q.x + SIZE / 2) / CELL, y = (q.z + SIZE / 2) / CELL; n ? mctx.lineTo(x, y) : mctx.moveTo(x, y); }); mctx.stroke();
   mctx.fillStyle = '#37e0ff'; for (const w of WPS) { mctx.beginPath(); mctx.arc(w.cell[1], w.cell[0], 1.6, 0, 7); mctx.fill(); }
   mctx.restore();
   mctx.fillStyle = '#fff'; mctx.beginPath(); mctx.moveTo(W / 2, W / 2 - 10); mctx.lineTo(W / 2 + 7, W / 2 + 7); mctx.lineTo(W / 2 - 7, W / 2 + 7); mctx.fill();
