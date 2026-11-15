@@ -214,7 +214,7 @@
   .hbox{position:absolute;background:rgba(0,30,40,.14);border:1px solid rgba(120,240,255,.42);border-radius:10px;padding:9px 13px;font-size:12.5px;line-height:1.55}
   .hbox .lbl{font-size:10px;letter-spacing:.16em;opacity:.8}
   .hbox .big{font-size:21px}
-  #hLeft{position:absolute;left:9%;top:15%;width:230px;display:flex;flex-direction:column;gap:10px}
+  #hLeft{position:absolute;left:9%;top:15%;width:230px;display:flex;flex-direction:column;gap:10px;transform-origin:0 0}   /* fitHud() scales it down on short screens */
   #hLeft .hbox{position:static}
   .hbox .big small{font-size:13px;opacity:.75;margin-left:8px}   /* remaining % beside the time left */
   .hbar{width:100%;height:7px;border:1px solid rgba(120,240,255,.6);border-radius:4px;margin:3px 0 7px;overflow:hidden}
@@ -257,7 +257,6 @@
   /* EVA timeline: like a video's seek bar. Click or drag anywhere between the start and the end of the route; stops are marked on it */
   #scrub{flex:1 0 100%;display:flex;align-items:center;gap:12px;pointer-events:auto;padding:0 2px;margin-bottom:2px;
     background:linear-gradient(to top,rgba(0,0,0,.45),transparent);border-radius:8px}
-  #scrubT{font:12px/1 "SF Mono",Menlo,Consolas,monospace;color:#d6f6ff;white-space:nowrap;min-width:96px;text-align:right;text-shadow:0 0 6px rgba(0,0,0,.9)}
   #scrubBar{position:relative;flex:1;height:26px;cursor:pointer;touch-action:none;outline:none}
   #scrubBar::before,#scrubFill{content:"";position:absolute;left:0;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;pointer-events:none;transition:height .12s,margin-top .12s}
   #scrubBar::before{right:0;background:rgba(255,255,255,.3)}
@@ -267,11 +266,7 @@
     box-shadow:0 0 0 2px rgba(55,224,255,.75),0 0 8px rgba(0,0,0,.6);transform:scale(.55);transition:transform .12s;pointer-events:none}
   #scrubBar:hover #scrubThumb,#scrubBar.drag #scrubThumb,#scrubBar:focus-visible #scrubThumb{transform:scale(1)}
   .scrubTick{position:absolute;top:50%;width:3px;height:12px;margin:-6px 0 0 -1.5px;background:#ffc95a;border-radius:2px;pointer-events:none}
-  .scrubLbl{position:absolute;bottom:24px;transform:translateX(-50%);font-size:10px;letter-spacing:.06em;color:#ffd98a;white-space:nowrap;pointer-events:none;text-shadow:0 0 5px #000}
-  #scrubTip{position:absolute;bottom:36px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.8);color:#fff;
-    font:11px "SF Mono",Menlo,Consolas,monospace;white-space:nowrap;pointer-events:none;display:none}
-  #scrubBar:hover #scrubTip{display:block}
-  #toast{position:fixed;top:84px;z-index:30;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
+  .scrubLbl{position:absolute;bottom:24px;transform:translateX(-50%);font-size:10px;letter-spacing:.06em;color:#ffd98a;white-space:nowrap;pointer-events:none;text-shadow:0 0 5px #000}  #toast{position:fixed;top:84px;z-index:30;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
   ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(120,230,255,.25);border-radius:3px}
 
   /* ---------- data credit + display-scale note (kept from the Gale build) ---------- */
@@ -668,9 +663,9 @@
   </div>
 </div>
 <div id="hudCtl">
-  <div id="scrub"><span id="scrubT">0:00 / 0:00</span>
+  <div id="scrub">
     <div id="scrubBar" role="slider" tabindex="0" aria-label="EVA timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Click or drag to jump to any point of the route">
-      <div id="scrubFill"></div><div id="scrubTicks"></div><div id="scrubThumb"></div><div id="scrubTip"></div></div></div>
+      <div id="scrubFill"></div><div id="scrubTicks"></div><div id="scrubThumb"></div></div></div>
   <button id="goBtn" class="start">▶ Start EVA</button>
   <button id="speedBtn">Sim speed ×15</button>
   <button id="lookBtn">🖱 Mouse look: ON</button>
@@ -2064,6 +2059,7 @@ document.getElementById('evaBtn').onclick = () => {
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
   fpStartState(); document.getElementById('arrive').style.display = 'none'; sim.arriveUntil = 0;
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
+  fitHud();
 };
 // the first-person start state: at the habitat, looking along the planned route, fresh consumables, no SEP alert, paused until ▶ Start
 // (used when entering the view and again after every return to the habitat, normal or ABORT)
@@ -2108,11 +2104,9 @@ document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.in
 // Everything the HUD shows (position, O2 / battery, stops reached, weather hour) is computed from sim.t, so a jump only has to set
 // the time and reset the few things that remember a past moment (stops reached, failed state, rover heading, return estimate).
 const scrubBar = document.getElementById('scrubBar'), scrubFill = document.getElementById('scrubFill'), scrubThumb = document.getElementById('scrubThumb'),
-  scrubTicks = document.getElementById('scrubTicks'), scrubTip = document.getElementById('scrubTip'), scrubT = document.getElementById('scrubT');
+  scrubTicks = document.getElementById('scrubTicks');
 let scrubFor = null;                                                    // the route the stop marks were drawn for
-const fmtHMS = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
-  return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };
-function updateScrub(P) {                                               // every frame: bar, thumb, clock
+function updateScrub(P) {                                               // every frame: bar and thumb (no clock: the bar shows progress only)
   if (scrubFor !== P) {                                                 // new route (start, ABORT): redraw the stop marks
     scrubFor = P; scrubTicks.innerHTML = '';
     P.stopIdx.forEach((si, k) => {
@@ -2124,8 +2118,7 @@ function updateScrub(P) {                                               // every
   }
   const f = P.b.time > 0 ? Math.min(1, sim.t / P.b.time) : 0;
   scrubFill.style.width = scrubThumb.style.left = `${(f * 100).toFixed(2)}%`;
-  scrubT.textContent = `${fmtHMS(sim.t)} / ${fmtHMS(P.b.time)}`;
-  scrubBar.setAttribute('aria-valuenow', Math.round(f * 100)); scrubBar.setAttribute('aria-valuetext', `${fmtHMS(sim.t)} of ${fmtHMS(P.b.time)}`);
+  scrubBar.setAttribute('aria-valuenow', Math.round(f * 100));
 }
 function seekTo(frac) {                                                 // jump to a point of the route (0 = leaving the habitat, 1 = back inside)
   const P = sim.active; if (!fp || !P || sim.resetAt) return;
@@ -2143,12 +2136,19 @@ scrubBar.addEventListener('pointerdown', e => {
   if (!fp || !sim.active || sim.resetAt) return;
   scrubbing = true; scrubBar.classList.add('drag'); scrubBar.setPointerCapture(e.pointerId); seekTo(scrubFrac(e)); e.preventDefault();
 });
-scrubBar.addEventListener('pointermove', e => {
-  const P = sim.active; if (!P) return; const f = scrubFrac(e);
-  scrubTip.style.left = `${f * 100}%`; scrubTip.textContent = fmtHMS(f * P.b.time);      // hover: the time under the cursor
-  if (scrubbing) seekTo(f);
-});
+scrubBar.addEventListener('pointermove', e => { if (scrubbing && sim.active) seekTo(scrubFrac(e)); });
 scrubBar.addEventListener('pointerup', endScrub); scrubBar.addEventListener('pointercancel', endScrub); scrubBar.addEventListener('lostpointercapture', endScrub);
+// Short screens (e.g. a laptop at 125–150 % display scaling leaves ~650 px of page height): the left HUD column
+// (consumables, next waypoint, weather, space weather) would run down into the timeline and buttons. It is scaled down
+// just enough to end above them; on a tall screen it stays at full size.
+let fitClock = 0;
+function fitHud() {
+  if (!fp) return;
+  const hl = document.getElementById('hLeft'), avail = hudCtl.getBoundingClientRect().top - 14 - hl.offsetTop, natural = hl.offsetHeight;
+  const k = natural > 0 ? Math.max(0.6, Math.min(1, avail / natural)) : 1;
+  hl.style.transform = k < 0.999 ? `scale(${k.toFixed(3)})` : '';
+}
+addEventListener('resize', fitHud);
 scrubBar.addEventListener('keydown', e => {                             // keyboard: ← → 5 %, Home / End
   const P = sim.active; if (!P || !(P.b.time > 0)) return; const f = sim.t / P.b.time;
   const to = e.key === 'ArrowLeft' ? f - 0.05 : e.key === 'ArrowRight' ? f + 0.05 : e.key === 'Home' ? 0 : e.key === 'End' ? 1 : null;
@@ -2457,6 +2457,7 @@ function updateFP(dt) {
   set('hTime', fmtClock(tot.t)); updateScrub(P);
   // return-to-habitat safety factor (live re-plan)
   const now = performance.now();
+  if (now - fitClock > 400) { fitClock = now; fitHud(); }             // the column's height changes (weather box, warnings): re-fit a few times a second
   if (now - sim.retClock > (N > 500 ? 1500 : 700)) { sim.retClock = now; updateReturn(p); }
   if (sim.ret) {
     const needO2 = sim.ret.o2, needWh = sim.ret.wh;
