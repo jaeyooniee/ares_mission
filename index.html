@@ -380,6 +380,31 @@
   .mcard .btn.del{border-color:rgba(255,90,77,.6);color:#ffd0cc}
   #schedMenu{min-width:300px;max-height:60vh;overflow-y:auto}
   #schedMenu .empty{font-size:12px;color:var(--dim);padding:8px 10px}
+
+/* ================= helmet HUD (HELMET_HUD_UI.md) ================= */
+#hud .hbox{pointer-events:auto;cursor:pointer}
+#hud .det{display:none}
+#hud.details .det,#hud .hbox.open .det{display:revert}
+#hHRic{display:inline-block;animation:hbeat var(--beat,1s) infinite}
+@keyframes hbeat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}}
+#hHR{font-weight:600}
+#hHR.warn{color:#ffb347} #hHR.alarm{color:#ff5a4d}
+#hud #breath{position:absolute;left:0;right:0;bottom:0;height:42%;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 100%,rgba(225,242,248,.95),rgba(225,242,248,.35) 55%,rgba(225,242,248,0) 80%)}
+#hud.rover #breath{display:none}
+#hud .visor{background:linear-gradient(180deg,rgba(255,200,120,.13),rgba(255,200,120,0) 22%)}
+#hud.rover .visor{background:none}
+#hud .glare{background:linear-gradient(115deg,rgba(255,255,255,0) 14%,rgba(255,255,255,.10) 15%,rgba(255,255,255,0) 17%),linear-gradient(115deg,rgba(255,255,255,0) 52%,rgba(255,255,255,.06) 53%,rgba(255,255,255,0) 55%),linear-gradient(160deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,0) 30%)}
+.wxt{font-size:11px;border-collapse:collapse;margin-top:4px} .wxt td{padding:1px 10px 1px 0} .wxt td:first-child{opacity:.7}
+#hudCtl #setPanel{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);flex-direction:column;gap:6px;width:260px;
+  padding:10px;border:1px solid rgba(120,240,255,.5);border-radius:10px;background:rgba(0,22,30,.94)}
+#hudCtl #setPanel.open{display:flex}
+#hudCtl #setPanel .sh{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:rgba(190,240,255,.7);margin-top:2px}
+#hudCtl #setPanel button{width:100%;text-align:left}
+#hudCtl button:disabled{opacity:.4;cursor:not-allowed}
+#hudCtl button.demoOn{border-color:#ffd166 !important;box-shadow:0 0 10px rgba(255,209,102,.55)}
+#sciNote{display:none}
+#brandLogo{cursor:pointer}
 </style>
 <script type="importmap">
 { "imports": {
@@ -412,7 +437,7 @@
   <div id="introSkip">click or press any key to skip</div>
 </div>
 <script src="web/js/intro-globe.js?v=20261115d"></script>
-<script src="web/js/intro.js?v=20261115d"></script>
+<script src="web/js/intro.js?v=20261115e"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -441,7 +466,7 @@
     <button class="navbtn">PLAN<span class="car">▼</span></button>
     <div class="sub">
       <button class="mi" data-sec="science"><span class="stp">1</span>Science Objectives<small>Pick objectives: the best sites become the stops</small></button>
-      <button class="mi" id="navPlan"><span class="stp">2</span>Weather &amp; departure<small>Best departure hours, flight rules, mission options</small></button>
+      <button class="mi" id="navPlan"><span class="stp">2</span>Schedule Mission<small>Best departure hours, flight rules, mission options</small></button>
       <button class="mi" data-sec="mission"><span class="stp">3</span>EVA stops<small>Habitat → sites → habitat</small></button>
       <button class="mi" data-sec="track"><span class="stp">4</span>Preview &amp; EVA<small>Watch the traverse, then start the first-person EVA</small></button>
     </div>
@@ -704,23 +729,23 @@
 
 <!-- ================= HUD ================= -->
 <div id="hud" class="helmet">
-  <div class="visor"></div><div class="glare"></div><div class="pillarL"></div><div class="pillarR"></div>
+  <div class="visor"></div><div class="glare"></div><div class="pillarL"></div><div class="pillarR"></div><div id="breath"></div>
   <canvas id="compass"></canvas>
   <div id="cross"></div>
   <div id="lookInd"></div>
   <div id="lookHint">🖱 Move the mouse to look around · M toggles mouse look · C re-centres</div>
   <div id="hLeft">   <!-- left column: consumables on top, next waypoint under them -->
   <div class="hbox" id="hL">
-    <div class="lbl" id="hL1">O₂ RESERVE</div><div class="big"><span id="hO2">–</span><small id="hO2p">100%</small></div><div class="hbar"><i id="hO2bar" style="width:100%"></i></div>
-    <div class="lbl" id="hL2">SUIT BATTERY</div><div class="big"><span id="hBat">–</span><small id="hBatp">100%</small></div><div class="hbar"><i id="hBatbar" style="width:100%"></i></div>
+    <div class="lbl" id="hL1">O₂ RESERVE</div><div class="big"><span id="hO2">–</span><small id="hO2p" class="det">100%</small></div><div class="hbar"><i id="hO2bar" style="width:100%"></i></div>
+    <div class="lbl" id="hL2">SUIT BATTERY</div><div class="big"><span id="hBat">–</span><small id="hBatp" class="det">100%</small></div><div class="hbar"><i id="hBatbar" style="width:100%"></i></div>
     <div class="lbl">EVA ELAPSED</div><div id="hTime">00:00</div>
+    <div class="lbl" style="margin-top:4px">HEART RATE</div><div id="hHR"><span id="hHRic">♥</span> <span id="hHRv">72</span> bpm</div>
   </div>
   <div class="hbox" id="hR">
     <div class="lbl">NEXT WAYPOINT</div><div class="big" id="hWp">–</div>
-    <div class="lbl" style="margin-top:4px">DISTANCE</div><div id="hDist">–</div>
-    <div class="lbl" style="margin-top:4px">GRADE AHEAD</div><div id="hGrade">–</div>
+    <div class="lbl" style="margin-top:4px">SLOPE AHEAD</div><div id="hGrade">–</div>
   </div>
-  <div class="hbox" id="wxHud" style="display:none"><div class="lbl">MARS WEATHER · EMARS</div><div id="wxHudTxt">–</div></div>
+  <div class="hbox" id="wxHud" style="display:none"><div class="lbl">MARS WEATHER · EMARS <span id="wxHudT" style="float:right"></span></div><div id="wxHudTxt">–</div><div class="det" id="wxHudDet"></div></div>
   <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px" id="swxSrc">(sample data)</div></div>
   </div>
   <canvas id="arrow" width="128" height="128"></canvas>
@@ -743,14 +768,20 @@
     <div id="scrubBar" role="slider" tabindex="0" aria-label="EVA timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Click or drag to jump to any point of the route">
       <div id="scrubFill"></div><div id="scrubTicks"></div><div id="scrubThumb"></div></div></div>
   <button id="goBtn" class="start">▶ Start EVA</button>
-  <button id="speedBtn">Sim speed ×15</button>
-  <button id="lookBtn">🖱 Mouse look: ON</button>
+  <button id="speedBtn">Speed ×1</button>
+  <button id="setBtn">Settings ⚙</button>
+  <button id="abortBtn" class="danger" title="Return to habitat">Abort EVA</button>
   <button id="dashBtn">⬇ Look at monitor (V)</button>
-  <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
-  <button id="sepBtn">☢ Inject SEP alert</button>
-  <button id="dustBtn">🌪 Inject dust storm</button>
-  <button id="leakBtn" class="danger">💨 Inject suit leak</button>
-  <button id="exitBtn">■ Back to map</button>
+  <button id="exitBtn">Back to map</button>
+  <div id="setPanel">
+    <div class="sh">Settings</div>
+    <button id="lookBtn">🖱 Mouse look: ON</button>
+    <button id="hudDetBtn">☰ HUD details: OFF</button>
+    <div class="sh">Demo controls</div>
+    <button id="sepBtn">☢ Inject SEP alert</button>
+    <button id="leakBtn" class="danger">💨 Inject suit leak</button>
+    <button id="dustBtn">🌪 Inject dust storm</button>
+  </div>
 </div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · radiation: NASA/JPL-Caltech/SwRI (Curiosity RAD, PDS) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
@@ -2274,7 +2305,7 @@ const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the butto
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit', 'confirmBtn', 'confirmWhy'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
-  if (!plan) return; setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; controls.enabled = false; crew.visible = false;
+  if (!plan) return; setVex(1); speedUp = 1; set('speedBtn', 'Speed ×1'); fp = true; controls.enabled = false; crew.visible = false;
   cmGroup.visible = false; if (cmPath) cmPath.visible = false; cmHide();   // map-only reference layers (CheMin pins, Curiosity traverse)
   if (mouseLook.on) flashLookHint();
   paint('img'); optTube.visible = retTube.visible = strTube.visible = false; wire.visible = false; minMesh.visible = false; sciSync();
@@ -2331,7 +2362,7 @@ function exitFP() {
   wxRender();                       // restore the weather haze / sunlight of the map view
 }
 document.getElementById('exitBtn').onclick = exitFP;
-document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
+document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Speed ×${speedUp}`; };
 
 // =================== EVA timeline (seek bar) ===================
 // Everything the HUD shows (position, O2 / battery, stops reached, weather hour) is computed from sim.t, so a jump only has to set
@@ -2395,13 +2426,19 @@ scrubBar.addEventListener('keydown', e => {                             // keybo
 });
 // SEP button: the real RAD replay; with no radiation data (a custom site) the plain alert banner as before
 document.getElementById('sepBtn').onclick = () => {
+  if (sepInj) return clearSEP();                                   // the button toggles: a second press clears the alert
+  if (sim.sep) { sim.sep = false; document.getElementById('sep').style.display = 'none'; set('swxTxt', '☢ No SEP alert · dose rate nominal'); document.getElementById('swx').style.borderColor = ''; return; }
   if (RAD && SEPP) return triggerSEP();
   sim.sep = true; document.getElementById('sep').style.display = 'block';
   set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)';
 };
 // contingency scenario: suit O2 leak (on foot) / power fault (rover): an extra constant loss that alone would empty the reserve in LEAK_DRAIN_MIN
 document.getElementById('leakBtn').onclick = () => {
-  if (!fp || !sim.active || sim.leak || sim.out) return;
+  if (sim.leak) {                                                  // "Seal": the loss so far stays lost, the leak stops here
+    const acc = leakExtra(); sim.base.o2 += acc.o2; sim.base.wh += acc.wh; sim.leak = null; sim.retClock = 0;
+    document.getElementById('leak').style.display = 'none'; toast('Leak sealed: the O₂ already lost stays lost'); return;
+  }
+  if (!fp || !sim.active || sim.out) return;
   const st = stateAt(sim.active, sim.t), res = mode === 'suit' ? 'o2' : 'wh';
   const left = supply()[res] - totals(st)[res];
   sim.leak = { res, rate: Math.max(0, left) / (LEAK_DRAIN_MIN * 60), t0: sim.t };
@@ -2572,8 +2609,8 @@ function applyMouseLook(dt) {          // rotate the view around the body (walki
   const P = Math.max(-1.3, Math.min(1.3, Math.asin(Math.max(-1, Math.min(1, _dir.y))) + mouseLook.pitch * Math.PI / 180));
   camera.lookAt(camera.position.x + Math.cos(P) * Math.sin(A) * 50, camera.position.y + Math.sin(P) * 50, camera.position.z + Math.cos(P) * Math.cos(A) * 50);
   const y = Math.round(mouseLook.yaw), pt = Math.round(mouseLook.pitch);
-  document.getElementById('lookInd').textContent = (Math.abs(y) > 3 || Math.abs(pt) > 3)
-    ? `HEAD ${Math.abs(y)}° ${y > 0 ? 'R' : 'L'} · ${Math.abs(pt)}° ${pt > 0 ? 'UP' : 'DOWN'}` : 'HEAD CENTRED';
+  const showHead = hudDet || Math.abs(y) > 25 || Math.abs(pt) > 15;   // shown only when the head is well turned (or HUD details is on)
+  document.getElementById('lookInd').textContent = showHead ? `HEAD ${Math.abs(y)}° ${y > 0 ? 'R' : 'L'} · ${Math.abs(pt)}° ${pt > 0 ? 'UP' : 'DOWN'}` : '';
 }
 
 // =================== HUD widgets ===================
@@ -2760,6 +2797,26 @@ function roverWant(P, st) {                 // direction of the route just ahead
   const a = pointAtDist(P, dA), dx = a.x - st.p.x, dz = a.z - st.p.z;
   return dx * dx + dz * dz > 0.25 ? Math.atan2(dx, dz) : null;
 }
+// ================= helmet HUD controls (HELMET_HUD_UI.md) =================
+let hudDet = false;                                      // HUD details: every card expanded, weather card and head direction always shown
+const hrState = { v: 72 };                               // simulated heart rate (bpm), eased towards its target every frame
+const setText = (el, t) => { if (el && el.textContent !== t) el.textContent = t; };
+function demoButtons() {                                 // gold border while a demo event is on; the labels follow the state
+  const sepB = document.getElementById('sepBtn'), leakB = document.getElementById('leakBtn'), dustB = document.getElementById('dustBtn');
+  const sepOn = !!(sepInj || sim.sep), leakOn = !!sim.leak, dustOn = !!stormInj;
+  setText(sepB, sepOn ? '✕ Clear SEP alert' : '☢ Inject SEP alert');
+  setText(leakB, leakOn ? (mode === 'suit' ? '💨 Seal suit leak' : '⚡ Clear power fault') : (mode === 'suit' ? '💨 Inject suit leak' : '⚡ Inject power fault'));
+  setText(dustB, dustOn ? '✕ Clear dust storm' : '🌪 Inject dust storm');
+  sepB.classList.toggle('demoOn', sepOn); leakB.classList.toggle('demoOn', leakOn); dustB.classList.toggle('demoOn', dustOn);
+  document.getElementById('abortBtn').disabled = !(sim.running || sim.t > 0 || sim.aborted);   // Abort is live once the EVA has started
+  document.getElementById('wxHud').style.display = (wxOn() || hudDet) ? '' : 'none';
+}
+document.getElementById('setBtn').onclick = () => document.getElementById('setPanel').classList.toggle('open');
+document.getElementById('hudDetBtn').onclick = () => {
+  hudDet = !hudDet; document.getElementById('hud').classList.toggle('details', hudDet); set('hudDetBtn', `☰ HUD details: ${hudDet ? 'ON' : 'OFF'}`);
+};
+document.querySelectorAll('#hud .hbox').forEach(b => b.addEventListener('click', () => b.classList.toggle('open')));   // a card opens its details
+document.getElementById('brandLogo').onclick = () => { location.href = location.pathname + '?select=1'; };   // the team logo: back to the landing-site choice
 function updateFP(dt) {
   let turning = false;
   if (mode === 'rover' && sim.active) {     // decide before moving: hold position while the rover turns towards the line
@@ -2818,11 +2875,29 @@ function updateFP(dt) {
   } else { sim.sf = 0; }
   // waypoint / instruction
   const w = P.stops[ns] != null ? WPS[P.stops[ns]] : WPS[0];
-  set('hWp', w.id === 'H' ? 'HABITAT' : `${w.short}`);
-  const remain = Math.max(0, P.b.cumD[P.stopIdx[ns]] - st.d);
-  set('hDist', remain >= 1000 ? `${(remain / 1000).toFixed(2)} km` : `${remain.toFixed(0)} m`);
+  const remain = Math.max(0, P.b.cumD[P.stopIdx[ns]] - st.d), dstr = remain >= 1000 ? `${(remain / 1000).toFixed(2)} km` : `${remain.toFixed(0)} m`;
+  set('hWp', w.id === 'H' ? `HABITAT · ${dstr}` : `${w.short} · ${dstr}`);
   let gmax = 0, gat = 0; for (let n = st.n; n < P.b.seg.length && P.b.cumD[n] - st.d < 80; n++) if (P.b.seg[n] > gmax) { gmax = P.b.seg[n]; gat = Math.max(0, P.b.cumD[n] - st.d); }
   const ge = document.getElementById('hGrade'); ge.textContent = `${gmax.toFixed(0)}° in ${gat.toFixed(0)} m`; ge.style.color = gmax > M.limit * 0.7 ? 'var(--amber)' : '';
+  demoButtons();
+  // simulated heart rate (HELMET_HUD_UI.md §3.3): resting, walking (+ slope), science stop, rover, alarms, depleted, abort
+  {
+    const moving = !!sim.running && !st.dwelling && sim.t < P.b.time;
+    let hrT = mode === 'suit' ? (moving ? 72 + 26 + Math.min(45, gmax * 2.4) : st.dwelling ? 84 : 72) : (moving ? 85 : 74);
+    if (sim.leak || sepInj || sim.sep || (sim.sf > 0 && sim.sf < SF_GO)) hrT += 14;
+    if (sim.out) hrT += 30;
+    if (sim.aborted && moving) hrT += 6;
+    hrState.v += (hrT - hrState.v) * Math.min(1, dt * 1.5);
+    const v = Math.round(hrState.v), hh = document.getElementById('hHR');
+    setText(document.getElementById('hHRv'), String(v));
+    hh.style.setProperty('--beat', (60 / Math.max(40, v)).toFixed(2) + 's');
+    hh.classList.toggle('alarm', v >= 160); hh.classList.toggle('warn', v >= 140 && v < 160);
+  }
+  {                                                       // breathing fog on the visor: period 4 s at rest, down to 2.2 s; strength up to 0.32 with heart rate
+    const br = document.getElementById('breath'), f = Math.min(1, Math.max(0, (hrState.v - 72) / 88));
+    const period = Math.max(2.2, 4 - (hrState.v - 72) * 0.025), ph = ((performance.now() / 1000) % period) / period;
+    if (br) br.style.opacity = (fp && mode === 'suit' ? (0.12 + 0.2 * f) * (0.5 - 0.5 * Math.cos(2 * Math.PI * ph)) : 0).toFixed(3);
+  }
   const far = pointAtDist(P, Math.min(st.d + lookAhead + 25, P.b.dist));
   const want = (Math.atan2(far.x - p.x, -(far.z - p.z)) * 180 / Math.PI + 360) % 360;
   let turn = want - hdg; while (turn > 180) turn -= 360; while (turn < -180) turn += 360;
@@ -2853,11 +2928,19 @@ function updateFP(dt) {
   if (sim.sep && !sim.aborted) warn.push('☢ SEP alert — return to shelter');
   if (sim.leak && !sim.aborted && !done) warn.unshift(sim.sf >= SF_GO ? '💨 Leak — reserve still OK, plan early return' : '💨 Leak — ABORT now');
   if (!done && empty) warn.unshift(`✖ ${tot.o2 >= sup.o2 ? 'O₂' : 'battery'} depleted before reaching the habitat`);
+  if (!wxOn() && hudDet && WX) {    // HUD details shows the weather card even when the Weather layer is off (text only, no fog or flight warnings)
+    const w = wxAt(wxState.dep + tot.t / 3600);
+    setText(document.getElementById('wxHudT'), `${wxWhen(wxState.dep + tot.t / 3600)} LMST`);
+    document.getElementById('wxHudTxt').innerHTML = `${w.tair.toFixed(0)} °C · Wind ${w.wind.toFixed(1)} m/s`;
+    document.getElementById('wxHudDet').innerHTML = `<table class="wxt"><tr><td>AIR</td><td>${w.tair.toFixed(0)} °C</td></tr><tr><td>GROUND</td><td>${w.ts.toFixed(0)} °C</td></tr><tr><td>WIND</td><td>${w.wind.toFixed(1)} m/s</td></tr><tr><td>DUST τ</td><td>${w.tau.toFixed(2)}</td></tr><tr><td>VISIBILITY</td><td>~${w.vis.toFixed(0)} km</td></tr></table><div class="small">EMARS reanalysis · hourly</div>`;
+  }
   if (wxOn()) {                     // weather of the current EVA hour (EMARS timeline, departure + elapsed time)
     const w = wxAt(wxState.dep + tot.t / 3600), WR = WXR[mode], k = 1 + 0.6 * w.tau;
     scene.fog.near = 150 * SC / k; scene.fog.far = 1500 * SC / k;
     scene.fog.color.copy(SKY).lerp(HAZE, Math.min(0.8, w.tau / 5)); scene.background = scene.fog.color;
-    document.getElementById('wxHudTxt').innerHTML = `${wxWhen(wxState.dep + tot.t / 3600)} LMST<br>T ${w.tair.toFixed(0)} °C air · ${w.ts.toFixed(0)} °C ground<br>Wind ${w.wind.toFixed(1)} m/s · dust τ ${w.tau.toFixed(2)} · vis ~${w.vis.toFixed(0)} km`;
+    setText(document.getElementById('wxHudT'), `${wxWhen(wxState.dep + tot.t / 3600)} LMST`);
+    document.getElementById('wxHudTxt').innerHTML = `${w.tair.toFixed(0)} °C · Wind ${w.wind.toFixed(1)} m/s`;
+    document.getElementById('wxHudDet').innerHTML = `<table class="wxt"><tr><td>AIR</td><td>${w.tair.toFixed(0)} °C</td></tr><tr><td>GROUND</td><td>${w.ts.toFixed(0)} °C</td></tr><tr><td>WIND</td><td>${w.wind.toFixed(1)} m/s</td></tr><tr><td>DUST τ</td><td>${w.tau.toFixed(2)}</td></tr><tr><td>VISIBILITY</td><td>~${w.vis.toFixed(0)} km</td></tr></table><div class="small">EMARS reanalysis · hourly</div>`;
     if (!done && w.tau >= WR.tauNoGo) warn.push(`🌪 Dust τ ${w.tau.toFixed(1)} over the limit — return to habitat`);
     if (!done && w.wind >= WR.windNoGo) warn.push(`💨 Wind ${w.wind.toFixed(0)} m/s over the limit — seek shelter`);
     if (!done && WR.daylight && w.lmst > WXR.daylight[1] - 0.75 && w.lmst < 23) warn.push(`🌇 Sunset ${w.lmst >= WXR.daylight[1] ? 'passed' : 'soon'} — head home`);
@@ -3456,7 +3539,7 @@ if (!window.__introDone && !matchMedia('(prefers-reduced-motion: reduce)').match
 }
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), tt = performance.now();
-  wpViz.forEach(v => v.beacon && (v.beacon.material.opacity = 0.45 + 0.3 * Math.sin(tt / 300)));
+  wpViz.forEach(v => { const b = v.beacon; if (!b) return; b.scale.x = b.scale.z = fp ? 0.3 : 1; b.material.opacity = fp ? 0.2 + 0.04 * Math.sin(tt / 300) : 0.45 + 0.3 * Math.sin(tt / 300); });   // in first-person the destination pillars are thin and faint
   if (fp) updateFP(dt); else { stepFly(); controls.update(); if (!FLY.pending && !FLY.active) keepOnMap(); updateMapPreview(dt); }   // the intro hand-over may aim far off the map centre (a card low on the screen): no pan limit until the fly-in ends
   updateLabels();
   renderer.render(scene, camera);

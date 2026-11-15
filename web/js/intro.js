@@ -9,6 +9,7 @@
 
   const TEXT = 'ARES MISSION';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const selectOnly = new URLSearchParams(location.search).get('select') === '1';   // the team logo link: straight to the site choice
   const body = document.body, textEl = document.getElementById('introText'), route = document.getElementById('introRoute');
   body.classList.add('intro-pending');
   try { const len = route.getTotalLength(); route.style.strokeDasharray = len; route.style.strokeDashoffset = len; } catch (e) { /* the line just shows fully */ }
@@ -265,7 +266,7 @@
 
   async function run() {
     intro.classList.add('on');
-    if (reduce) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await chooseSite(); skipped = false; await whenSiteReady(); intro.classList.add('reveal', 'handed'); return dock(); }
+    if (reduce || selectOnly) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await chooseSite(); skipped = false; await whenSiteReady(); intro.classList.add('reveal', 'handed'); return dock(); }
     await sleep(350);  intro.classList.add('logo');                    // 1. logo appears in the centre, route line draws itself
     await sleep(2100); intro.classList.add('lift');                    // 2. logo slides left and shrinks, cursor starts blinking to its right
     await sleep(950);
