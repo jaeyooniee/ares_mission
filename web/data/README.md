@@ -40,3 +40,19 @@ Source: USGS Astrogeology, *Mars MSL Gale Merged Orthophoto Mosaic 25cm* (colour
 | `science.json`, `science.bin`, `reach.bin` | team `science.py` with the Jezero rows of `Min_trial/category_minerals_by_site.txt` (see `web.jezero_mapping` in `science.json`); novelty from the Perseverance traverse (NASA MMGIS `M20_traverse.json`) |
 
 Not included for Jezero: `cost.png` (the page draws the cost map itself).
+
+## mawrth/ and meridiani/: two more landing sites
+
+Same files and formats as `jezero/` (`?site=mawrth`, `?site=meridiani`). Each area is the **largest square that its HiRISE DTM covers completely** (no gaps), so they are smaller than Gale and Jezero. Built with the same team code (`pipeline.py` → `pipeline_min.py` + `run_smooth10.py` → `science.py`); the habitat is the flattest ground near the middle and the two route stops are the best patches of two water-related minerals.
+
+| | Mawrth Vallis | Meridiani Planum |
+|---|---|---|
+| Area | 5.1 km square, centre 23.0435°N, 18.4569°W, 320 × 320 at 16 m | 4.7 km square, centre 2.0217°S, 5.4823°W, 296 × 296 at 16 m (Victoria crater rim in the south-west corner) |
+| DTM | HiRISE `DTEEC_006755_2030_011383_2030` (1 m) | HiRISE `DTEEC_021747_1780_022380_1780` (1 m) |
+| Texture | HiRISE `PSP_006755_2030` red ortho, greyscale tinted for display | HiRISE `ESP_021747_1780` red ortho, greyscale tinted for display |
+| CRISM | 2 FRT + 1 HRL MTRDR, **absolute index thresholds** (clays and hydration cover most of the area, so robust z would miss them) | 7 FRT used (of 9 listed), robust z per observation |
+| Science rows | **proposed** (not in the team table): Fe/Mg + Al clays, kaolinite, hydrated silica | **proposed**: habitability from sulfates incl. jarosite (BD2265) + hematite; diversity = sulfate, hematite, pyroxene / olivine |
+| Novelty | none (no rover has been there) | Opportunity traverse (PDS Analyst's Notebook `MERB_traverse_5130`) |
+| THEMIS TI | `00N300E` tile | `30S300E` tile |
+
+Honest notes: Meridiani's plains are under basaltic sand, so CRISM signals there are weak; on their own, Habitability and Resources have no place scoring ≥ 0.6, and the page says so. The proposed rows are documented in each `science.json` under `web.<site>_mapping`.

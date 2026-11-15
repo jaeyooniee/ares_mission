@@ -1,0 +1,289 @@
+{
+ "source": [
+  "frt00009326_07_sr167j_mtr3.img",
+  "frt00013e49_07_sr166j_mtr3.img",
+  "hrl00004962_07_sr183j_mtr3.img"
+ ],
+ "coverage_pct": 100.0,
+ "minerals": {
+  "clay": {
+   "label": "Fe/Mg clay (nontronite / smectite)",
+   "index": "D2300",
+   "threshold": 0.015,
+   "threshold_type": "index",
+   "color": [
+    220,
+    60,
+    60
+   ],
+   "area_pct_of_covered": 43.71,
+   "candidates": [
+    {
+     "x": 2912.3,
+     "y": 3769.9,
+     "lon": -18.45044,
+     "lat": 23.02309,
+     "area_m2": 9803376,
+     "peak_index": 0.0443
+    },
+    {
+     "x": 4448.2,
+     "y": 531.9,
+     "lon": -18.42228,
+     "lat": 23.07772,
+     "area_m2": 436320,
+     "peak_index": 0.0293
+    },
+    {
+     "x": 395.1,
+     "y": 1909.9,
+     "lon": -18.49659,
+     "lat": 23.05447,
+     "area_m2": 289008,
+     "peak_index": 0.0258
+    }
+   ]
+  },
+  "clay_oh": {
+   "label": "Fe/Mg-OH clay",
+   "index": "BD2290",
+   "threshold": 0.012,
+   "threshold_type": "index",
+   "color": [
+    255,
+    140,
+    120
+   ],
+   "area_pct_of_covered": 25.96,
+   "candidates": [
+    {
+     "x": 2548.8,
+     "y": 4268.2,
+     "lon": -18.4571,
+     "lat": 23.01468,
+     "area_m2": 5167584,
+     "peak_index": 0.0324
+    },
+    {
+     "x": 145.0,
+     "y": 3037.0,
+     "lon": -18.50117,
+     "lat": 23.03545,
+     "area_m2": 203616,
+     "peak_index": 0.0213
+    },
+    {
+     "x": 396.8,
+     "y": 1924.1,
+     "lon": -18.49656,
+     "lat": 23.05423,
+     "area_m2": 196848,
+     "peak_index": 0.0189
+    }
+   ]
+  },
+  "al_clay": {
+   "label": "Al clay (montmorillonite, Al-OH)",
+   "index": "D2200",
+   "threshold": 0.008,
+   "threshold_type": "index",
+   "color": [
+    80,
+    170,
+    255
+   ],
+   "area_pct_of_covered": 3.72,
+   "candidates": [
+    {
+     "x": 3131.2,
+     "y": 1707.1,
+     "lon": -18.44642,
+     "lat": 23.05789,
+     "area_m2": 249696,
+     "peak_index": 0.0182
+    },
+    {
+     "x": 4331.1,
+     "y": 930.8,
+     "lon": -18.42443,
+     "lat": 23.07099,
+     "area_m2": 115632,
+     "peak_index": 0.0144
+    },
+    {
+     "x": 3985.8,
+     "y": 142.2,
+     "lon": -18.43076,
+     "lat": 23.08429,
+     "area_m2": 110016,
+     "peak_index": 0.0139
+    }
+   ]
+  },
+  "kaolinite": {
+   "label": "Kaolinite",
+   "index": "BD2165",
+   "threshold": 0.004,
+   "threshold_type": "index",
+   "color": [
+    190,
+    120,
+    255
+   ],
+   "area_pct_of_covered": 0.93,
+   "candidates": [
+    {
+     "x": 2779.9,
+     "y": 1807.3,
+     "lon": -18.45287,
+     "lat": 23.0562,
+     "area_m2": 63360,
+     "peak_index": 0.01
+    },
+    {
+     "x": 69.9,
+     "y": 153.8,
+     "lon": -18.50255,
+     "lat": 23.0841,
+     "area_m2": 25056,
+     "peak_index": 0.0116
+    },
+    {
+     "x": 3174.9,
+     "y": 1502.2,
+     "lon": -18.44562,
+     "lat": 23.06135,
+     "area_m2": 20016,
+     "peak_index": 0.0082
+    }
+   ]
+  },
+  "silica": {
+   "label": "Hydrated silica (opal)",
+   "index": "MIN2250",
+   "threshold": 0.004,
+   "threshold_type": "index",
+   "color": [
+    240,
+    240,
+    120
+   ],
+   "area_pct_of_covered": 0.1,
+   "candidates": [
+    {
+     "x": 3149.9,
+     "y": 1755.3,
+     "lon": -18.44608,
+     "lat": 23.05708,
+     "area_m2": 10512,
+     "peak_index": 0.0081
+    },
+    {
+     "x": 3106.7,
+     "y": 1926.0,
+     "lon": -18.44687,
+     "lat": 23.0542,
+     "area_m2": 2592,
+     "peak_index": 0.0065
+    },
+    {
+     "x": 4943.2,
+     "y": 2559.8,
+     "lon": -18.4132,
+     "lat": 23.04351,
+     "area_m2": 2304,
+     "peak_index": 0.0058
+    }
+   ]
+  },
+  "hydrated": {
+   "label": "Hydrated minerals (H2O)",
+   "index": "BD1900R2",
+   "threshold": 0.03,
+   "threshold_type": "index",
+   "color": [
+    140,
+    230,
+    255
+   ],
+   "area_pct_of_covered": 26.27,
+   "candidates": [
+    {
+     "x": 1316.5,
+     "y": 3976.9,
+     "lon": -18.47969,
+     "lat": 23.0196,
+     "area_m2": 5254128,
+     "peak_index": 0.0738
+    },
+    {
+     "x": 4713.7,
+     "y": 4565.5,
+     "lon": -18.41741,
+     "lat": 23.00967,
+     "area_m2": 640224,
+     "peak_index": 0.0478
+    },
+    {
+     "x": 4997.4,
+     "y": 355.7,
+     "lon": -18.41221,
+     "lat": 23.08069,
+     "area_m2": 121968,
+     "peak_index": 0.0438
+    }
+   ]
+  },
+  "olivine": {
+   "label": "Olivine",
+   "index": "OLINDEX3",
+   "threshold": 0.09,
+   "threshold_type": "index",
+   "color": [
+    20,
+    170,
+    150
+   ],
+   "area_pct_of_covered": 0.16,
+   "candidates": [
+    {
+     "x": 1710.4,
+     "y": 702.6,
+     "lon": -18.47247,
+     "lat": 23.07484,
+     "area_m2": 8640,
+     "peak_index": 0.1366
+    },
+    {
+     "x": 804.8,
+     "y": 3092.7,
+     "lon": -18.48907,
+     "lat": 23.03451,
+     "area_m2": 6336,
+     "peak_index": 0.1134
+    },
+    {
+     "x": 4695.2,
+     "y": 732.0,
+     "lon": -18.41775,
+     "lat": 23.07434,
+     "area_m2": 3744,
+     "peak_index": 0.1653
+    }
+   ]
+  }
+ },
+ "grid": {
+  "cell_m": 4.0,
+  "width": 1280,
+  "height": 1281,
+  "area_lonlat": [
+   -18.50383,
+   23.00031,
+   -18.40997,
+   23.08669
+  ],
+  "units": "x east, y south (m) from the area's north-west corner"
+ },
+ "low_confidence": []
+}

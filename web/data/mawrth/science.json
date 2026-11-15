@@ -1,0 +1,183 @@
+{
+ "version": 1,
+ "meshW": 320,
+ "meshH": 321,
+ "nodata": 255,
+ "criteria": [
+  {
+   "key": "life",
+   "label": "Habitability: Fe/Mg and Al clays (long-lived water)",
+   "objectives": [
+    "LPS-4M"
+   ]
+  },
+  {
+   "key": "water",
+   "label": "Water & volatile record",
+   "objectives": [
+    "LPS-3LM",
+    "SE-3LM"
+   ]
+  },
+  {
+   "key": "geology",
+   "label": "Geology: kaolinite, pyroxene, olivine + exposed strata",
+   "objectives": [
+    "LPS-1LM",
+    "LPS-2LM"
+   ]
+  },
+  {
+   "key": "resource",
+   "label": "ISRU resource potential",
+   "objectives": [
+    "AS-3LM",
+    "MI-4M",
+    "OP-3LM"
+   ]
+  },
+  {
+   "key": "diversity",
+   "label": "Sample diversity: Fe/Mg clay, Al clay, hydrated silica within 100 m",
+   "objectives": [
+    "SE-4LM",
+    "SE-5LM"
+   ]
+  }
+ ],
+ "presets": {
+  "balanced": {
+   "life": 1,
+   "water": 1,
+   "geology": 1,
+   "resource": 1,
+   "diversity": 1
+  },
+  "astrobiology": {
+   "life": 3,
+   "water": 2,
+   "geology": 1,
+   "resource": 0,
+   "diversity": 1
+  },
+  "resources": {
+   "life": 0,
+   "water": 2,
+   "geology": 0,
+   "resource": 3,
+   "diversity": 0
+  },
+  "geology": {
+   "life": 1,
+   "water": 1,
+   "geology": 3,
+   "resource": 0,
+   "diversity": 1
+  }
+ },
+ "defaultPreset": "balanced",
+ "overlay": {
+  "covers_m": [
+   5120.0,
+   5124.0
+  ],
+  "note": "same placement as minerals.png: covers_m from the area's north-west corner"
+ },
+ "reach": {
+  "mode": "walk",
+  "limit": 0.72,
+  "unit": "kg O2",
+  "o2_capacity_kg": 1.2,
+  "reserve_frac": 0.6,
+  "max_eva_h": 8.0,
+  "stop_min": 20,
+  "calibration": "route.json과 비교: 산소 ×1.000, 시간 ×1.000 (1에 가까우면 pipeline과 일치)"
+ },
+ "formula": "V = S x R; S = weighted mean of criterion scores (0-1); R = 1 - 0.5 * roundtrip_O2 / limit, 0 if over limit, blocked, protected or over max EVA time",
+ "sources": {
+  "dem": {
+   "file": "C:\\Users\\comac\\OneDrive - The University of Manchester\\Hyeonu Kim's files - NASA Space Apps Challenge\\Data\\Mawrth\\DEM\\dteec_006755_2030_011383_2030_a01.img",
+   "coverage": 1.0
+  },
+  "crism": {
+   "files": [
+    "frt00009326_07_sr167j_mtr3.img",
+    "frt00013e49_07_sr166j_mtr3.img"
+   ],
+   "params": {
+    "life": [
+     "D2300",
+     "BD2290",
+     "D2200"
+    ],
+    "water": [
+     "BD1900R2",
+     "MIN2250",
+     "D2200"
+    ],
+    "resource": [
+     "BD1900R2",
+     "D2300",
+     "D2200"
+    ],
+    "geology": [
+     "BD2165",
+     "HCPINDEX2",
+     "LCPINDEX2",
+     "OLINDEX3"
+    ],
+    "_fe_clay": [
+     "D2300",
+     "BD2290"
+    ],
+    "_al_clay": [
+     "D2200",
+     "BD2165"
+    ],
+    "_silica": [
+     "MIN2250"
+    ]
+   },
+   "normalize": "absolute index (score = index / index_full)",
+   "z_full": 8.0,
+   "index_full": {
+    "D2300": 0.03,
+    "BD2290": 0.025,
+    "D2200": 0.013,
+    "BD2165": 0.007,
+    "MIN2250": 0.007,
+    "BD1900R2": 0.05,
+    "OLINDEX3": 0.11,
+    "HCPINDEX2": 0.02,
+    "LCPINDEX2": 0.02
+   }
+  },
+  "themis": {
+   "file": "https://asc-astropedia.s3.us-west-2.amazonaws.com/Mars/Odyssey/THEMIS-Global-Thermal-Inertia-Mosaic/Quantitative-32-Bit/THEMIS_TI_Mosaic_Quant_00N300E_100mpp.cub",
+   "note": "100 m/px, broad trend only"
+  }
+ },
+ "notes": [
+  "Criterion scores are normalised within this area (2nd-98th percentile), so they rank sites relative to each other, not on an absolute scale.",
+  "Round-trip O2 uses the steepest local slope, so it is conservative.",
+  "THEMIS thermal inertia is 100 m/px and only reflects broad trends.",
+  "Novelty = distance from the rover traverse, not from sampled targets."
+ ],
+ "web": {
+  "bins": {
+   "science.bin": "Uint8 [criteria x meshH x meshW], 0-254 = score 0-1, 255 = no data, criteria in the order of \"criteria\"",
+   "reach.bin": "Uint8 [meshH x meshW], R x 254 (0 = cannot reach)"
+  },
+  "site_rule": "a site must score >= 0.6 (science.py high_score) in every picked objective; ranked by mean(picked scores) x R; sites >= 150 m apart",
+  "mawrth_mapping": {
+   "life": "D2300, BD2290, D2200",
+   "water": "BD1900R2, MIN2250, D2200",
+   "resource": "BD1900R2, D2300, D2200",
+   "geology": "BD2165, HCPINDEX2, LCPINDEX2, OLINDEX3",
+   "_fe_clay": "D2300, BD2290",
+   "_al_clay": "D2200, BD2165",
+   "_silica": "MIN2250",
+   "note": "proposed Mawrth rows (the team table has Gale and Jezero only): Al-clay indices D2200 / BD2165 and hydrated silica MIN2250 added; scores and minerals use the absolute index (score = index / typical strong value), not robust z, because clays and hydration cover most of this area"
+  }
+ }
+}

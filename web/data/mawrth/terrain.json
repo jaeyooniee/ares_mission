@@ -1,0 +1,147 @@
+{
+ "source": "HiRISE DTM DTEEC_006755_2030_011383_2030_A01 (1 m, PDS) cropped to a 5.12 km square that the DTM covers completely, resampled to 4 m by the Python pipeline, then every 4th cell (16 m)",
+ "nx": 320,
+ "ny": 320,
+ "cell_m": 16.0,
+ "z_min": -3424.3,
+ "z_max": -3252.12,
+ "area_lonlat_W_S_E_N": [
+  -18.50383,
+  23.00031,
+  -18.40997,
+  23.08669
+ ],
+ "origin": "x east, y south, metres from the north-west corner of the area; row 0 = north",
+ "dropped_last_row": true,
+ "dropped_last_col": false,
+ "texture": {
+  "file": "texture_color.jpg",
+  "source": "HiRISE PSP_006755_2030_RED_C_01_ORTHO (red, 25 cm) cropped to the area: greyscale, tinted to a Mars colour for display, the colour is NOT measured",
+  "covers_m": [
+   5120.0,
+   5124.0
+  ],
+  "px": [
+   8185,
+   8186
+  ]
+ },
+ "walk": {
+  "slope_limit_deg": 18.0,
+  "o2_capacity_kg": 1.2,
+  "body_kg": 75,
+  "suit_kg": 60,
+  "suit_speed_factor": 0.6
+ },
+ "rover": {
+  "slope_limit_deg": 28.0,
+  "speed_ms": 4.1667,
+  "wh_per_km": 250
+ },
+ "assumptions_kept_from_demo": {
+  "suit_battery_wh": 450,
+  "suit_base_w": 60,
+  "rover_battery_wh": 40000,
+  "rover_cabin_o2_kg": 4,
+  "crew": 2,
+  "o2_per_person_kg_h": 0.035
+ },
+ "minerals": {
+  "file": "minerals.png",
+  "covers_m": [
+   5120.0,
+   5124.0
+  ],
+  "source": "MRO CRISM MTRDR summary parameters: frt00009326, frt00013e49, hrl00004962 (100.0% coverage), robust z per observation",
+  "classes": {
+   "clay": {
+    "label": "Fe/Mg clay (nontronite / smectite)",
+    "index": "D2300",
+    "color": [
+     220,
+     60,
+     60
+    ],
+    "area_pct": 43.71
+   },
+   "clay_oh": {
+    "label": "Fe/Mg-OH clay",
+    "index": "BD2290",
+    "color": [
+     255,
+     140,
+     120
+    ],
+    "area_pct": 25.96
+   },
+   "al_clay": {
+    "label": "Al clay (montmorillonite, Al-OH)",
+    "index": "D2200",
+    "color": [
+     80,
+     170,
+     255
+    ],
+    "area_pct": 3.72
+   },
+   "kaolinite": {
+    "label": "Kaolinite",
+    "index": "BD2165",
+    "color": [
+     190,
+     120,
+     255
+    ],
+    "area_pct": 0.93
+   },
+   "silica": {
+    "label": "Hydrated silica (opal)",
+    "index": "MIN2250",
+    "color": [
+     240,
+     240,
+     120
+    ],
+    "area_pct": 0.1
+   },
+   "hydrated": {
+    "label": "Hydrated minerals (H2O)",
+    "index": "BD1900R2",
+    "color": [
+     140,
+     230,
+     255
+    ],
+    "area_pct": 26.27
+   },
+   "olivine": {
+    "label": "Olivine",
+    "index": "OLINDEX3",
+    "color": [
+     20,
+     170,
+     150
+    ],
+    "area_pct": 0.16
+   }
+  }
+ },
+ "destinations": [
+  {
+   "name": "AlClay-1",
+   "kind": "al_clay",
+   "label": "Al clay (montmorillonite, Al-OH)",
+   "index": "D2200",
+   "peak_index": 0.0182,
+   "area_m2": 249696
+  },
+  {
+   "name": "Clay-1",
+   "kind": "clay",
+   "label": "Fe/Mg clay (nontronite / smectite)",
+   "index": "D2300",
+   "peak_index": 0.0443,
+   "area_m2": 9803376
+  }
+ ]
+}

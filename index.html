@@ -293,7 +293,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<link rel="stylesheet" href="web/css/intro.css?v=20261115n"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
+<link rel="stylesheet" href="web/css/intro.css?v=20261115s"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
 </head>
 <body class="brand-hidden">
 <div id="intro" aria-hidden="true">
@@ -303,13 +303,15 @@
   <div id="introTitle"><span id="introGhost"></span><span id="introText"></span><span id="introCursor"></span></div>
   <!-- landing-site choice: shown after the title is typed; the app then loads that site's data (data-tex: its map image, fetched early on hover) -->
   <div id="introSites" role="group" aria-label="Choose a landing site">
-    <button class="siteCard" data-site="gale" data-tex="web/data/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg?v=3d1)"></span><span class="name">GALE</span><span class="sub">Gale crater · Curiosity</span></button>
-    <button class="siteCard" data-site="jezero" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Jezero crater · Perseverance</span></button>
-    <button class="siteCard custom" data-site="custom" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own Mars data</span></button>
+    <button class="siteCard" data-site="gale" data-tex="web/data/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg?v=3d1)"></span><span class="name">GALE</span><span class="sub">Curiosity rover</span></button>
+    <button class="siteCard" data-site="jezero" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Perseverance rover</span></button>
+    <button class="siteCard" data-site="mawrth" data-tex="web/data/mawrth/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_mawrth.jpg?v=3d1)"></span><span class="name">MAWRTH</span><span class="sub">Clay-rich valley</span></button>
+    <button class="siteCard" data-site="meridiani" data-tex="web/data/meridiani/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_meridiani.jpg?v=3d1)"></span><span class="name">MERIDIANI</span><span class="sub">Opportunity rover</span></button>
+    <button class="siteCard custom" data-site="custom" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own data</span></button>
   </div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro.js?v=20261115n"></script>
+<script src="web/js/intro.js?v=20261115p"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -376,6 +378,8 @@
     <div id="siteMenu" class="sub" role="menu">
       <button class="mi" data-site="gale" role="menuitem">Gale crater<small>Curiosity landing area · 4.78°S, 137.40°E</small></button>
       <button class="mi" data-site="jezero" role="menuitem">Jezero crater<small>Perseverance landing area · 18.48°N, 77.39°E</small></button>
+      <button class="mi" data-site="mawrth" role="menuitem">Mawrth Vallis<small>Clay-rich layered terrain · 23.04°N, 18.46°W</small></button>
+      <button class="mi" data-site="meridiani" role="menuitem">Meridiani Planum<small>Opportunity, Victoria crater · 2.02°S, 5.48°W</small></button>
       <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
       <button class="mi" data-site="custom-new" role="menuitem" id="siteCustomNew">Custom data…<small>Build a site from your own DEM, image and CRISM</small></button>
     </div>
@@ -466,7 +470,7 @@
       <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
       <div class="sub">Habitat transparent display → helmet / rover HUD</div>
       <div class="note" id="aboutNote">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
-      <p>Pick a landing site on the start screen (Gale, Jezero, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
+      <p>Pick a landing site on the start screen (Gale, Jezero, Mawrth Vallis, Meridiani Planum, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
     </div>
     <div class="ipane" data-info="controls">
       <h1>Map controls</h1>
@@ -474,7 +478,7 @@
         <li><b>Left-drag</b> — move the map position</li>
         <li><b>Right-drag</b> — tilt and rotate the view</li>
         <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
-        <li><b>Location ▼</b> (top bar) — switch to Gale, Jezero or your custom site</li>
+        <li><b>Location ▼</b> (top bar) — switch to Gale, Jezero, Mawrth Vallis, Meridiani Planum or your custom site</li>
         <li><b>Click a drill-site pin</b> (Gale, LAYERS → Curiosity drill sites) — its measured minerals</li>
       </ul>
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
@@ -488,7 +492,7 @@
         <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
         <tr><td>Science value</td><td id="srcSci">Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
         <tr id="srcCm"><td>Ground truth (Gale)</td><td>Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook (clay wt% from Thorpe et al. 2022); Curiosity traverse: NASA MMGIS. Shown in LAYERS on the map only, as reference: not used in route scoring</td></tr>
-        <tr><td>Custom sites</td><td>Built in your browser from your own files with the same rules as Gale and Jezero (DEM; optional image, CRISM MTRDR, THEMIS; rover traverse from NASA MMGIS). Nothing is uploaded; the site is kept in this browser and can be downloaded as a package</td></tr>
+        <tr><td>Custom sites</td><td>Built in your browser from your own files with the same rules as the built-in sites (DEM; optional image, CRISM MTRDR, THEMIS; rover traverse from NASA MMGIS). Nothing is uploaded; the site is kept in this browser and can be downloaded as a package</td></tr>
         <tr><td>Not in this build</td><td>Soft soil, boulders, live space weather (DONKI), radiation, rover photos</td></tr>
       </table>
       <p class="small" style="margin-top:12px" id="srcFoot">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
@@ -569,6 +573,26 @@ const SITES = {
     img: 'USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour',
     sci: 'Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives',
     credit: 'Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo',
+  },
+  mawrth: {
+    name: 'Mawrth Vallis', rover: '', data: 'web/data/mawrth/',
+    about: 'Terrain: <b>real HiRISE DTM</b> (DTEEC_006755_2030_011383_2030, 1 m) over a <b>5.1 km square</b> that the DTM covers completely, shown on a 16 m grid. '
+      + 'One of the most clay-rich places on Mars: Fe/Mg clays (nontronite) under Al clays (montmorillonite, kaolinite) and hydrated silica. No rover has been here, so there is no Novelty objective. '
+      + 'Imagery: <b>HiRISE PSP_006755_2030</b> (red, 25 cm), greyscale <b>tinted</b> to a Mars colour for display.',
+    elev: 'HiRISE DTM DTEEC_006755_2030_011383_2030 (1 m, PDS), 5.1 km square shown at 16 m',
+    img: 'HiRISE PSP_006755_2030 red ortho image (25 cm) — greyscale, tinted to a Mars colour for display',
+    sci: 'Team science.py: HiRISE DTM (geology, reachability), CRISM summary parameters with Mawrth rows (Fe/Mg + Al clays, hydrated silica; proposed, not in the team table), THEMIS thermal inertia (resources); no rover traverse (no novelty); scored against NASA Moon to Mars objectives',
+    credit: 'Data: NASA/JPL-Caltech/University of Arizona (HiRISE DTM and image) · CRISM: NASA/JPL/JHU-APL · greyscale image tinted for display, not true colour',
+  },
+  meridiani: {
+    name: 'Meridiani Planum', rover: 'Opportunity', data: 'web/data/meridiani/',
+    about: 'Terrain: <b>real HiRISE DTM</b> (DTEEC_021747_1780_022380_1780, 1 m) over a <b>4.7 km square</b> north-east of <b>Victoria crater</b> (its rim is in the south-west corner), which Opportunity explored in 2006–2008, shown on a 16 m grid. '
+      + 'Sulfate sandstone and hematite country under a basaltic sand cover, so CRISM sees only weak signals here: Habitability and Resources have no strong place on their own. Novelty uses the Opportunity traverse. '
+      + 'Imagery: <b>HiRISE ESP_021747_1780</b> (red, 25 cm), greyscale <b>tinted</b> to a Mars colour for display.',
+    elev: 'HiRISE DTM DTEEC_021747_1780_022380_1780 (1 m, PDS), 4.7 km square shown at 16 m',
+    img: 'HiRISE ESP_021747_1780 red ortho image (25 cm) — greyscale, tinted to a Mars colour for display',
+    sci: 'Team science.py: HiRISE DTM (geology, reachability), CRISM summary parameters with Meridiani rows (sulfates incl. jarosite + hematite for habitability; sulfate, hematite, pyroxene / olivine for diversity; proposed, not in the team table), THEMIS thermal inertia (resources), Opportunity traverse from the PDS Analyst\'s Notebook (novelty), scored against NASA Moon to Mars objectives',
+    credit: 'Data: NASA/JPL-Caltech/University of Arizona (HiRISE DTM and image) · CRISM: NASA/JPL/JHU-APL · Opportunity traverse: PDS Geosciences Node · greyscale image tinted for display, not true colour',
   },
   jezero: {
     name: 'Jezero crater', rover: 'Perseverance', data: 'web/data/jezero/',
@@ -1296,7 +1320,8 @@ function sciRender() {
     ? (() => {                                                                       // qualifying area in hectares (one mesh cell = covers / mesh)
         const cellM2 = SCI.overlay.covers_m[0] / E.W * SCI.overlay.covers_m[1] / E.H, ha = E.pass * cellM2 / 1e4, pct = E.reach ? 100 * E.pass / E.reach : 0;
         return E.pass ? `${ha < 10 ? ha.toFixed(1) : Math.round(ha)} ha (${pct < 0.01 ? '<0.01' : pct < 1 ? pct.toFixed(2) : pct.toFixed(0)}% of the reachable area) is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}.`
-          : `No reachable place is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}. No route: drop one objective.`;
+          : sciPick.size > 1 ? `No reachable place is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}. No route: drop one objective.`
+          : `No reachable place is strong (score ≥ ${HIGH}) in ${sciPickText()} at this site. No route: pick another objective.`;
       })()
     : 'No objective picked yet. The map shows the value of every reachable place with all six objectives counted equally.';
   document.getElementById('sciTopHdr').textContent = sciPick.size ? `Top sites · ${sciPickText()}` : 'Top sites';
@@ -1304,7 +1329,8 @@ function sciRender() {
   sciPins.length = 0;
   const list = document.getElementById('sciSites'); list.innerHTML = '';
   if (!sciSitesNow.length) { const li = document.createElement('li'); li.className = 'empty';
-    li.textContent = sciPick.size ? 'No reachable place is strong in all of these. Drop one objective to get a science route.'
+    li.textContent = sciPick.size > 1 ? 'No reachable place is strong in all of these. Drop one objective to get a science route.'
+      : sciPick.size ? 'The data show no strong place for this objective here. Pick another objective to get a science route.'
       : 'Pick one or more objectives: the places strong in all of them are ranked here, and the route visits the best two.';
     list.appendChild(li); }
   sciSitesNow.forEach(s => {
@@ -1421,7 +1447,11 @@ function scienceRoute() {
 if (SCI) {
   const R = SCI.reach;
   document.getElementById('sciLead').textContent = `Pick the objectives this EVA must serve: only places strong in all of them are kept, and the route visits the best two (Habitat → A → B → Habitat). Value = science score × reachability; a place counts only if a suited crew can walk there and back within ${Math.round(R.reserve_frac * 100)}% of suit O₂ (${R.limit} kg) and ${R.max_eva_h} h.`;
-  document.getElementById('sciNote').textContent = 'Scores are relative within this 10 km area, not absolute. Hover an objective or a tag for its NASA Moon to Mars objective codes; click a site to fly to it.';
+  const areaKm = (SCI.overlay.covers_m[0] / 1000).toFixed(SCI.overlay.covers_m[0] >= 9500 ? 0 : 1),
+        absIdx = /absolute/.test(SCI.sources?.crism?.normalize || '');
+  document.getElementById('sciNote').textContent = (absIdx
+    ? `Mineral scores use the absolute CRISM index (clays cover most of this ${areaKm} km area); terrain scores are relative within it.`
+    : `Scores are relative within this ${areaKm} km area, not absolute.`) + ' Hover an objective or a tag for its NASA Moon to Mars objective codes; click a site to fly to it.';
   const ob = document.getElementById('sciObj');
   for (const c of SCI.criteria) {
     const b = document.createElement('button'); b.className = 'btn'; b.dataset.k = c.key; b.textContent = SCI_BTN[c.key] || c.key;

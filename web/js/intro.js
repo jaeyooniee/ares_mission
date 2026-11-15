@@ -155,7 +155,7 @@
       }
       addEventListener('keydown', onKey);
       if (soon) soon.addEventListener('click', () => { soon.classList.remove('nudge'); void soon.offsetWidth; soon.classList.add('nudge'); });
-      setTimeout(() => { if (!intro.classList.contains('picked')) gale.focus({ preventScroll: true }); }, reduce ? 0 : 900);
+      // no card is focused automatically: only the card under the mouse (or one reached with Tab) lights up; Enter / Space still picks Gale
     });
   }
 

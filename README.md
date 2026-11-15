@@ -8,7 +8,7 @@ Live site: https://aresmission.us · Challenge page: https://www.spaceappschalle
 
 ## What it does
 
-- **Three landing sites**: Gale crater and Jezero crater (10 × 10 km each, real HiRISE terrain), or a **Custom site** built in the browser from your own DEM, image, CRISM and THEMIS files. Switch with **Location ▼** in the top bar.
+- **Five landing sites**: Gale crater and Jezero crater (10 × 10 km each), Mawrth Vallis (5.1 km) and Meridiani Planum (4.7 km, next to Victoria crater), all on real HiRISE terrain, or a **Custom site** built in the browser from your own DEM, image, CRISM and THEMIS files. Switch with **Location ▼** in the top bar.
 - **Science value**: pick objectives (scored against NASA Moon to Mars objectives) and the map shows where the terrain is strong in all of them, with a ranked list of top sites. The route visits the best two.
 - **Route planning**: walking and rover routes on the slope / cost grid of the DEM (A* in the page, then smoothed), with a time, oxygen and energy budget from the team pipeline's models (Tobler walking speed × suit factor, Pandolf metabolic O₂ at Mars gravity, rover speed and Wh/km). Optimal and straight-line routes are compared side by side, with an elevation profile.
 - **GO / NO-GO**: GO when the safety factor (supply ÷ need) is at least ×1.5. The badge at the top right always shows the current state.
@@ -17,7 +17,7 @@ Live site: https://aresmission.us · Challenge page: https://www.spaceappschalle
 
 ## Honest notes
 
-- The Gale colour image is a *processed* USGS colour mosaic, not a true-colour photo. Grey strips without colour data use **estimated** colour from brightness. The Jezero image is greyscale, tinted for display.
+- The Gale colour image is a *processed* USGS colour mosaic, not a true-colour photo. Grey strips without colour data use **estimated** colour from brightness. The Jezero, Mawrth and Meridiani images are greyscale, tinted for display. The Mawrth and Meridiani science rows are proposed by us (the team table covers Gale and Jezero); see `web/data/README.md`.
 - Science stops come from a simple rule on the mineral maps. It is an assumption, not validated science.
 - Suit battery, rover battery and cabin oxygen are demo assumptions. All time, oxygen and energy values come from simplified models that have not been validated against real rover data.
 - Not in this build: soft soil, boulders, live space weather (DONKI), radiation, rover photos.
@@ -38,7 +38,9 @@ ares_mission/
 │  │                     store.js (keeps it in this browser, IndexedDB). Nothing is uploaded anywhere
 │  ├─ img/               Logo and site-card images
 │  └─ data/              Gale site files (terrain, routes, texture, minerals, science value, CheMin) + README
-│     └─ jezero/         Jezero site files, same names and formats
+│     ├─ jezero/         Jezero site files, same names and formats
+│     ├─ mawrth/         Mawrth Vallis site files
+│     └─ meridiani/      Meridiani Planum site files
 ├─ python/               Data pipeline (currently kept in the team's shared folder)
 ├─ data/raw, data/processed   Raw data and intermediate results. Not committed to Git
 ├─ docs/
@@ -58,7 +60,7 @@ python -m http.server 8000
 
 Then open http://localhost:8000.
 
-- `?site=jezero` opens Jezero directly.
+- `?site=jezero`, `?site=mawrth`, `?site=meridiani` open that site directly.
 - `?intro=0` skips the intro screen. Click or press any key to skip it.
 
 ## Deployment
@@ -67,11 +69,11 @@ GitHub Pages (`main` branch, repository root) with a custom domain: https://ares
 
 ## Data sources
 
-- NASA/JPL-Caltech/University of Arizona: HiRISE DEM of Gale crater (`Gale_DEM_SMG_1m`) and HiRISE DTM of Jezero (`JEZ_hirise_soc_006`), via JPL Mars Trek
+- NASA/JPL-Caltech/University of Arizona: HiRISE DEM of Gale crater (`Gale_DEM_SMG_1m`) and HiRISE DTM of Jezero (`JEZ_hirise_soc_006`), via JPL Mars Trek; HiRISE DTMs `DTEEC_006755_2030_011383_2030` (Mawrth) and `DTEEC_021747_1780_022380_1780` (Meridiani) with their HiRISE ortho images, via PDS
 - USGS Astrogeology: *Mars MSL Gale Merged Orthophoto Mosaic 25cm*, HiRISE colour version (T. Parker, F. J. Calef III); Jezero visible mosaic (HiRISE, CTX by MSSS, HRSC by ESA/DLR/FU Berlin)
 - NASA/JPL/JHU-APL: MRO CRISM MTRDR summary parameters (minerals)
 - Mars Odyssey THEMIS global thermal inertia mosaic (USGS Astropedia)
-- Curiosity and Perseverance traverses: NASA MMGIS (mars.nasa.gov)
+- Curiosity and Perseverance traverses: NASA MMGIS (mars.nasa.gov); Opportunity traverse: PDS Analyst's Notebook (`MERB_traverse_5130`)
 - Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook; clay wt% from Thorpe et al. 2022
 
 ## SI (Super Intelligence) disclosure
