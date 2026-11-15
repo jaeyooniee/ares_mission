@@ -254,6 +254,23 @@
   #hudCtl button.danger{border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.7)}
   #hudCtl button.start{border-color:rgba(98,242,154,.85);color:#d8ffe6;background:rgba(10,60,30,.8);font-weight:600;min-width:130px}
   #hudCtl button.start.running{border-color:rgba(120,240,255,.5);color:#bff7ff;background:rgba(0,40,55,.75);font-weight:500}
+  /* EVA timeline: like a video's seek bar. Click or drag anywhere between the start and the end of the route; stops are marked on it */
+  #scrub{flex:1 0 100%;display:flex;align-items:center;gap:12px;pointer-events:auto;padding:0 2px;margin-bottom:2px;
+    background:linear-gradient(to top,rgba(0,0,0,.45),transparent);border-radius:8px}
+  #scrubT{font:12px/1 "SF Mono",Menlo,Consolas,monospace;color:#d6f6ff;white-space:nowrap;min-width:96px;text-align:right;text-shadow:0 0 6px rgba(0,0,0,.9)}
+  #scrubBar{position:relative;flex:1;height:26px;cursor:pointer;touch-action:none;outline:none}
+  #scrubBar::before,#scrubFill{content:"";position:absolute;left:0;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;pointer-events:none;transition:height .12s,margin-top .12s}
+  #scrubBar::before{right:0;background:rgba(255,255,255,.3)}
+  #scrubFill{width:0;background:var(--cyan);box-shadow:0 0 8px rgba(55,224,255,.6)}
+  #scrubBar:hover::before,#scrubBar:hover #scrubFill,#scrubBar.drag::before,#scrubBar.drag #scrubFill{height:8px;margin-top:-4px}
+  #scrubThumb{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;
+    box-shadow:0 0 0 2px rgba(55,224,255,.75),0 0 8px rgba(0,0,0,.6);transform:scale(.55);transition:transform .12s;pointer-events:none}
+  #scrubBar:hover #scrubThumb,#scrubBar.drag #scrubThumb,#scrubBar:focus-visible #scrubThumb{transform:scale(1)}
+  .scrubTick{position:absolute;top:50%;width:3px;height:12px;margin:-6px 0 0 -1.5px;background:#ffc95a;border-radius:2px;pointer-events:none}
+  .scrubLbl{position:absolute;bottom:24px;transform:translateX(-50%);font-size:10px;letter-spacing:.06em;color:#ffd98a;white-space:nowrap;pointer-events:none;text-shadow:0 0 5px #000}
+  #scrubTip{position:absolute;bottom:36px;transform:translateX(-50%);padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.8);color:#fff;
+    font:11px "SF Mono",Menlo,Consolas,monospace;white-space:nowrap;pointer-events:none;display:none}
+  #scrubBar:hover #scrubTip{display:block}
   #toast{position:fixed;top:84px;z-index:30;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
   ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(120,230,255,.25);border-radius:3px}
 
@@ -651,6 +668,9 @@
   </div>
 </div>
 <div id="hudCtl">
+  <div id="scrub"><span id="scrubT">0:00 / 0:00</span>
+    <div id="scrubBar" role="slider" tabindex="0" aria-label="EVA timeline" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Click or drag to jump to any point of the route">
+      <div id="scrubFill"></div><div id="scrubTicks"></div><div id="scrubThumb"></div><div id="scrubTip"></div></div></div>
   <button id="goBtn" class="start">▶ Start EVA</button>
   <button id="speedBtn">Sim speed ×15</button>
   <button id="lookBtn">🖱 Mouse look: ON</button>
@@ -2027,7 +2047,7 @@ function setVex(v) {
   wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 * SC : 225 * SC); if (o.beacon) o.beacon.position.y = y + 110 * SC; });
   if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
 }
-let fp = false, speedUp = 15;
+let fp = false, speedUp = 15, scrubbing = false, lookSnap = false;   // scrubbing: the timeline is being dragged (time stands still); lookSnap: after a jump, point the view at once
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
 const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit', 'confirmBtn', 'confirmWhy'].map(id => document.getElementById(id));
@@ -2083,6 +2103,57 @@ function exitFP() {
 }
 document.getElementById('exitBtn').onclick = exitFP;
 document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
+
+// =================== EVA timeline (seek bar) ===================
+// Everything the HUD shows (position, O2 / battery, stops reached, weather hour) is computed from sim.t, so a jump only has to set
+// the time and reset the few things that remember a past moment (stops reached, failed state, rover heading, return estimate).
+const scrubBar = document.getElementById('scrubBar'), scrubFill = document.getElementById('scrubFill'), scrubThumb = document.getElementById('scrubThumb'),
+  scrubTicks = document.getElementById('scrubTicks'), scrubTip = document.getElementById('scrubTip'), scrubT = document.getElementById('scrubT');
+let scrubFor = null;                                                    // the route the stop marks were drawn for
+const fmtHMS = s => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return h ? `${h}:${String(m).padStart(2, '0')}:${String(x).padStart(2, '0')}` : `${m}:${String(x).padStart(2, '0')}`; };
+function updateScrub(P) {                                               // every frame: bar, thumb, clock
+  if (scrubFor !== P) {                                                 // new route (start, ABORT): redraw the stop marks
+    scrubFor = P; scrubTicks.innerHTML = '';
+    P.stopIdx.forEach((si, k) => {
+      const w = k > 0 && k < P.stopIdx.length - 1 && P.stops[k] != null ? WPS[P.stops[k]] : null; if (!w || !(P.b.time > 0)) return;
+      const left = `${(100 * P.b.cumT[si] / P.b.time).toFixed(2)}%`;
+      const t = document.createElement('i'); t.className = 'scrubTick'; t.style.left = left; scrubTicks.appendChild(t);
+      const l = document.createElement('span'); l.className = 'scrubLbl'; l.style.left = left; l.textContent = w.short; scrubTicks.appendChild(l);
+    });
+  }
+  const f = P.b.time > 0 ? Math.min(1, sim.t / P.b.time) : 0;
+  scrubFill.style.width = scrubThumb.style.left = `${(f * 100).toFixed(2)}%`;
+  scrubT.textContent = `${fmtHMS(sim.t)} / ${fmtHMS(P.b.time)}`;
+  scrubBar.setAttribute('aria-valuenow', Math.round(f * 100)); scrubBar.setAttribute('aria-valuetext', `${fmtHMS(sim.t)} of ${fmtHMS(P.b.time)}`);
+}
+function seekTo(frac) {                                                 // jump to a point of the route (0 = leaving the habitat, 1 = back inside)
+  const P = sim.active; if (!fp || !P || sim.resetAt) return;
+  const t = Math.min(P.b.time, Math.max(0, frac * P.b.time)); sim.t = t;
+  const st = stateAt(P, t); sim.lastStop = 0;                           // the stops already reached at that moment (same rule as advance())
+  for (let k = 1; k < P.stopIdx.length; k++) if (st.d >= P.b.cumD[P.stopIdx[k]] - 0.5 && (st.n >= P.stopIdx[k] || t >= P.b.time)) sim.lastStop = k;
+  sim.out = null;                                                       // going back clears a failed EVA (if the reserve is empty there, the next frame fails it again)
+  sim.arriveUntil = 0; document.getElementById('arrive').style.display = 'none';
+  sim.retClock = 0; sim.yaw = null; lookSnap = true;                    // re-plan the way home now, rover points along the line, no slow swing of the view
+  updateGoBtn(); updateScrub(P);
+}
+const scrubFrac = e => { const r = scrubBar.getBoundingClientRect(); return Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); };
+const endScrub = e => { if (!scrubbing) return; scrubbing = false; scrubBar.classList.remove('drag'); try { scrubBar.releasePointerCapture(e.pointerId); } catch (_) {} };
+scrubBar.addEventListener('pointerdown', e => {
+  if (!fp || !sim.active || sim.resetAt) return;
+  scrubbing = true; scrubBar.classList.add('drag'); scrubBar.setPointerCapture(e.pointerId); seekTo(scrubFrac(e)); e.preventDefault();
+});
+scrubBar.addEventListener('pointermove', e => {
+  const P = sim.active; if (!P) return; const f = scrubFrac(e);
+  scrubTip.style.left = `${f * 100}%`; scrubTip.textContent = fmtHMS(f * P.b.time);      // hover: the time under the cursor
+  if (scrubbing) seekTo(f);
+});
+scrubBar.addEventListener('pointerup', endScrub); scrubBar.addEventListener('pointercancel', endScrub); scrubBar.addEventListener('lostpointercapture', endScrub);
+scrubBar.addEventListener('keydown', e => {                             // keyboard: ← → 5 %, Home / End
+  const P = sim.active; if (!P || !(P.b.time > 0)) return; const f = sim.t / P.b.time;
+  const to = e.key === 'ArrowLeft' ? f - 0.05 : e.key === 'ArrowRight' ? f + 0.05 : e.key === 'Home' ? 0 : e.key === 'End' ? 1 : null;
+  if (to != null) { seekTo(to); e.preventDefault(); e.stopPropagation(); }
+});
 document.getElementById('sepBtn').onclick = () => { sim.sep = true; document.getElementById('sep').style.display = 'block';
   set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)'; };
 // contingency scenario: suit O2 leak (on foot) / power fault (rover): an extra constant loss that alone would empty the reserve in LEAK_DRAIN_MIN
@@ -2345,7 +2416,7 @@ function updateFP(dt) {
     if (sim.yaw == null && want != null) sim.yaw = want;
     turning = sim.running && !sim.out && want != null && s0.d < sim.active.b.dist - 1 && Math.abs(angDiff(want, sim.yaw)) > ROVER_TURN.start;
   }
-  const r = advance(dt, sim.running && !turning ? speedUp : 0); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
+  const r = advance(dt, sim.running && !turning && !scrubbing ? speedUp : 0); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
   if (mode === 'rover') {                   // follow the line: tight while driving, a steady turn on the spot while turning
     const want = roverWant(P, st);
     if (want != null && sim.yaw != null) {
@@ -2368,7 +2439,8 @@ function updateFP(dt) {
   if (mode === 'rover' && sim.yaw != null) {   // the driver faces the rover's nose, so the view, the rover and the line agree
     const hx = Math.sin(sim.yaw), hz = Math.cos(sim.yaw), fx = p.x + hx * 30, fz = p.z + hz * 30;
     look.set(fx, heightAt(fx, fz) + M.eye * 0.8, fz);
-  } else if (camera.position.distanceTo(target) > 3) look.lerp(target, Math.min(1, dt * 6));
+  } else if (camera.position.distanceTo(target) > 3) look.lerp(target, lookSnap ? 1 : Math.min(1, dt * 6));
+  lookSnap = false;
   applyMouseLook(dt);
 
   const sup = supply(), tot = totals(st), hdg = heading();
@@ -2382,7 +2454,7 @@ function updateFP(dt) {
   const showRes = (tId, pId, barId, sec, pct) => { set(tId, fmtLeft(sec)); set(pId, `${Math.max(0, pct).toFixed(1)}%`); document.getElementById(barId).style.width = `${Math.max(0, pct)}%`; };
   if (mode === 'suit') { showRes('hO2', 'hO2p', 'hO2bar', o2Sec, o2Left); showRes('hBat', 'hBatp', 'hBatbar', whSec, whLeft); }
   else { showRes('hO2', 'hO2p', 'hO2bar', whSec, whLeft); showRes('hBat', 'hBatp', 'hBatbar', o2Sec, o2Left); }   // rover: battery first, then cabin O2
-  set('hTime', fmtClock(tot.t));
+  set('hTime', fmtClock(tot.t)); updateScrub(P);
   // return-to-habitat safety factor (live re-plan)
   const now = performance.now();
   if (now - sim.retClock > (N > 500 ? 1500 : 700)) { sim.retClock = now; updateReturn(p); }
