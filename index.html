@@ -4,7 +4,7 @@
 <!-- SI (Super Intelligence) disclosure: this file, index.html, was written with the assistance of Claude (Anthropic, Claude Opus 5.5) through Claude Code. The page code and text were generated with the model and edited by the team. No NASA logos or branding are used in this file. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Martian Map – EVA Planner, Helmet HUD & Rover HUD</title>
+<title>Martian Map – EVA Planner with weather and scheduled missions</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -60,14 +60,20 @@
 
   /* ---------- drawer (menu content) ---------- */
   #drawer{top:140px;right:24px;width:340px;max-height:calc(100% - 164px);display:none;z-index:15}
-  #siteLoc{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.25);
-    font-size:12.5px;color:var(--dim);white-space:nowrap;letter-spacing:.04em}
-  #siteLoc b{color:#fff;font-weight:600}
+  /* landing site: a small line under the brand name (it used to be a box in the middle of the bar) */
+  #brandText{display:flex;flex-direction:column;justify-content:center;line-height:1.15}
+  #siteLoc{font-size:10.5px;color:var(--dim);white-space:nowrap;letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+  #siteLoc b{color:#9fdcec;font-weight:500}
+  /* PLAN menu: numbered steps in work order */
+  .sub .mi .stp{float:left;width:18px;height:18px;margin:1px 9px 0 0;border-radius:50%;border:1px solid rgba(55,224,255,.6);
+    color:#37e0ff;font-size:10.5px;line-height:16px;text-align:center}
+  .sub .mi:has(.stp) small{margin-left:27px}
+  .sub .mi:disabled{opacity:.45;cursor:not-allowed} .sub .mi:disabled:hover{background:none}
   #siteLoc{position:relative;cursor:pointer;padding-right:8px}
   #siteToggle{background:none;border:0;border-left:1px solid var(--line);color:#cfe3ea;font-size:9px;line-height:1;padding:4px 2px 4px 9px;margin-left:4px;cursor:pointer;transition:transform .2s,color .2s}
   #siteLoc:hover #siteToggle,#siteLoc.open #siteToggle{color:#fff}
   #siteLoc.open #siteToggle{transform:rotate(180deg)}
-  #siteMenu{left:auto;right:0;min-width:270px;cursor:default}
+  #siteMenu{left:0;right:auto;min-width:270px;cursor:default;text-transform:none;letter-spacing:normal}   /* the line now sits at the left, under the brand: the list opens to the right of it */
   #siteLoc.open #siteMenu{display:block}
   #siteMenu .mi.cur{background:rgba(55,224,255,.1)}
   #siteMenu .mi{position:relative;padding-right:40px}
@@ -91,14 +97,15 @@
   .xbtn{background:none;border:0;color:var(--dim);font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
   .xbtn:hover{color:#fff}
   #drFold{display:none;font-size:15px;padding:2px 6px}
-  #drawer.fold-able #drFold{display:block} #drawer.fold-able #drClose{display:none}   /* Science value: fold instead of close */
+  #drawer.fold-able #drFold{display:block}   /* Science Objectives: ▲ folds it, × closes it */
   #drawer.fold-able .dhead{cursor:pointer}
+  #drawer .dhead h2{margin-right:auto} #drawer .dhead{gap:2px}
   #drawer.folded .sec{display:none} #drawer.folded .dhead{margin-bottom:0}
   .sec{display:none} .sec.on{display:block}
 
   /* ---------- always-visible: readiness badge + layers ---------- */
   /* GO badge: top right, under the Start EVA button · layers: top left, under the brand */
-  #gonogo{position:fixed;top:76px;right:24px;z-index:14;cursor:pointer;gap:16px;min-width:300px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  #gonogo{position:fixed;top:76px;right:24px;z-index:14;cursor:pointer;gap:16px;width:340px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 
   /* ---------- info tab ---------- */
   #infoView{top:76px;left:24px;right:24px;bottom:24px;display:none;grid-template-columns:210px minmax(0,1fr);padding:0;overflow:hidden;z-index:16}
@@ -115,8 +122,12 @@
   .ipane .small{font-size:12.5px;line-height:1.65}
   .ipane .src{font-size:12.5px} .ipane .src td{padding:6px 4px}
 
-  @media (max-width:980px){ #siteLoc .k{display:none} 
-    .navbtn{padding:8px 8px;letter-spacing:.04em}
+  /* narrow screens: the menus shrink first, so the travel mode and Start EVA always stay on screen */
+  #topnav .seg,#evaTop{flex:none}
+  @media (max-width:1100px){ .navbtn{padding:8px 9px;letter-spacing:.06em} #brand{margin-right:8px} }
+  @media (max-width:980px){
+    .navbtn{padding:8px 7px;letter-spacing:.04em;font-size:11.5px} .navbtn .car{display:none}
+    #brandName{font-size:13.5px;letter-spacing:.16em}   /* the Location line stays down to 821 px; below that the whole brand text hides (logo only) */
     #drawer{width:calc(100% - 48px)} #infoView{grid-template-columns:150px minmax(0,1fr)}
   }
   @media (max-width:860px){
@@ -124,6 +135,7 @@
     #topnav{padding:0 12px 0 16px} #topnav .seg button{padding:6px 8px;font-size:11.5px}
     #evaTop{padding:8px 12px}
   }
+  @media (max-width:820px){ #brandText{display:none} .navbtn{padding:8px 6px;font-size:11px} }   /* logo only */
   .panel h1{font-size:15px;margin:0 0 2px;letter-spacing:.06em}
   .panel .sub{font-size:11.5px;color:var(--dim);margin-bottom:8px}
   h2{font-size:10.5px;letter-spacing:.16em;color:var(--cyan);margin:14px 0 7px;font-weight:600;text-transform:uppercase}
@@ -230,9 +242,14 @@
   /* rover only: car-navigation map replaces the round minimap (on foot keeps the round one) */
   #navmap{position:absolute;right:9%;top:15%;width:380px;height:240px;display:none}
   #hud.rover #navmap{display:block} #hud.rover #minimap{display:none}
+  /* rover: a 3D cockpit replaces the drawn windshield frame, and the nav map / speed dash live on its dashboard monitor */
+  #hud.rover .visor,#hud.rover .glare,#hud.rover .pillarL,#hud.rover .pillarR,#hud.rover #navmap,#hud.rover #dash{display:none !important}
+  #dashBtn{display:none} body.rovermode #dashBtn{display:inline-block}
+  #hud.rover #instr{bottom:auto;top:calc(5% + 92px)}   /* rover: instruction up under the compass, clear of the dash display */
+  #hud #instr,#hud #arrow,#hud #hLeft{transition:opacity .4s} body.dashlook #hud #instr,body.dashlook #hud #arrow,body.dashlook #hud #hLeft{opacity:0}   /* looking down: the monitor carries the instruction */
   #hudCtl{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:none;gap:8px;flex-wrap:wrap;justify-content:center;width:max-content;max-width:92%}
   /* rover: the dashboard sits above the centred buttons, the instruction and arrow move up with it */
-  #hud.rover #dash{bottom:64px} #hud.rover #instr{bottom:calc(15% + 100px)} #hud.rover #arrow{bottom:calc(23% + 100px)}
+  #hud.rover #dash{bottom:64px} #hud.rover #arrow{bottom:calc(23% + 100px)}
   #hudCtl button{pointer-events:auto;background:rgba(0,40,55,.75);border:1px solid rgba(120,240,255,.5);color:#bff7ff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
   #hudCtl button.danger{border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.7)}
   #hudCtl button.start{border-color:rgba(98,242,154,.85);color:#d8ffe6;background:rgba(10,60,30,.8);font-weight:600;min-width:130px}
@@ -286,6 +303,48 @@
   #sciSites .mins .mn{display:inline-flex;align-items:center;gap:4px;margin:3px 9px 0 0;color:#cfe3ea;white-space:nowrap}
   #sciSites .mins .mn i{width:8px;height:8px;border-radius:2px;display:inline-block}
   .crit{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.08);margin:2px 4px 0 0;color:#cfe3ea}
+
+  /* ---------- weather layer (EMARS) ---------- */
+  #wxCtl{margin-top:8px}
+  #wxCtl .seg button{padding:5px 4px;font-size:11.5px}
+  #wxCtl label.sl b,.plan label.sl b{float:right;font-weight:500;font-variant-numeric:tabular-nums}
+  #wxHud{font-size:11.5px}
+
+  /* ---------- mission planner (science value → weather → options) ---------- */
+  #toPlan{width:100%;margin-top:12px;padding:10px;font-size:13px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
+  #toPlan:disabled{opacity:.4;cursor:not-allowed}
+  .deps{width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums}
+  .deps th{color:var(--dim);font-weight:500;text-align:left;padding:3px 4px;border-bottom:1px solid var(--line)}
+  .deps td{padding:5px 4px;border-bottom:1px dashed var(--line)}
+  .deps tr.row:hover{background:rgba(55,224,255,.08);cursor:pointer}
+  .st{font-weight:700;font-size:10.5px;letter-spacing:.06em}
+  .st.go{background:none;border:0;color:var(--green)} .st.nogo{background:none;border:0;color:var(--red)}
+  .ocard{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:7px 0;cursor:pointer;background:rgba(255,255,255,.03)}
+  .ocard:hover{background:rgba(55,224,255,.07)}
+  .ocard.sel{border-color:var(--cyan);background:rgba(55,224,255,.12);box-shadow:0 0 0 1px rgba(55,224,255,.35) inset}
+  .ocard .oh{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600}
+  .ocard .rec{font-size:10px;font-weight:600;color:#0b1820;background:#fde725;border-radius:4px;padding:1px 5px;margin-left:6px}
+  .ocard .sortie{font-size:11.3px;color:#cfe3ea;margin-top:5px;padding:5px 7px;border-radius:7px;background:rgba(0,0,0,.18)}
+  .ocard .sortie.on{outline:1px solid rgba(55,224,255,.6)}
+  .ocard .sortie small{color:var(--dim);display:block}
+  #confirmBtn{position:fixed;right:24px;bottom:24px;z-index:16;display:none;padding:12px 22px;font-size:14px;font-weight:700;letter-spacing:.04em;border-radius:12px;cursor:pointer;
+    background:#1d7a4a;border:1px solid #62f29a;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.35)}
+  #confirmBtn:disabled{background:rgba(60,60,60,.7);border-color:rgba(255,255,255,.2);color:#bbb;cursor:not-allowed}
+  body.planning #confirmBtn{display:block}
+  body.planning #drawer{max-height:calc(100% - 230px)}
+  #confirmWhy{position:fixed;right:24px;bottom:78px;z-index:16;display:none;font-size:11.5px;max-width:340px;text-align:right;color:#ffd9a3;text-shadow:0 0 6px #000}
+  body.planning #confirmWhy{display:block}
+
+  /* ---------- scheduled missions ---------- */
+  .mcard{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:8px 0;background:rgba(255,255,255,.03)}
+  .mcard.sel{border-color:#62f29a;background:rgba(98,242,154,.08)}
+  .mcard .mh{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+  .mcard .mm{font-size:11px;color:var(--dim);margin-top:2px}
+  .mcard .btns{margin-top:6px}
+  .mcard .btn{padding:4px 8px;font-size:11.5px}
+  .mcard .btn.del{border-color:rgba(255,90,77,.6);color:#ffd0cc}
+  #schedMenu{min-width:300px;max-height:60vh;overflow-y:auto}
+  #schedMenu .empty{font-size:12px;color:var(--dim);padding:8px 10px}
 </style>
 <script type="importmap">
 { "imports": {
@@ -311,7 +370,7 @@
   </div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro.js?v=20261115p"></script>
+<script src="web/js/intro.js?v=20261115q"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -319,31 +378,40 @@
 <div id="topnav" class="glass">
   <div id="brand">
     <div id="brandLogo"><img src="web/img/logo_base.png" alt="ARES MISSION logo" draggable="false"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 32) scale(1.36) translate(-32 -32)"><path d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/><circle cx="17" cy="45" r="3.6" fill="#37e0ff"/><circle cx="47" cy="17" r="2.6" fill="#0a161e" stroke="#37e0ff" stroke-width="2"/></g></svg></div>
-    <div id="brandName">ARES MISSION</div>
+    <div id="brandText">
+      <div id="brandName">ARES MISSION</div>
+      <div id="siteLoc" title="–"><span class="k">Location:</span> <b id="siteName">Gale crater</b>
+        <button id="siteToggle" type="button" aria-expanded="false" aria-controls="siteMenu" title="Change landing site">▼</button>
+        <div id="siteMenu" class="sub" role="menu">
+          <button class="mi" data-site="gale" role="menuitem">Gale crater<small>Curiosity landing area · 4.78°S, 137.40°E</small></button>
+          <button class="mi" data-site="jezero" role="menuitem">Jezero crater<small>Perseverance landing area · 18.48°N, 77.39°E</small></button>
+          <button class="mi" data-site="mawrth" role="menuitem">Mawrth Vallis<small>Clay-rich layered terrain · 23.04°N, 18.46°W</small></button>
+          <button class="mi" data-site="meridiani" role="menuitem">Meridiani Planum<small>Opportunity, Victoria crater · 2.02°S, 5.48°W</small></button>
+          <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
+          <button class="mi" data-site="custom-new" role="menuitem" id="siteCustomNew">Custom data…<small>Build a site from your own DEM, image and CRISM</small></button>
+        </div></div>
+    </div>
   </div>
+  <!-- menus follow the work order: plan → check readiness → map views → saved missions → info -->
   <div class="navitem">
-    <button class="navbtn">MISSION<span class="car">▼</span></button>
+    <button class="navbtn">PLAN<span class="car">▼</span></button>
     <div class="sub">
-      <button class="mi" data-sec="mission">EVA plan<small>Habitat and the stops picked from science objectives</small></button>
-      <button class="mi" data-sec="compare">Mission readiness<small>GO / NO-GO and route comparison</small></button>
+      <button class="mi" data-sec="science"><span class="stp">1</span>Science Objectives<small>Pick objectives: the best sites become the stops</small></button>
+      <button class="mi" id="navPlan"><span class="stp">2</span>Weather &amp; departure<small>Best departure hours, flight rules, mission options</small></button>
+      <button class="mi" data-sec="mission"><span class="stp">3</span>EVA stops<small>Habitat → sites → habitat</small></button>
+      <button class="mi" data-sec="track"><span class="stp">4</span>Preview &amp; EVA<small>Watch the traverse, then start the first-person EVA</small></button>
     </div>
   </div>
   <div class="navitem">
-    <button class="navbtn">ROUTE<span class="car">▼</span></button>
+    <button class="navbtn">READINESS<span class="car">▼</span></button>
     <div class="sub">
-      <button class="mi" data-sec="conditions">Route conditions<small>Precomputed slope limits (walk / rover)</small></button>
-      <button class="mi" data-sec="profile">Elevation profile<small>Optimal vs straight route</small></button>
-      <button class="mi" data-sec="display">Display options<small>Straight-line route, height scale</small></button>
+      <button class="mi" data-sec="compare">GO / NO-GO<small>Safety factor and optimal vs straight route</small></button>
+      <button class="mi" data-sec="profile">Elevation profile<small>Height along the route</small></button>
+      <button class="mi" data-sec="conditions">Route conditions<small>Slope limits on foot and by rover</small></button>
     </div>
   </div>
   <div class="navitem">
-    <button class="navbtn">CREW<span class="car">▼</span></button>
-    <div class="sub">
-      <button class="mi" data-sec="track">Crew track<small>Preview the traverse, then start the first-person EVA</small></button>
-    </div>
-  </div>
-  <div class="navitem">
-    <button class="navbtn">LAYERS<span class="car">▼</span></button>
+    <button class="navbtn">MAP<span class="car">▼</span></button>
     <div class="sub" id="layerMenu">
       <h2 style="margin-top:0">Layers (data overlay)</h2>
       <div class="btns" id="layers">
@@ -351,18 +419,35 @@
         <button class="btn" data-l="elev">Elevation</button>
         <button class="btn" data-l="slope">Slope</button>
         <button class="btn" data-l="cost">Cost map</button>
+        <button class="btn" data-l="wx" id="wxLayerBtn">Weather (hourly, 3 sols)</button>
       </div>
       <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
-      <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay (all)</label>
-      <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
-      <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Science value (Moon to Mars)</label>
+      <div id="minOpts">
+        <div id="minHdr" style="font-size:12px;margin-top:6px">Expected CRISM minerals overlay</div>
+        <div id="minLegend" class="small" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:4px"></div>
+      </div>
+      <!-- shown instead of the CRISM options while the Weather layer is selected -->
+      <div id="wxCtl" style="display:none">
+        <div class="seg wxSeg"></div>
+        <div style="margin-top:8px"><button class="btn" id="wxPlay">▶ Play</button></div>
+        <label class="sl">Departure <b id="wxDepTxt"></b><input type="range" id="wxDep" min="0" max="71" step="1"></label>
+      </div>
+      <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Scientific value</label>
+      <div id="sciLegendBox"><div id="sciLegend"></div><div class="sciScale"><span>low</span><span>high value · dark = out of reach</span></div></div>
       <div id="cmBox" hidden>
       <label class="chk" style="margin-top:8px"><input type="checkbox" id="showCm" autocomplete="off"> Curiosity drill sites (CheMin)</label>
       <label class="chk"><input type="checkbox" id="showCmPath" autocomplete="off"> Curiosity rover traverse</label>
       <div class="small" id="cmLegend" style="margin-top:3px;opacity:.85">Reference only, not used in route scoring: drill samples are ~2–6 cm, a CRISM pixel is ≈18 m.
         <span style="color:#ffd24a">Gold</span> = within 200 m of the planned route. Click a pin or its label for the measured minerals (again to close).</div>
       </div>
+      <h2>Display</h2>
+      <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
+      <div class="small" style="margin-top:6px">Terrain height ×2 and the overall tilt levelled for display only. Slopes, routes and budgets use true heights.</div>
     </div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn" id="schedNavBtn">MISSIONS<span class="car">▼</span></button>
+    <div class="sub" id="schedMenu"></div>
   </div>
   <div class="navitem">
     <button class="navbtn" id="infoNavBtn">INFO<span class="car">▼</span></button>
@@ -370,18 +455,7 @@
       <button class="mi" data-info="about">About this build</button>
       <button class="mi" data-info="sources">Data sources</button>
       <button class="mi" data-info="controls">Map controls</button>
-    </div>
-  </div>
-  <div class="spacer"></div>
-  <div id="siteLoc" title="–"><span class="k">Location:</span> <b id="siteName">Gale crater</b>
-    <button id="siteToggle" type="button" aria-expanded="false" aria-controls="siteMenu" title="Change landing site">▼</button>
-    <div id="siteMenu" class="sub" role="menu">
-      <button class="mi" data-site="gale" role="menuitem">Gale crater<small>Curiosity landing area · 4.78°S, 137.40°E</small></button>
-      <button class="mi" data-site="jezero" role="menuitem">Jezero crater<small>Perseverance landing area · 18.48°N, 77.39°E</small></button>
-      <button class="mi" data-site="mawrth" role="menuitem">Mawrth Vallis<small>Clay-rich layered terrain · 23.04°N, 18.46°W</small></button>
-      <button class="mi" data-site="meridiani" role="menuitem">Meridiani Planum<small>Opportunity, Victoria crater · 2.02°S, 5.48°W</small></button>
-      <button class="mi" data-site="custom" role="menuitem" id="siteCustom" hidden>Custom site<small>Saved in this browser</small></button>
-      <button class="mi" data-site="custom-new" role="menuitem" id="siteCustomNew">Custom data…<small>Build a site from your own DEM, image and CRISM</small></button>
+      <button class="mi" data-info="weather">Weather model</button>
     </div>
   </div>
   <div class="spacer"></div>
@@ -421,13 +495,33 @@
 
   <div class="sec" data-sec="science">
     <div class="small" id="sciLead"></div>
-    <h2>Objectives · a site must be strong in all picked</h2>
+    <h2>Objectives</h2>
     <div class="btns sciObj" id="sciObj"></div>
     <div class="small" id="sciCount"></div>
-    <div id="sciLegend"></div><div class="sciScale"><span>low</span><span>high value · dark = out of reach</span></div>
     <h2 id="sciTopHdr">Top sites</h2>
     <ol id="sciSites"></ol>
     <div class="small" id="sciNote" style="margin-top:8px"></div>
+    <button id="toPlan" disabled>Next: weather &amp; mission plan →</button>
+  </div>
+
+  <div class="sec plan" data-sec="plan">
+    <div class="small" id="planLead"></div>
+    <h2>Weather scenario (EMARS, 3 sols)</h2>
+    <div class="seg wxSeg"></div>
+    <h2>Flight rules · NO-GO at or above</h2>
+    <label class="sl" title="Flight rule: dust opacity at or above this is NO-GO">Dust τ limit <b id="wxTauLimTxt"></b><input type="range" id="wxTauLim" min="0.5" max="6" step="0.1"></label>
+    <label class="sl" title="Flight rule: 2 m wind at or above this is NO-GO">Wind limit <b id="wxWindLimTxt"></b><input type="range" id="wxWindLim" min="5" max="30" step="1"></label>
+    <h2 id="planDepHdr">Best departures</h2>
+    <div id="planDeps"></div>
+    <h2>Mission options</h2>
+    <div id="planOpts"></div>
+    <div class="small" id="planNote" style="margin-top:6px"></div>
+    <div class="btns" style="margin-top:10px"><button class="btn" id="planBack">← Back to science value</button></div>
+  </div>
+
+  <div class="sec" data-sec="scheduled">
+    <div class="small">Confirmed missions are saved in this browser. Pick one to load its route and weather and watch the traverse; switch between its EVAs with the buttons.</div>
+    <div id="schedList"></div>
   </div>
 
   <div class="sec" data-sec="conditions">
@@ -439,11 +533,6 @@
     <div class="small" style="margin-top:4px">Dashed lines = waypoints · white dot = crew position</div>
   </div>
 
-  <div class="sec" data-sec="display">
-    <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
-    <div class="small" style="margin-top:8px">Map view: terrain height ×2 and the overall tilt levelled for display only. Slopes, routes and budgets use true heights.</div>
-  </div>
-
   <div class="sec" data-sec="track">
     <div class="row"><span>Progress</span><b id="trkP">0%</b></div>
     <div class="row"><span>Status</span><b id="trkS">At habitat</b></div>
@@ -452,7 +541,7 @@
   </div>
 </div>
 
-<!-- MISSION / ROUTE / CREW panels: cards in the left column, each stays open until its × is pressed -->
+<!-- PLAN / READINESS panels: cards in the left column, each stays open until its × is pressed -->
 <div id="leftDock"></div>
 
 <!-- ================= INFO TAB ================= -->
@@ -462,6 +551,7 @@
     <button class="itab" data-info="about">About this build</button>
     <button class="itab" data-info="sources">Data sources</button>
     <button class="itab" data-info="controls">Map controls</button>
+    <button class="itab" data-info="weather">Weather model</button>
     <div style="flex:1"></div>
     <button class="itab" id="infoClose">← Back to map</button>
   </div>
@@ -483,6 +573,30 @@
       </ul>
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
     </div>
+    <div class="ipane" data-info="weather">
+      <h1>Weather model · NASA Ames Mars GCM / EMARS</h1>
+      <p>The page reads <code>web/data/weather_gale.json</code>, built by <code>python/emars_extract.py</code> from the public EMARS v1.0 files (Penn State Data Commons). Only the bytes of the grid points around Gale are downloaded (HTTP range requests on the NetCDF-3 files), not the 1–5 GB files.</p>
+      <h2>What the data is</h2>
+      <p>EMARS (Ensemble Mars Atmosphere Reanalysis System, Greybush et al. 2019) runs the <b>NASA Ames Mars GCM</b> (github.com/nasa/AmesGCM) and assimilates TES and MCS temperature retrievals. It gives hourly ground and air temperature, surface pressure, winds and dust opacity for Mars Years 24–33. It is a record of past Mars years, <b>not a forecast</b>: no real-time Mars weather forecast exists yet. Real past years are used as <b>scenarios</b>: a clear season (MY32), a dusty season (MY29) and the 2007 global dust storm (MY28).</p>
+      <h2>Limits of the GCM and how we handle them</h2>
+      <table class="src">
+        <tr><td>Running the GCM</td><td>Fortran + MPI on Linux, hours to days per Mars year → we use the published EMARS output instead of running the model</td></tr>
+        <tr><td>Resolution</td><td>One grid cell is about 5° × 6° (≈ 300 × 350 km), so the whole 10 km map is inside one cell → weather is one value per hour for the whole map; it changes the plan through <b>time</b>. Spatial detail comes from the terrain (wind-exposed ridges, hazards in poor visibility)</td></tr>
+        <tr><td>Not a forecast</td><td>Values are the weather of a past Mars year at that season → three real scenarios</td></tr>
+        <tr><td>Thin air</td><td>Air density ≈ 0.02 kg/m³: even 20 m/s pushes very little → wind matters through blowing dust and sand on exposed ground; dust and temperature drive the budget</td></tr>
+        <tr><td>Height mismatch</td><td>The GCM's smoothed ground is ≈ 3 km above the Gale floor → pressure moved hydrostatically to the habitat height (about 10–15 % above Curiosity REMS); wind scaled from the lowest model level (~36 m) to 2 m (×0.65)</td></tr>
+      </table>
+      <h2>How weather enters the route and GO / NO-GO</h2>
+      <table class="src">
+        <tr><td>Dust τ (visibility)</td><td>Two visibility classes (on foot τ ≥ 0.9 / 1.5, rover τ ≥ 1.5 / 3) lower the slope limit, make slopes cost more, keep a margin from blocked ground and slow travel. A* re-plans on that cost map. τ ≥ τ limit → NO-GO</td></tr>
+        <tr><td>Wind (2 m)</td><td>Above level 1 (on foot 7 m/s, rover 10 m/s) the most exposed 20 % of the ground costs ×2.5; above level 2 (10 / 15 m/s) the most exposed 10 % is blocked → a sheltered route. Wind ≥ wind limit → NO-GO</td></tr>
+        <tr><td>Temperature</td><td>Suit heater 1.5 W per °C below −40 °C (cooling 3 W per °C above +10 °C), rover cabin heating 25 W per °C below +5 °C, hour by hour from the battery</td></tr>
+        <tr><td>Time of day</td><td>On foot: depart after 06:00 and be back before 18:00 local mean solar time; an EVA longer than the 8 h limit is NO-GO</td></tr>
+      </table>
+      <p class="small">The route is chosen with the worst weather inside the expected EVA window, then the budget is integrated with the weather of each hour along the way. Every departure hour of the 3 sols is evaluated ("departure-time A*"). All thresholds are team assumptions. Source: Greybush, S. J., et al. (2019), Geosci. Data J. 6, 137–150; dataset doi:10.18113/D3W375.</p>
+      <h2>Mission planner and scheduled missions</h2>
+      <p class="small">Science Objectives → <b>Next</b>: the best departures for Habitat → A → B → Habitat are listed, plus split options (A in one EVA, B in the next good departure) when one EVA is too long for the O₂ / battery or the 8 h limit. Pick an option and press <b>Confirm</b> (only when the badge shows GO); it is saved under SCHEDULED, where it can be replayed on the map.</p>
+    </div>
     <div class="ipane" data-info="sources">
       <h1>Data used in this build</h1>
       <table class="src">
@@ -490,10 +604,11 @@
         <tr><td>Imagery</td><td id="srcImg">USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
         <tr><td>Routes · budget</td><td>Planned in the page: A* on the slope / cost grid of the DEM, with the team pipeline's models (Tobler walking speed × suit factor, Pandolf metabolic O₂ at Mars gravity; rover speed and Wh/km)</td></tr>
         <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
-        <tr><td>Science value</td><td id="srcSci">Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
+        <tr id="srcSci"><td>Scientific value</td><td>Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
         <tr id="srcCm"><td>Ground truth (Gale)</td><td>Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook (clay wt% from Thorpe et al. 2022); Curiosity traverse: NASA MMGIS. Shown in LAYERS on the map only, as reference: not used in route scoring</td></tr>
         <tr><td>Custom sites</td><td>Built in your browser from your own files with the same rules as the built-in sites (DEM; optional image, CRISM MTRDR, THEMIS; rover traverse from NASA MMGIS). Nothing is uploaded; the site is kept in this browser and can be downloaded as a package</td></tr>
-        <tr><td>Not in this build</td><td>Soft soil, boulders, live space weather (DONKI), radiation, rover photos</td></tr>
+        <tr><td>Weather</td><td>EMARS v1.0 reanalysis (NASA Ames Mars GCM + TES/MCS assimilation, Penn State), hourly point timeline at Gale for 3 real Mars-year scenarios — see Info → Weather model</td></tr>
+        <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos, real-time Mars weather forecast (none exists yet)</td></tr>
       </table>
       <p class="small" style="margin-top:12px" id="srcFoot">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
     </div>
@@ -518,18 +633,19 @@
     <div class="lbl" style="margin-top:4px">DISTANCE</div><div id="hDist">–</div>
     <div class="lbl" style="margin-top:4px">GRADE AHEAD</div><div id="hGrade">–</div>
   </div>
+  <div class="hbox" id="wxHud" style="display:none"><div class="lbl">MARS WEATHER · EMARS</div><div id="wxHudTxt">–</div></div>
   <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px">(sample data)</div></div>
   </div>
   <canvas id="arrow" width="128" height="128"></canvas>
   <div id="instr"><div class="main" id="hInstr">–</div><div class="warn" id="hWarn"></div></div>
   <canvas id="minimap" width="300" height="300"></canvas>
-  <canvas id="navmap" width="760" height="480"></canvas>
+  <canvas id="navmap" width="1248" height="500"></canvas>
   <div id="leak">💨 SUIT O₂ LEAK<br><span id="leakSub" style="font-size:12px">press ABORT to route home</span></div>
   <div id="sep">☢ SEP EVENT DETECTED — elevated proton flux<br><span style="font-size:12px">Shelter recommended · press ABORT to route home</span></div>
   <div id="arrive"></div>
   <div id="dash">
     <div><div class="k">SPEED</div><div class="v" id="dSpd">0.0 km/h</div></div>
-    <canvas id="att" width="240" height="240"></canvas>
+    <canvas id="att" width="480" height="480"></canvas>
     <div><div class="k">PITCH / ROLL</div><div class="v" id="dAtt">0° / 0°</div></div>
     <div><div class="k">RANGE</div><div class="v" id="dRange">– km</div></div>
   </div>
@@ -538,6 +654,7 @@
   <button id="goBtn" class="start">▶ Start EVA</button>
   <button id="speedBtn">Sim speed ×15</button>
   <button id="lookBtn">🖱 Mouse look: ON</button>
+  <button id="dashBtn">⬇ Look at monitor (V)</button>
   <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="leakBtn" class="danger">💨 Inject suit leak</button>
@@ -545,6 +662,8 @@
 </div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
+<div id="confirmWhy"></div>
+<button id="confirmBtn" disabled>✓ Confirm mission</button>
 <div id="tip" role="dialog" aria-modal="true" aria-label="How to move around the map">
   <div class="tipBox">
     <h3>Moving around the map</h3>
@@ -553,7 +672,6 @@
       <li><b>Right-drag</b> — tilt and rotate the view</li>
       <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
     </ul>
-    <div class="tipTouch">Touch screen: one finger moves the map, two fingers zoom and rotate.</div>
     <label class="chk"><input type="checkbox" id="tipHide"> Don't show again today</label>
     <button id="tipOk">Got it</button>
   </div>
@@ -677,7 +795,7 @@ const DEST = TERRAIN.destinations || [];
 }
 function fillStops() {
   if (WPS[1].off) {                                   // no route yet: only the habitat
-    document.getElementById('wp1Name').textContent = '—'; document.getElementById('wp1Txt').textContent = 'Pick objectives in Science value';
+    document.getElementById('wp1Name').textContent = '—'; document.getElementById('wp1Txt').textContent = 'Pick objectives in Science Objectives';
     document.getElementById('wp2Name').textContent = '—'; document.getElementById('wp2Txt').textContent = '';
     return;
   }
@@ -686,7 +804,7 @@ function fillStops() {
     document.getElementById(nid).textContent = w.name;
     // line 1: mineral · CRISM index and its peak value · patch area (or the science value of a priority site); line 2: coordinates
     const el = document.getElementById(id);
-    el.textContent = w.site ? `Science value ${Math.round(w.site.V * 100)} · ${sciCrits(w.site).join(', ') || 'no single strong criterion'}`
+    el.textContent = w.site ? `Scientific value ${Math.round(w.site.V * 100)} · ${sciCrits(w.site).join(', ') || 'no single strong criterion'}`
       : d ? `${d.label} · ${d.index} ${d.peak_index} · ${(d.area_m2 / 1e4).toFixed(1)} ha` : '';
     const c = document.createElement('span'); c.style.whiteSpace = 'nowrap'; c.textContent = pos;
     if (el.textContent) el.appendChild(document.createElement('br')); el.appendChild(c);
@@ -706,7 +824,7 @@ const SF_GO = 1.5;
 const LEAK_DRAIN_MIN = 50;    // contingency: a suit leak (rover: power fault) that by itself would empty the remaining reserve in this many minutes
 const MODES = {
   suit:  { name: 'On foot (EVA suit)', limit: TERRAIN.walk.slope_limit_deg,  wSlope: 0.25, wSoft: 0, eye: 1.7 },
-  rover: { name: 'Pressurized rover',  limit: TERRAIN.rover.slope_limit_deg, wSlope: 0.10, wSoft: 0, eye: 3.2 },
+  rover: { name: 'Pressurized rover',  limit: TERRAIN.rover.slope_limit_deg, wSlope: 0.10, wSoft: 0, eye: 2.0 },   // eye: seated driver of the open-frame rover
 };
 
 // ② slope (deg)
@@ -729,7 +847,7 @@ function computeCost(slope, soft, rock, limit, wSlope, wSoft) {
 }
 
 // ④ A* (8-neighbour)
-function astar(cost, s, g) {
+function astar(cost, s, g, limit = costLimit ?? params[mode].limit) {   // limit: slope limit of this cost map (weather can lower it)
   const total = N * N, gS = new Float64Array(total).fill(Infinity), came = new Int32Array(total).fill(-1), closed = new Uint8Array(total);
   const hk = [], hf = [];
   const push = (k, f) => { hk.push(k); hf.push(f); let n = hk.length - 1; while (n > 0) { const p = (n - 1) >> 1; if (hf[p] <= hf[n]) break; [hk[p], hk[n]] = [hk[n], hk[p]]; [hf[p], hf[n]] = [hf[n], hf[p]]; n = p; } };
@@ -745,7 +863,7 @@ function astar(cost, s, g) {
     for (const [di, dj, d] of nb) {
       const a = i + di, b = j + dj; if (a < 0 || a >= N || b < 0 || b >= N) continue;
       const nk = idx(a, b); if (closed[nk] || !isFinite(cost[nk])) continue;
-      if (Math.atan(Math.abs(data.h[nk] - data.h[k]) / (d * CELL)) * 180 / Math.PI > params[mode].limit) continue;   // the step itself must also respect the slope limit
+      if (Math.atan(Math.abs(data.h[nk] - data.h[k]) / (d * CELL)) * 180 / Math.PI > limit) continue;   // the step itself must also respect the slope limit
       const ng = gS[k] + d * CELL * (ck + cost[nk]) / 2;
       if (ng < gS[nk]) { gS[nk] = ng; came[nk] = k; push(nk, ng + H(nk)); }
     }
@@ -793,10 +911,10 @@ function budgetPts(pts, mode) {
 }
 // Smooth the ABORT route. A* moves in 45-degree steps on the 16 m grid, so first cut straight shortcuts where the terrain allows it
 // (line of sight), then round the corners with a moving average. Every point stays on a walkable cell (not blocked, not next to a blocked cell).
-function smoothReturn(cells, start) {
+function smoothReturn(cells, start, C = cost) {
   const walkable = (x, z) => {
     const k = cellAt(x, z), i = Math.floor(k / N), j = k % N;
-    return isFinite(cost[k]) && (i < 1 || isFinite(cost[k - N])) && (i >= N - 1 || isFinite(cost[k + N])) && (j < 1 || isFinite(cost[k - 1])) && (j >= N - 1 || isFinite(cost[k + 1]));
+    return isFinite(C[k]) && (i < 1 || isFinite(C[k - N])) && (i >= N - 1 || isFinite(C[k + N])) && (j < 1 || isFinite(C[k - 1])) && (j >= N - 1 || isFinite(C[k + 1]));
   };
   const chordOk = (a, b) => {
     const L = Math.hypot(b.x - a.x, b.z - a.z), m = Math.max(1, Math.ceil(L / (CELL * 0.5)));
@@ -834,7 +952,7 @@ let mean = 0; for (const z of data.h) mean += z; mean /= N * N;
 for (let k = 0; k < N * N; k++) data.h[k] -= mean;
 let hMin = Infinity, hMax = -Infinity; for (const z of data.h) { hMin = Math.min(hMin, z); hMax = Math.max(hMax, z); }
 
-let mode = 'suit', layer = 'img', cost = null;
+let mode = 'suit', layer = 'img', cost = null, costLimit = null, mmReady = false;   // cost / costLimit = the cost map in use (weather may tighten it)
 const params = { suit: { ...MODES.suit }, rover: { ...MODES.rover } };
 const supply = () => mode === 'suit' ? { o2: SUIT_O2_KG, wh: SUIT_BAT_WH } : { o2: ROVER_O2_KG, wh: ROVER_BAT_WH };
 // =================== Three.js scene ===================
@@ -930,7 +1048,7 @@ function mineralKeyOf(r, g, b) {
   return k;
 }
 const MIN_SHORT = { hematite: 'Hematite', clay: 'Fe/Mg clay', clay_oh: 'Fe/Mg-OH clay', poly_sulf: 'Poly. sulfate', mono_sulf: 'Mono. sulfate',
-  ferric_sulfate: 'Ferric sulfate*', hydrated: 'Hydrated (H₂O)', fine_hematite: 'Fine hematite*', olivine: 'Olivine', fe_olivine: 'Fe-olivine', hcp: 'High-Ca pyroxene' };
+  ferric_sulfate: 'Ferric sulfate', hydrated: 'Hydrated (H₂O)', fine_hematite: 'Fine hematite', olivine: 'Olivine', fe_olivine: 'Fe-olivine', hcp: 'High-Ca pyroxene' };
 let MINPX = null;
 if (MIN) {
   const im = new Image();
@@ -980,8 +1098,6 @@ function renderMineralFilter() {
 function afterMineralChange() {
   document.querySelectorAll('#minLegend .minItem').forEach(b => b.classList.toggle('off', !minOn.has(b.dataset.k)));
   renderMineralFilter();
-  const all = MIN ? Object.keys(MIN.classes).length : 0, cb = document.getElementById('showMin');
-  cb.checked = minOn.size === all && all > 0; cb.indeterminate = minOn.size > 0 && minOn.size < all;   // ☑ all · ☐ none · – some
   minMesh.visible = minOn.size > 0 && !fp;            // nothing lit = nothing drawn (never in the first-person view)
 }
 function toggleMineral(k) { if (minOn.has(k)) minOn.delete(k); else minOn.add(k); afterMineralChange(); }
@@ -993,41 +1109,133 @@ scene.add(wire);
 
 
 
-// habitat
-const hab = new THREE.Group(); const white = new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.5 });
-const base = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 8, 32), white); base.position.y = 4; hab.add(base);
-const dome = new THREE.Mesh(new THREE.SphereGeometry(14, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), white); dome.position.y = 8; hab.add(dome);
-const tubeH = new THREE.Mesh(new THREE.BoxGeometry(26, 6, 6), white); tubeH.position.set(20, 3, 0); hab.add(tubeH);
-// foundation pad: the habitat stands on a levelled pad that reaches down to the lowest ground under it (no gap on sloping ground)
-const padMat = new THREE.MeshStandardMaterial({ color: 0x8b7766, roughness: 1, metalness: 0 });
-const padDome = new THREE.Mesh(new THREE.CylinderGeometry(15.5, 15.5, 1, 40).translate(0, -0.5, 0), padMat); hab.add(padDome);     // top at y = 0
-const padTube = new THREE.Mesh(new THREE.BoxGeometry(27, 1, 8).translate(20, -0.5, 0), padMat); hab.add(padTube);
-// sit the habitat on the ground under its whole footprint: floor = highest ground (nothing is buried), pad = down to the lowest ground
-function seatHabitat() {
-  const k = hab.scale.x, cx = hab.position.x, cz = hab.position.z, hs = [];
-  const at = (lx, lz) => hs.push(heightAt(cx + lx * k, cz + lz * k));
-  for (const r of [0, 5, 10, 15.5]) for (let a = 0; a < 24; a++) { at(Math.cos(a / 24 * 2 * Math.PI) * r, Math.sin(a / 24 * 2 * Math.PI) * r); if (!r) break; }   // dome + pad ring
-  for (let lx = 7; lx <= 33.5; lx += 2) for (const lz of [-4, 0, 4]) at(lx, lz);                                                                // tunnel + pad
-  const top = Math.max(...hs), low = Math.min(...hs);
-  hab.position.y = top;
-  const depth = Math.max(0.5, (top - low) / k + 1.5);              // in the model's own units (it is scaled by k); 1.5 sinks the pad's edge into the ground
-  padDome.scale.y = padTube.scale.y = depth;
+// ===================== habitat: a surface base of linked domes with airlocks (original design) =====================
+// Model units (scaled by SC like the rest of the map markers); +x east, +z south.
+// A large dome and a smaller one joined by a pressurised corridor; four airlock tubes stick out in different directions,
+// so every EVA leaves through the airlock that faces its first stop and comes back through the one facing its last.
+// true size, not the map-marker scale SC: 1 model unit = HAB_K metres → main dome ≈ 19 m across, airlock tubes ≈ 4 m wide,
+// in proportion with a 2 m eye height in the first-person view. The route keep-out and the airlock doors use the same scale.
+const HAB_K = 0.8;
+const HAB_DOMES = [{ x: 0, z: 0, r: 12 }, { x: -26, z: 13, r: 8 }];
+const HAB_LINKS = [[0, 1]];
+const HAB_LOCKS = [{ d: 0, a: 0 }, { d: 0, a: -70 }, { d: 0, a: 70 }, { d: 1, a: 125 }].map(o => ({ ...o, a: o.a * Math.PI / 180 }));
+const WALL_H = 5, LINK_R = 2.2, LOCK_R = 2.6, LOCK_LEN = 9;
+const lockEnds = L => { const D = HAB_DOMES[L.d], c = Math.cos(L.a), s = Math.sin(L.a);
+  return { ax: D.x + c * D.r, az: D.z + s * D.r, bx: D.x + c * (D.r + LOCK_LEN), bz: D.z + s * (D.r + LOCK_LEN), c, s }; };
+
+const hab = new THREE.Group();
+const habMat = {
+  shell: new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.6, flatShading: true, emissive: 0x2a2a2a }),
+  glass: new THREE.MeshStandardMaterial({ color: 0xd2dde2, roughness: 0.25, metalness: 0.1, flatShading: true, emissive: 0x1c2226 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x8e959b, roughness: 0.45, metalness: 0.4, flatShading: true }),
+  dark:  new THREE.MeshStandardMaterial({ color: 0x3b4146, roughness: 0.7 }),
+  caution: new THREE.MeshStandardMaterial({ color: 0xc08a2e, roughness: 0.6 }),
+  rib:   new THREE.LineBasicMaterial({ color: 0x6f787f }),
+};
+// a group whose local +x points from (ax, az) towards (bx, bz)
+function axisGroup(ax, az, bx, bz) { const g = new THREE.Group(); g.position.set(ax, 0, az); g.rotation.y = -Math.atan2(bz - az, bx - ax); hab.add(g); return { g, L: Math.hypot(bx - ax, bz - az) }; }
+const tubeGeo = (r, L, y) => new THREE.CylinderGeometry(r, r, L, 18, 1).rotateZ(Math.PI / 2).translate(L / 2, y, 0);
+const ringGeo = (r, w, x, y) => new THREE.TorusGeometry(r, w, 6, 22).rotateY(Math.PI / 2).translate(x, y, 0);
+// domes: panelled wall, rim, faceted glass cap with geodesic ribs, top hatch, skirt
+for (const D of HAB_DOMES) {
+  const g = new THREE.Group(); g.position.set(D.x, 0, D.z); hab.add(g);
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(D.r * 1.06, D.r * 1.1, 0.9, 24).translate(0, 0.45, 0), habMat.metal));          // skirt
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(D.r, D.r * 1.04, WALL_H, 20).translate(0, WALL_H / 2, 0), habMat.shell));       // wall panels
+  g.add(new THREE.Mesh(new THREE.TorusGeometry(D.r * 1.01, 0.4, 6, 40).rotateX(Math.PI / 2).translate(0, WALL_H, 0), habMat.metal));
+  const cap = new THREE.SphereGeometry(D.r * 0.97, 14, 5, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.55, 1).translate(0, WALL_H, 0);
+  g.add(new THREE.Mesh(cap, habMat.glass));
+  g.add(new THREE.LineSegments(new THREE.EdgesGeometry(cap, 1).scale(1.004, 1.004, 1.004), habMat.rib));   // just off the glass (no flicker)
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(D.r * 0.22, D.r * 0.24, 0.7, 20).translate(0, WALL_H + D.r * 0.53 + 0.2, 0), habMat.metal));   // top hatch
+  for (let k = 0; k < 2; k++) {                                         // two dark ports on the wall
+    const a = (k ? 0.8 : -0.8) + Math.PI, p = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.4, 16).rotateZ(Math.PI / 2), habMat.dark);
+    p.position.set(Math.cos(a) * D.r * 1.02, WALL_H * 0.45, Math.sin(a) * D.r * 1.02); p.rotation.y = -a; g.add(p);
+  }
 }
-{ const hx = wx(HAB[1]) - 22, hz = wz(HAB[0]) + 22; hab.position.set(hx, heightAt(hx, hz), hz); } hab.scale.setScalar(SC); seatHabitat(); scene.add(hab);
-// habitat keep-out: no route may cross the dome or the tunnel (as drawn, scale SC) or come within HAB_MARGIN of them.
-// Every route starts and ends at the airlock, just outside the tunnel end (the tunnel points east, +x).
-const HAB_MARGIN = 12, HAB_C = { x: hab.position.x, z: hab.position.z };
-const HAB_R = 14 * SC + HAB_MARGIN, HAB_TX = [7 * SC, 33 * SC + HAB_MARGIN], HAB_TW = 3 * SC + HAB_MARGIN;
-const inHabitat = (x, z) => { const dx = x - HAB_C.x, dz = z - HAB_C.z; return dx * dx + dz * dz < HAB_R * HAB_R || (dx > HAB_TX[0] && dx < HAB_TX[1] && Math.abs(dz) < HAB_TW); };
-const HAB_CELLS = [];
-for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (inHabitat(wx(j), wz(i))) HAB_CELLS.push(idx(i, j));
-const HAB_DOOR = (() => {            // first open cell east of the tunnel end, on the tunnel axis
-  for (let d = HAB_TX[1]; d < HAB_TX[1] + 10 * CELL; d += CELL / 2) { const k = cellAt(HAB_C.x + d, HAB_C.z); if (!inHabitat(wx(k % N), wz(Math.floor(k / N)))) return [Math.floor(k / N), k % N]; }
-  return HAB;
+// corridors between the domes
+for (const [i, j] of HAB_LINKS) {
+  const A = HAB_DOMES[i], B = HAB_DOMES[j], { g, L } = axisGroup(A.x, A.z, B.x, B.z);
+  g.add(new THREE.Mesh(tubeGeo(LINK_R, L, LINK_R + 0.3), habMat.shell));
+  for (const f of [0.38, 0.5, 0.62]) g.add(new THREE.Mesh(ringGeo(LINK_R + 0.15, 0.22, L * f, LINK_R + 0.3), habMat.metal));
+}
+// airlocks: a tube out of the dome wall, ribs, a heavy frame and a round end plate with a rectangular door in it,
+// and a ramp onto the ground. No two faces share a plane (that z-fighting made the airlock ends flicker).
+const openTube = (r, x0, x1, y, seg = 28) => new THREE.CylinderGeometry(r, r, x1 - x0, seg, 1, true).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, y, 0);
+const discX = (r, h, x, y, seg = 32) => new THREE.CylinderGeometry(r, r, h, seg).rotateZ(Math.PI / 2).translate(x, y, 0);   // a closed disc facing ±x
+for (const Lk of HAB_LOCKS) {
+  const e = lockEnds(Lk), { g } = axisGroup(e.ax - e.c * 1.5, e.az - e.s * 1.5, e.bx, e.bz), L = LOCK_LEN + 1.5, y = LOCK_R + 0.3;
+  g.add(new THREE.Mesh(openTube(LOCK_R, 0, L - 0.6, y), habMat.shell));                                         // tube (open: its ends are hidden)
+  for (const x of [L * 0.4, L * 0.65]) g.add(new THREE.Mesh(ringGeo(LOCK_R + 0.15, 0.25, x, y), habMat.metal));
+  // frame: an outer collar and a front flange ring
+  g.add(new THREE.Mesh(openTube(LOCK_R + 0.45, L - 0.9, L, y, 32), habMat.metal));
+  g.add(new THREE.Mesh(new THREE.RingGeometry(LOCK_R - 0.15, LOCK_R + 0.45, 40).rotateY(Math.PI / 2).translate(L + 0.01, y, 0), habMat.metal));
+  // end plate: a round disc closing the tube, with radial ribs and rim bolts; a tall rectangular door set in its middle
+  g.add(new THREE.Mesh(discX(LOCK_R + 0.3, 0.3, L - 0.05, y), habMat.shell));                                   // round plate, face at L + 0.10
+  for (let k = 0; k < 12; k++) {
+    const a = k / 12 * Math.PI * 2, rr = (1.45 + LOCK_R + 0.15) / 2;
+    if (Math.abs(Math.sin(a)) > 0.75) continue;                                                                  // leave room above / below the door
+    const rib = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, LOCK_R + 0.15 - 1.45), habMat.metal);
+    rib.position.set(L + 0.13, y + Math.sin(a) * rr, Math.cos(a) * rr); rib.rotation.x = -a; g.add(rib);
+  }
+  for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2; g.add(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.12).translate(L + 0.13, y + Math.sin(a) * (LOCK_R + 0.12), Math.cos(a) * (LOCK_R + 0.12)), habMat.dark)); }
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.85, 1.55).translate(L + 0.13, y - 0.05, 0), habMat.dark));      // door frame (dark seal)
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.6, 1.3).translate(L + 0.18, y - 0.05, 0), habMat.shell));       // the door
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.38, 0.7).translate(L + 0.245, y + 0.85, 0), habMat.dark));     // small window
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.16, 1.1).translate(L + 0.245, y - 1.0, 0), habMat.caution));   // caution stripe
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.42).translate(L + 0.28, y - 0.05, 0.3), habMat.dark));     // lever handle
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.12).translate(L + 0.25, y - 0.05, 0.46), habMat.metal)); // handle pivot
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.25, LOCK_R * 1.5).translate(L + 1.7, 0.12, 0), habMat.metal));          // ramp
+}
+// footprint sample points (model units) for seating the base and for the placement search
+const HAB_FOOT = [];
+for (const D of HAB_DOMES) { HAB_FOOT.push([D.x, D.z]); for (const r of [D.r * 0.5, D.r + 1.6]) for (let a = 0; a < 16; a++) HAB_FOOT.push([D.x + Math.cos(a / 16 * 2 * Math.PI) * r, D.z + Math.sin(a / 16 * 2 * Math.PI) * r]); }
+const footSeg = (ax, az, bx, bz, w) => { const L = Math.hypot(bx - ax, bz - az), nx = -(bz - az) / L, nz = (bx - ax) / L;
+  for (let t = 0; t <= L; t += 2) for (const o of [-w, 0, w]) HAB_FOOT.push([ax + (bx - ax) * t / L + nx * o, az + (bz - az) * t / L + nz * o]); };
+for (const [i, j] of HAB_LINKS) footSeg(HAB_DOMES[i].x, HAB_DOMES[i].z, HAB_DOMES[j].x, HAB_DOMES[j].z, LINK_R + 1);
+for (const Lk of HAB_LOCKS) { const e = lockEnds(Lk); footSeg(e.ax, e.az, e.bx + e.c * 3.4, e.bz + e.s * 3.4, LOCK_R + 1); }
+// sit the base straight on the map surface (no foundation pad): floor = median ground height under its footprint,
+// so on the (flattest available) site the uphill edge just touches into the ground and the downhill edge just clears it
+function seatHabitat() {
+  const k = hab.scale.x, cx = hab.position.x, cz = hab.position.z, hs = HAB_FOOT.map(([lx, lz]) => heightAt(cx + lx * k, cz + lz * k)).sort((a, b) => a - b);
+  hab.position.y = hs[Math.floor(hs.length / 2)];
+}
+// placement: the flattest spot within ~130 m of the planned habitat point (less pad, and every airlock opens onto usable ground)
+const HAB_POS = (() => {
+  const x0 = wx(HAB[1]), z0 = wz(HAB[0]); let best = { x: x0, z: z0, s: Infinity };
+  for (let di = -14; di <= 14; di++) for (let dj = -14; dj <= 14; dj++) {
+    if (di * di + dj * dj > 196) continue;
+    const x = x0 + dj * CELL, z = z0 + di * CELL; let lo = Infinity, hi = -Infinity;
+    for (const [lx, lz] of HAB_FOOT) { const h = heightRaw(x + lx * HAB_K, z + lz * HAB_K); if (h < lo) lo = h; if (h > hi) hi = h; }
+    const s = (hi - lo) + 0.01 * Math.hypot(x - x0, z - z0);
+    if (s < best.s) best = { x, z, s };
+  }
+  return best;
 })();
-function blockHabitat(c) {           // applied to every cost map used for routing (planned route, ABORT, live return estimate)
+hab.position.set(HAB_POS.x, 0, HAB_POS.z); hab.scale.setScalar(HAB_K); seatHabitat(); scene.add(hab);
+{ const k = cellAt(HAB_POS.x, HAB_POS.z), c = [Math.floor(k / N), k % N]; WPS[0].cell = c; WPS0[0].cell = [...c]; }   // the H marker sits on the base
+// keep-out: no route may cross a dome, corridor or airlock (as drawn) or come within HAB_MARGIN metres of them
+const HAB_MARGIN = 10, HAB_C = { x: hab.position.x, z: hab.position.z };
+const segDist = (px, pz, ax, az, bx, bz) => { const vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((px - ax) * vx + (pz - az) * vz) / (vx * vx + vz * vz))); return Math.hypot(px - ax - vx * t, pz - az - vz * t); };
+function inHabitat(x, z) {
+  const lx = (x - HAB_C.x) / HAB_K, lz = (z - HAB_C.z) / HAB_K, m = HAB_MARGIN / HAB_K;
+  for (const D of HAB_DOMES) if (Math.hypot(lx - D.x, lz - D.z) < D.r + m) return true;
+  for (const [i, j] of HAB_LINKS) if (segDist(lx, lz, HAB_DOMES[i].x, HAB_DOMES[i].z, HAB_DOMES[j].x, HAB_DOMES[j].z) < LINK_R + m) return true;
+  for (const Lk of HAB_LOCKS) { const e = lockEnds(Lk); if (segDist(lx, lz, e.ax, e.az, e.bx + e.c * 3.4, e.bz + e.s * 3.4) < LOCK_R + m) return true; }
+  return false;
+}
+const HAB_CELLS = [];
+{ const r = Math.ceil(60 * HAB_K / CELL) + 2, ci = WPS[0].cell[0], cj = WPS[0].cell[1];
+  for (let i = Math.max(0, ci - r); i <= Math.min(N - 1, ci + r); i++) for (let j = Math.max(0, cj - r); j <= Math.min(N - 1, cj + r); j++) if (inHabitat(wx(j), wz(i))) HAB_CELLS.push(idx(i, j)); }
+// the airlock doors: the hatch position (where the drawn route starts / ends) and the first open grid cell straight out of it
+const HAB_DOORS = HAB_LOCKS.map(Lk => {
+  const e = lockEnds(Lk), mouth = { x: HAB_C.x + (e.bx + e.c * 1.6) * HAB_K, z: HAB_C.z + (e.bz + e.s * 1.6) * HAB_K };
+  for (let d = 0; d < 12 * CELL; d += CELL / 2) { const k = cellAt(mouth.x + e.c * d, mouth.z + e.s * d); if (!inHabitat(wx(k % N), wz(Math.floor(k / N)))) return { mouth, cell: [Math.floor(k / N), k % N] }; }
+  return { mouth, cell: [...WPS[0].cell] };
+});
+// airlocks ordered by how close their door is to a point (the first one is used; the others are fallbacks)
+const doorsToward = (x, z) => HAB_DOORS.slice().sort((p, q) => Math.hypot(wx(p.cell[1]) - x, wz(p.cell[0]) - z) - Math.hypot(wx(q.cell[1]) - x, wz(q.cell[0]) - z));
+function blockHabitat(c) {           // applied to every cost map used for routing (planned route, weather re-routes, ABORT, live return estimate)
   for (const k of HAB_CELLS) c[k] = Infinity;
-  const d = idx(HAB_DOOR[0], HAB_DOOR[1]); if (!isFinite(c[d])) c[d] = 1;
+  for (const d of HAB_DOORS) { const k = idx(d.cell[0], d.cell[1]); if (!isFinite(c[k])) c[k] = 1; }
   return c;
 }
 // waypoint beacons + labels
@@ -1183,6 +1391,10 @@ function paint(force) {
     lgEl.style.background = css(COSTR);
     document.getElementById('lg0').textContent = 'easy'; document.getElementById('lg1').textContent = `hard · red = blocked (${mode === 'suit' ? 'on foot' : 'rover'})`; return;
   }
+  if (L === 'wx') {                       // Weather layer: imagery underneath, haze and sunlight from the weather
+    terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
+    document.getElementById('lg0').textContent = 'EMARS reanalysis · Gale'; document.getElementById('lg1').textContent = 'hourly · 3 sols'; return;
+  }
   if (L === 'img') {
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
     document.getElementById('lg0').textContent = 'HiRISE colour mosaic'; document.getElementById('lg1').textContent = 'USGS · processed colour'; return;
@@ -1197,21 +1409,20 @@ function paint(force) {
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
 if (MIN) {
-  // legend = per-mineral switches (largest area first): colour · name · area %; * = low-confidence detection; click to show / hide
-  const ents = Object.entries(MIN.classes).sort((a, b) => (b[1].area_pct ?? 0) - (a[1].area_pct ?? 0)), lowAny = ents.some(([, c]) => c.low);
+  // legend = per-mineral switches (largest area first): colour · name · area %; click to show / hide (low-confidence detections say so in the hover text)
+  const ents = Object.entries(MIN.classes).sort((a, b) => (b[1].area_pct ?? 0) - (a[1].area_pct ?? 0));
   const leg = document.getElementById('minLegend'); leg.innerHTML = '';
   for (const [k, c] of ents) {
     const b = document.createElement('button'); b.type = 'button'; b.className = minOn.has(k) ? 'minItem' : 'minItem off'; b.dataset.k = k;   // all unlit at start
     b.title = `${c.index}${c.threshold != null ? ` · robust z ≥ ${c.threshold}` : ''}${c.low ? ' · low confidence' : ''} · click to show / hide`;
     const dot = document.createElement('i'); b.style.setProperty('--c', `rgb(${c.color.join(',')})`);
-    b.append(dot, `${c.label}${c.low ? '*' : ''} ${c.area_pct}%`); b.onclick = () => toggleMineral(k); leg.appendChild(b);
+    b.append(dot, `${c.label} ${c.area_pct}%`); b.onclick = () => toggleMineral(k); leg.appendChild(b);
   }
   const ctl = document.createElement('span'); ctl.className = 'minCtl';
-  ctl.innerHTML = 'Show <button type="button" data-all="1">all</button> · <button type="button" data-all="0">none</button>' + (lowAny ? ' · * low confidence' : '');
+  ctl.innerHTML = 'Show <button type="button" data-all="1">all</button> · <button type="button" data-all="0">none</button>';
   ctl.querySelectorAll('button').forEach(b => b.onclick = () => setAllMinerals(b.dataset.all === '1')); leg.appendChild(ctl);
   document.getElementById('srcMin').textContent = MIN.source;
-} else { document.getElementById('showMin').parentElement.style.display = 'none'; }
-document.getElementById('showMin').onchange = e => setAllMinerals(e.target.checked);   // select-all box: all on / all off
+} else { document.getElementById('minHdr').style.display = 'none'; }   // the header is a label only: minerals are switched with the legend and Show all / none
 
 // ===================== SCIENCE VALUE layer =====================
 // Data from Min_trial/science.py (same config and grid as the pipeline):
@@ -1243,9 +1454,9 @@ function sciSync() {
   sciMesh.visible = on; for (const p of sciPins) p.mesh.visible = on;
 }
 // smooth camera move to a site (keeps the viewing direction, comes closer if far away)
-function sciFly(x, y, z) {
+function sciFly(x, y, z, dist = 0) {   // dist > 0: view from that distance (to fit a whole route)
   const t0 = performance.now(), D = 900, fromT = controls.target.clone(), fromC = camera.position.clone();
-  const toT = new THREE.Vector3(x, y, z), off = fromC.clone().sub(fromT); off.setLength(Math.min(off.length(), 900 * SC));
+  const toT = new THREE.Vector3(x, y, z), off = fromC.clone().sub(fromT); off.setLength(dist > 0 ? dist : Math.min(off.length(), 900 * SC));
   const toC = toT.clone().add(off);
   const step = () => {
     const k = Math.min(1, (performance.now() - t0) / D), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
@@ -1316,6 +1527,7 @@ function sciOverlay(E) {
 }
 function sciRender() {
   const E = sciEvaluate(); sciOverlay(E); sciSitesNow = sciPick.size ? sciPickSites(E) : [];
+  document.getElementById('toPlan').disabled = !sciSitesNow.length;     // the mission planner needs at least one site
   document.getElementById('sciCount').textContent = sciPick.size
     ? (() => {                                                                       // qualifying area in hectares (one mesh cell = covers / mesh)
         const cellM2 = SCI.overlay.covers_m[0] / E.W * SCI.overlay.covers_m[1] / E.H, ha = E.pass * cellM2 / 1e4, pct = E.reach ? 100 * E.pass / E.reach : 0;
@@ -1323,7 +1535,7 @@ function sciRender() {
           : sciPick.size > 1 ? `No reachable place is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}. No route: drop one objective.`
           : `No reachable place is strong (score ≥ ${HIGH}) in ${sciPickText()} at this site. No route: pick another objective.`;
       })()
-    : 'No objective picked yet. The map shows the value of every reachable place with all six objectives counted equally.';
+    : '';
   document.getElementById('sciTopHdr').textContent = sciPick.size ? `Top sites · ${sciPickText()}` : 'Top sites';
   for (const p of sciPins) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.el.remove(); }
   sciPins.length = 0;
@@ -1400,6 +1612,7 @@ function setPriority(k, quiet = false) {
 }
 function toggleObjective(key) {
   if (sciPick.has(key)) sciPick.delete(key); else sciPick.add(key);
+  planReset();                                                    // a changed objective set invalidates the mission options
   document.querySelectorAll('#sciObj .btn').forEach(b => b.classList.toggle('on', sciPick.has(b.dataset.k)));
   sciRender();
   if (drawerEl.classList.contains('folded')) setFolded(true);       // keep the folded title's objective list current
@@ -1408,10 +1621,10 @@ function toggleObjective(key) {
   setPriority(sciSitesNow.length ? 'science' : 'none');         // the route always matches what the drawer shows
 }
 // route through the current stops on the current mode's cost map (same A* + smoothing + budget model as the ABORT route)
-function scienceRoute() {
+function scienceRoute(C = cost, lim = params[mode].limit) {   // C, lim: a weather cost map and its (lower) slope limit
   // computeCost() opens a 5 × 5 square around every waypoint whatever its slope; for this route those steep cells stay closed,
   // and each stop moves to the nearest cell within the slope limit (≤ 6 cells ≈ 100 m away), so the whole route keeps the limit
-  const lim = params[mode].limit, c2 = cost.map((c, k) => slope[k] > lim ? Infinity : c);
+  const c2 = C.map((c, k) => slope[k] > lim ? Infinity : c);
   const flat = ([i0, j0]) => {
     let best = null, bd = Infinity;
     for (let di = -6; di <= 6; di++) for (let dj = -6; dj <= 6; dj++) {
@@ -1420,18 +1633,21 @@ function scienceRoute() {
     }
     return best;
   };
-  const stops = [flat(HAB_DOOR), flat(WPS[1].cell), flat(WPS[2].cell)]; if (stops.some(c => !c)) return null;   // start / end = the airlock
-  const legs = [[0, 1], [1, 2], [2, 0]], at = n => ({ x: wx(stops[n][1]), z: wz(stops[n][0]) });
-  const pts = [], stopIdx = [0], keep = cost;
-  cost = c2;                                           // smoothReturn() checks walkability on the global cost map
-  try {
-    for (const [a, b] of legs) {
-      const cells = astar(c2, stops[a], stops[b]); if (!cells) return null;
-      const leg = cells.length > 1 ? smoothReturn(cells, at(a)) : [at(a)];
-      if (pts.length) leg.shift();                     // each leg starts where the previous one ended
-      pts.push(...leg); stopIdx.push(pts.length - 1);
-    }
-  } finally { cost = keep; }
+  // leave through the airlock nearest the first stop, come back through the one nearest the last stop (fallback: the next nearest)
+  const pick = w => doorsToward(wx(w.cell[1]), wz(w.cell[0])).find(d => flat(d.cell));
+  const dOut = pick(WPS[1]), dBack = pick(WPS[2].dup ? WPS[1] : WPS[2]); if (!dOut || !dBack) return null;
+  const stops = [flat(dOut.cell), flat(WPS[1].cell), flat(WPS[2].cell), flat(dBack.cell)]; if (stops.some(c => !c)) return null;
+  const legs = [[0, 1], [1, 2], [2, 3]], at = n => ({ x: wx(stops[n][1]), z: wz(stops[n][0]) });
+  const pts = [], stopIdx = [0];
+  for (const [a, b] of legs) {
+    const cells = astar(c2, stops[a], stops[b], lim); if (!cells) return null;
+    const leg = cells.length > 1 ? smoothReturn(cells, at(a), c2) : [at(a)];
+    if (pts.length) leg.shift();                       // each leg starts where the previous one ended
+    pts.push(...leg); stopIdx.push(pts.length - 1);
+  }
+  // the drawn route starts at the outbound hatch and ends at the return hatch (straight out of / into the airlock)
+  pts.unshift({ ...dOut.mouth }); for (let k = 1; k < stopIdx.length; k++) stopIdx[k]++;
+  pts.push({ ...dBack.mouth }); stopIdx[stopIdx.length - 1] = pts.length - 1;
   const path = pts.map(q => cellAt(q.x, q.z)), b = budgetPts(pts, mode);
   b.blocked = 0; b.maxSlope = Math.max(...path.map(k => slope[k]));       // like the pipeline: steepest grid cell crossed (point-to-point heights pick up DEM noise)
   const plan = { path, pts: pts.map(q => new THREE.Vector3(q.x, heightAt(q.x, q.z) + 2.5, q.z)), b, stopIdx, dwell: new Set(), stops: MISSION.slice() };
@@ -1441,12 +1657,12 @@ function scienceRoute() {
     for (let q = sp.length ? 1 : 0; q <= m; q++) sp.push({ x: A.x + (B.x - A.x) * q / m, z: A.z + (B.z - A.z) * q / m });
   }
   const spath = sp.map(q => cellAt(q.x, q.z)), sb = budgetPts(sp, mode);
-  sb.blocked = new Set(spath.filter(k => !isFinite(cost[k]))).size; sb.maxSlope = Math.max(...spath.map(k => slope[k]));
+  sb.blocked = new Set(spath.filter(k => !isFinite(C[k]))).size; sb.maxSlope = Math.max(...spath.map(k => slope[k]));
   return { plan, straight: { path: spath, pts: sp.map(q => new THREE.Vector3(q.x, heightAt(q.x, q.z) + 2.5, q.z)), b: sb } };
 }
 if (SCI) {
   const R = SCI.reach;
-  document.getElementById('sciLead').textContent = `Pick the objectives this EVA must serve: only places strong in all of them are kept, and the route visits the best two (Habitat → A → B → Habitat). Value = science score × reachability; a place counts only if a suited crew can walk there and back within ${Math.round(R.reserve_frac * 100)}% of suit O₂ (${R.limit} kg) and ${R.max_eva_h} h.`;
+  document.getElementById('sciLead').innerHTML = `Pick the objectives this EVA must serve.<br>Limits: round-trip on foot within ${Math.round(R.reserve_frac * 100)}% suit O₂ (${R.limit} kg) and ${R.max_eva_h} h.`;
   const areaKm = (SCI.overlay.covers_m[0] / 1000).toFixed(SCI.overlay.covers_m[0] >= 9500 ? 0 : 1),
         absIdx = /absolute/.test(SCI.sources?.crism?.normalize || '');
   document.getElementById('sciNote').textContent = (absIdx
@@ -1461,14 +1677,24 @@ if (SCI) {
   WPS[1].off = WPS[2].off = true; placeWaypoints(); fillStops();       // start: only the habitat, no route until objectives are picked
   if (!MINPX) addEventListener('minerals-ready', () => sciRender(), { once: true });   // fill in the per-site mineral lines once the image is read
   document.getElementById('showSci').onchange = e => { sciSync(); if (e.target.checked) openSection('science'); };
-  const openSci = () => setTimeout(() => openSection('science'), 0);  // after the module has finished (the drawer code is further down)
-  if (window.__introDone) openSci(); else addEventListener('intro-done', openSci, { once: true });
+  // the Science Objectives panel no longer opens by itself after the intro: it opens from PLAN → Science Objectives
 } else {
   sciRouteKey = 'minerals';                                            // no science data: fall back to the pipeline's EVA-07 route
-  document.getElementById('showSci').parentElement.style.display = 'none';
+  document.getElementById('showSci').parentElement.style.display = 'none'; document.getElementById('sciLegendBox').style.display = 'none';
 }
-document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('#layers button').forEach(x => x.classList.remove('on')); b.classList.add('on'); layer = b.dataset.l; paint(); });
+// switch the data layer. The Weather layer shows its controls where the CRISM options are and switches the
+// weather-aware planning on / off (refresh = false: the caller recomputes the route itself)
+function setLayer(l, refresh = true) {
+  document.querySelectorAll('#layers button').forEach(x => x.classList.toggle('on', x.dataset.l === l));
+  const wasWx = layer === 'wx'; layer = l;
+  document.getElementById('minOpts').style.display = l === 'wx' ? 'none' : '';
+  document.getElementById('wxCtl').style.display = l === 'wx' ? '' : 'none';
+  minMesh.visible = l !== 'wx' && !!MIN && minOn.size > 0;
+  if (l !== 'wx' && wxState.play) document.getElementById('wxPlay').click();
+  if (!refresh) return;
+  if (wasWx !== (l === 'wx') && basePlan) applyPlan(); else { paint(); wxRender(); }
+}
+document.querySelectorAll('#layers button').forEach(b => b.onclick = () => setLayer(b.dataset.l));
 
 // =================== route computation ===================
 let plan = null, straight = null, optTube = null, retTube = null, strTube = null, arLine = null;   // optTube = way out (cyan), retTube = way back (violet)
@@ -1514,22 +1740,170 @@ function stopIdxFor(rows) {                // index of the route point nearest t
   out.push(rows.length - 1); return out;
 }
 
+// =================== WEATHER: EMARS point timeline at Gale ===================
+// One value per hour for the whole 10 km map: the GCM grid cell (~300 km) is far larger than the area, so weather
+// varies in TIME, not across the map. Spatial detail comes from the terrain (exposure to wind, hazards in poor visibility).
+let WX = null;
+if (SITE_ID === 'gale') { try { const r = await fetch(DATA + 'weather_gale.json'); if (r.ok) WX = await r.json(); } catch (e) { console.warn('weather data not loaded', e); } }   // EMARS covers Gale only
+// flight rules and weather -> cost / budget model (team assumptions; the NO-GO limits are tunable with the sliders)
+const WXR = {
+  wind2m: 0.65,          // 2 m wind ≈ 0.65 × wind at the lowest model level (~36 m): log profile, roughness 1 cm
+  dustH_km: 3.0,         // effective near-surface dust scale height for the visibility estimate (3.912 × H / τ)
+  daylight: [6, 18],     // on foot: depart after and return before (local mean solar time)
+  // tauVis: dust τ of visibility class 1 / 2 · visLim: slope-limit cut (°) · visBuf: margin from blocked ground (cells) · wind: 2 m wind of class 1 / 2
+  suit:  { tauNoGo: 2.0, windNoGo: 14, tauVis: [0.9, 1.5], visLim: [0, 1, 1], visBuf: [0, 0, 1], wind: [7, 10], speed: [1, 0.85, 0.6], heatWK: 1.5, tCold: -40, coolWK: 3.0, tHot: 10, daylight: true },
+  rover: { tauNoGo: 4.0, windNoGo: 20, tauVis: [1.5, 3.0], visLim: [0, 3, 6], visBuf: [0, 1, 2], wind: [10, 15], speed: [1, 0.8, 0.6], heatWK: 25, tCold: 5, coolWK: 0, tHot: 99, daylight: false },
+};
+const MAX_EVA_H = SCI?.reach?.max_eva_h ?? 8;        // science.py: longest EVA on foot
+const wxState = { sc: 0, dustX: 1, dep: 0, play: null };
+const wxOn = () => !!WX && layer === 'wx';            // weather is applied while the Weather layer is selected
+const wxSc = () => WX.scenarios[wxState.sc];
+const wxN = () => wxSc().ts_c.length;
+function wxAt(h) {                       // weather at hour h of the scenario timeline (linear interpolation)
+  const S = wxSc(), n = S.ts_c.length; h = Math.min(Math.max(h, 0), n - 1);
+  const i = Math.min(n - 2, Math.floor(h)), f = h - i, L = a => a[i] + (a[i + 1] - a[i]) * f;
+  const abs = S.hours[0].lmst + h, tau = L(S.dust_tau) * wxState.dustX;
+  return { h, lmst: abs % 24, sol: Math.floor(abs / 24) + 1, ls: L(S.ls), ts: L(S.ts_c), tair: L(S.tair_c), ps: L(S.ps_pa),
+    wind: L(S.wind_ms) * WXR.wind2m, wdir: S.wind_dir_deg[Math.round(h)], tau, vis: 3.912 * WXR.dustH_km / Math.max(tau, 0.05) };
+}
+const wxWhen = h => { const w = wxAt(h); return `Sol ${w.sol} ${fmtClock(w.lmst * 3600)}`; };
+function wxWindow(h0, h1) {              // worst weather between two hours of the timeline
+  const r = { tauMax: 0, windMax: 0, tMin: 99, tMax: -199, dark: false, beyond: h1 > wxN() - 1 };
+  for (let h = h0; h <= h1 + 1e-6; h += 0.25) {
+    const w = wxAt(h); r.tauMax = Math.max(r.tauMax, w.tau); r.windMax = Math.max(r.windMax, w.wind);
+    r.tMin = Math.min(r.tMin, w.tair); r.tMax = Math.max(r.tMax, w.ts);
+    if (w.lmst < WXR.daylight[0] || w.lmst > WXR.daylight[1]) r.dark = true;
+  }
+  return r;
+}
+// how far each cell sticks out of its surroundings (height minus the mean height within ~190 m): ridges and knobs are wind-exposed
+const EXPO = (() => {
+  const R = 12, M1 = N + 1, S = new Float64Array(M1 * M1), e = new Float32Array(N * N);
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) S[(i + 1) * M1 + j + 1] = data.h[idx(i, j)] + S[i * M1 + j + 1] + S[(i + 1) * M1 + j] - S[i * M1 + j];
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const i0 = Math.max(0, i - R), i1 = Math.min(N, i + R + 1), j0 = Math.max(0, j - R), j1 = Math.min(N, j + R + 1);
+    e[idx(i, j)] = data.h[idx(i, j)] - (S[i1 * M1 + j1] - S[i0 * M1 + j1] - S[i1 * M1 + j0] + S[i0 * M1 + j0]) / ((i1 - i0) * (j1 - j0));
+  }
+  const s = Float32Array.from(e).sort();
+  return { e, q80: s[Math.floor(N * N * 0.8)], q90: s[Math.floor(N * N * 0.9)] };
+})();
+function dilateBlocked(c, n) {           // poor visibility: keep a margin of n cells from blocked ground
+  let cur = new Uint8Array(N * N); for (let k = 0; k < N * N; k++) cur[k] = isFinite(c[k]) ? 0 : 1;
+  for (let it = 0; it < n; it++) {
+    const nx = cur.slice();
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (cur[idx(i, j)])
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) { const a = i + di, b = j + dj; if (a >= 0 && a < N && b >= 0 && b < N) nx[idx(a, b)] = 1; }
+    cur = nx;
+  }
+  for (let k = 0; k < N * N; k++) if (cur[k]) c[k] = Infinity;
+}
+function weatherCost(vis, wind) {        // cost map for a visibility class (0-2) and a wind class (0-2), for the current stops
+  const P = params[mode], M = WXR[mode], lim = P.limit - M.visLim[vis];
+  const c = computeCost(slope, data.soft, data.rock[mode], lim, P.wSlope * [1, 1.6, 2.4][vis], P.wSoft);
+  const buf = M.visBuf[vis]; if (buf) dilateBlocked(c, buf);
+  if (wind) for (let k = 0; k < N * N; k++) {
+    if (!isFinite(c[k])) continue;
+    if (wind >= 2 && EXPO.e[k] > EXPO.q90) c[k] = Infinity; else if (EXPO.e[k] > EXPO.q80) c[k] *= 2.5;
+  }
+  const r = buf + 2;                     // keep the habitat and the stops reachable
+  for (const w of WPS) for (let di = -r; di <= r; di++) for (let dj = -r; dj <= r; dj++) {
+    const a = w.cell[0] + di, b = w.cell[1] + dj; if (a >= 0 && a < N && b >= 0 && b < N) c[idx(a, b)] = 1;
+  }
+  return { cost: c, limit: lim };
+}
+// route through the current stops for a weather class; cached per (mode, stops, visibility class, wind class)
+const routeCache = new Map();
+const stopsKey = () => `${WPS[1].cell}|${WPS[2].cell}|${WPS[2].dup ? 1 : 0}`;
+function routeFor(vis, wind) {
+  const key = `${mode}|${stopsKey()}|${vis}|${wind}`; if (routeCache.has(key)) return routeCache.get(key);
+  const P = params[mode];
+  const W = vis || wind ? weatherCost(vis, wind) : { cost: computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft), limit: P.limit };
+  blockHabitat(W.cost);                  // no route through the base (domes, corridors, airlocks); the airlock doors stay open
+  const r = scienceRoute(W.cost, W.limit);
+  const out = r ? { ...r, C: W.cost, lim: W.limit, rerouted: !!(vis || wind) } : { fail: true, C: W.cost, lim: W.limit, rerouted: !!(vis || wind) };
+  routeCache.set(key, out);
+  if (routeCache.size > 24) routeCache.delete(routeCache.keys().next().value);   // each entry holds a cost map (~1.5 MB)
+  return out;
+}
+// walk the route through time: each segment gets the weather of the hour the crew is there
+function applyWeather(b0, depH, M) {
+  const n = b0.cumT.length, b = { ...b0, cumT: [0], cumO: [0], cumE: [0], spd: [0] };
+  let t = 0, o = 0, e = 0, heat = 0;
+  for (let k = 1; k < n; k++) {
+    const dt0 = b0.cumT[k] - b0.cumT[k - 1], do0 = b0.cumO[k] - b0.cumO[k - 1], de0 = b0.cumE[k] - b0.cumE[k - 1];
+    const w = wxAt(depH + t / 3600), vis = w.tau >= M.tauVis[1] ? 2 : w.tau >= M.tauVis[0] ? 1 : 0;
+    const f = M.speed[vis] * (w.wind >= M.wind[0] ? 0.92 : 1), dt = dt0 / f;
+    const teff = mode === 'suit' ? 0.5 * (w.ts + w.tair) : w.tair;          // suit: ground contact + air; rover cabin: air
+    const pw = M.heatWK * Math.max(0, M.tCold - teff) + M.coolWK * Math.max(0, teff - M.tHot);
+    t += dt;
+    o += mode === 'suit' ? do0 * (1 + 0.6 * ((dt / dt0 - 1) || 0)) : (dt0 > 0 ? do0 * dt / dt0 : 0);
+    e += de0 + (mode === 'suit' ? SUIT_BASE_W * (dt - dt0) / 3600 : 0) + pw * dt / 3600; heat += pw * dt / 3600;
+    b.cumT.push(t); b.cumO.push(o); b.cumE.push(e); b.spd.push((b0.spd[k] || 0) * f);
+  }
+  return Object.assign(b, { time: t, o2: o, wh: e, heatWh: heat });
+}
+// departure-time A* for the current stops: route chosen for the WORST weather of the expected EVA window, budget hour by hour
+function wxEvaluate(depH) {
+  const M = WXR[mode], sup = supply(), base = routeFor(0, 0);
+  if (base.fail) return { depH, go: false, reasons: ['no traversable route'], sf: 0, lim: '–', vis: 0, wind: 0, R: base, rerouted: false, win: null, plan: null };
+  const win0 = wxWindow(depH, depH + base.plan.b.time / 3600 / 0.8);
+  const vis = win0.tauMax >= M.tauVis[1] ? 2 : win0.tauMax >= M.tauVis[0] ? 1 : 0;
+  const wind = win0.windMax >= M.wind[1] ? 2 : win0.windMax >= M.wind[0] ? 1 : 0;
+  const R = routeFor(vis, wind), reasons = [];
+  const rules = (win, hours) => {
+    if (win.tauMax >= M.tauNoGo) reasons.push(`dust τ ${win.tauMax.toFixed(1)} ≥ limit ${M.tauNoGo}`);
+    if (win.windMax >= M.windNoGo) reasons.push(`wind ${win.windMax.toFixed(0)} m/s ≥ limit ${M.windNoGo}`);
+    if (M.daylight && win.dark) reasons.push('outside daylight (06–18 LMST)');
+    if (win.beyond) reasons.push('runs past the end of the weather data');
+    if (mode === 'suit' && hours > MAX_EVA_H) reasons.push(`longer than ${MAX_EVA_H} h`);
+  };
+  if (R.fail) { rules(win0, 0); reasons.push('no safe route in these conditions');
+    return { depH, go: false, reasons, sf: 0, lim: '–', vis, wind, R, rerouted: true, win: win0, plan: null }; }
+  const b = applyWeather(R.plan.b, depH, M), sb = applyWeather(R.straight.b, depH, M), win = wxWindow(depH, depH + b.time / 3600);
+  rules(win, b.time / 3600);
+  const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = Math.min(sfO, sfE);
+  if (sf < SF_GO) reasons.push(`safety factor ×${sf.toFixed(2)} < ${SF_GO}`);
+  return { depH, go: !reasons.length, reasons, sf, lim: sfO < sfE ? 'O₂' : 'battery', vis, wind, R, rerouted: R.rerouted, win,
+    plan: { ...R.plan, b }, straight: { ...R.straight, b: sb } };
+}
+// every departure hour for the current stops (cached per stops; cleared when the scenario, limits or mode change)
+const wxScans = new Map();
+function wxScanAll() {
+  const key = `${mode}|${stopsKey()}`;
+  if (!wxScans.has(key)) { const a = []; for (let h = 0; h < wxN(); h++) a.push(wxEvaluate(h)); wxScans.set(key, a); }
+  return wxScans.get(key);
+}
+function wxBest() { let best = null; for (const e of wxScanAll()) if (e.go && (!best || e.sf > best.sf + 1e-9)) best = e; return best ? best.depH : null; }
+function wxReset() { wxScans.clear(); }
+
+let basePlan = null, baseStraight = null, baseCost = null, baseTube = null, curEval = null;
 function recompute() {
-  const P = params[mode], R = ROUTES[mode], sup = supply();
-  cost = blockHabitat(computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft));
+  const P = params[mode], R = ROUTES[mode];
+  cost = baseCost = blockHabitat(computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft)); costLimit = P.limit;
   if (sciRouteKey === 'none') { clearRoute(); cmNear(); return; }
-  const sr = sciRouteKey === 'science' ? scienceRoute() : null;
-  if (sciRouteKey === 'science' && !sr) {
+  const sr = sciRouteKey === 'science' ? routeFor(0, 0) : null;
+  if (sciRouteKey === 'science' && sr.fail) {
     setPriority('none', true);
     toast(`No traversable ${mode === 'suit' ? 'walking' : 'rover'} route through ${WPS0[1] && sciSitesNow[0] ? sciSitesNow.slice(0, 2).map(x => x.name).join(' and ') : 'the picked sites'}`); return;
   }
-  if (sr) { plan = sr.plan; straight = sr.straight; }
+  if (sr) { basePlan = sr.plan; baseStraight = sr.straight; baseCost = sr.C; }
   else {
-    straight = seriesFrom(R.straight, R.summary.straight, mode);
-    plan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
+    baseStraight = seriesFrom(R.straight, R.summary.straight, mode);
+    basePlan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
   }
-  [optTube, retTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = retTube = arLine = null;
+  applyPlan();
+}
+// pick the plan for the current weather and departure, then draw the routes, the comparison table and GO / NO-GO
+function applyPlan() {
+  const P = params[mode], sup = supply();
+  curEval = wxOn() && sciRouteKey === 'science' ? wxEvaluate(wxState.dep) : null;
+  const ev = curEval;
+  plan = ev && ev.plan ? ev.plan : basePlan; straight = ev && ev.straight ? ev.straight : baseStraight;
+  const newCost = ev && ev.R && ev.R.C ? ev.R.C : baseCost, costChanged = newCost !== cost;
+  cost = newCost; costLimit = ev && ev.R ? ev.R.lim : P.limit;
+  [optTube, retTube, strTube, arLine, baseTube].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = retTube = arLine = baseTube = null;
   strTube = makeTube(straight.pts, 0xff5a4d); strTube.visible = document.getElementById('showStraight').checked;
+  if (ev && ev.rerouted && ev.plan) { baseTube = makeTube(basePlan.pts, 0x8a9aa0); baseTube.material.transparent = true; baseTube.material.opacity = 0.45; }   // clear-weather route, for comparison
   const sb = straight.b;
   set('sD', `${(sb.dist / 1000).toFixed(2)} km`); set('sS', `${sb.maxSlope.toFixed(0)}°`); set('sT', fmtT(sb.time));
   set('sO', `${(100 * sb.o2 / sup.o2).toFixed(0)}%`); set('sE', `${(100 * sb.wh / sup.wh).toFixed(0)}%`); set('sB', `${sb.blocked} ⚠`);
@@ -1542,25 +1916,47 @@ function recompute() {
   const b = plan.b;
   set('oD', `${(b.dist / 1000).toFixed(2)} km`); set('oS', `${b.maxSlope.toFixed(0)}°`); set('oT', fmtT(b.time));
   set('oO', `${(100 * b.o2 / sup.o2).toFixed(0)}%`); set('oE', `${(100 * b.wh / sup.wh).toFixed(0)}%`); set('oB', b.blocked === 0 ? '0 ✓' : `${b.blocked} ⚠`);
-  const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = Math.min(sfO, sfE), lim = sfO < sfE ? 'O₂' : 'battery';
-  const go = sf >= SF_GO, g = document.getElementById('gonogo');
+  const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = ev ? ev.sf : Math.min(sfO, sfE), lim = ev ? ev.lim : sfO < sfE ? 'O₂' : 'battery';
+  const go = ev ? ev.go : sf >= SF_GO, g = document.getElementById('gonogo');
   g.className = go ? 'go' : 'nogo'; set('gnTxt', go ? 'GO' : 'NO-GO');
-  document.getElementById('gnWhy').innerHTML = `Safety factor <b>×${sf.toFixed(2)}</b> (limited by ${lim})<br>${(b.dist / 1000).toFixed(2)} km · ${fmtT(b.time)} · max ${b.maxSlope.toFixed(0)}°`;
+  // GO: the badge alone. NO-GO: only the reasons, in plain words
+  document.getElementById('gnWhy').innerHTML = go ? '' : nogoReasons(ev, sf, lim, b).join('<br>');
   document.getElementById('evaBtn').disabled = false; document.getElementById('previewBtn').disabled = false;
   set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
-  resetSim(); paint(); drawProfile(); cmNear();                       // CheMin pins within 200 m of the new route turn gold
+  resetSim(); paint(); drawProfile(); cmNear();
+  if (costChanged && mmReady) buildMinimapBase();
+  wxRender(); planConfirmState();
+}
+
+// why the plan is NO-GO, grouped as consumables / route / weather (the weather check's own reasons when the Weather layer is on)
+function nogoReasons(ev, sf, lim, b) {
+  const out = new Set();
+  if (sf < SF_GO) out.add(lim === 'O₂' ? 'Insufficient O₂' : 'Insufficient battery');
+  if (b && b.blocked > 0) out.add('Rough terrain');
+  for (const r of ev ? ev.reasons : []) {
+    if (/route/.test(r)) out.add('Rough terrain');
+    else if (/dust/.test(r)) out.add('Dust storm warning, high opacity');
+    else if (/wind/.test(r)) out.add('High wind');
+    else if (/daylight/.test(r)) out.add('Outside daylight');
+    else if (/longer than/.test(r)) out.add(`EVA over ${MAX_EVA_H} h`);
+    else if (/weather data/.test(r)) out.add('Beyond weather data');
+  }
+  if (!out.size) out.add(lim === 'O₂' ? 'Insufficient O₂' : 'Insufficient battery');
+  return [...out];
 }
 
 // no route yet (start, or no place meets the picked objectives): only the habitat, and the panels say what to do
 function clearRoute() {
-  [optTube, retTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } });
-  optTube = retTube = strTube = arLine = null; plan = null; straight = null;
+  [optTube, retTube, strTube, arLine, baseTube].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } });
+  optTube = retTube = strTube = arLine = baseTube = null; plan = null; straight = null; basePlan = baseStraight = null; curEval = null;
   for (const id of ['oD', 'oS', 'oT', 'oO', 'oE', 'oB', 'sD', 'sS', 'sT', 'sO', 'sE', 'sB']) set(id, '–');
   document.getElementById('gonogo').className = 'idle'; set('gnTxt', 'PLAN');
-  document.getElementById('gnWhy').innerHTML = 'No route yet<br>Pick objectives in Science value';
+  document.getElementById('gnWhy').innerHTML = 'No route yet';
   document.getElementById('evaBtn').disabled = true; document.getElementById('previewBtn').disabled = true;
   set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
   resetSim(); paint(); drawProfile();
+  if (mmReady) buildMinimapBase();
+  wxRender(); planConfirmState();
 }
 
 // =================== simulation state (shared by preview + first-person) ===================
@@ -1592,7 +1988,7 @@ function nextStop(P, n) { for (let k = 1; k < P.stopIdx.length; k++) if (P.stopI
 // live return-to-habitat estimate (re-planned A* from current cell)
 function updateReturn(p) {
   const k = cellAt(p.x, p.z), here = [Math.floor(k / N), k % N];
-  const path = astar(cost, here, HAB_DOOR);
+  const path = astar(cost, here, doorsToward(p.x, p.z)[0].cell);
   sim.ret = path ? budget(path, data.h, data.soft, slope, cost, mode, params[mode].limit) : null;
 }
 
@@ -1634,13 +2030,16 @@ function setVex(v) {
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
-const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit'].map(id => document.getElementById(id));
+const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit', 'confirmBtn', 'confirmWhy'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; controls.enabled = false; crew.visible = false;
   cmGroup.visible = false; if (cmPath) cmPath.visible = false; cmHide();   // map-only reference layers (CheMin pins, Curiosity traverse)
   if (mouseLook.on) flashLookHint();
   paint('img'); optTube.visible = retTube.visible = strTube.visible = false; wire.visible = false; minMesh.visible = false; sciSync();
+  if (baseTube) baseTube.visible = false;
+  sun.position.set(-1200, 900, -600); sun.intensity = 2.2; if (hemiLight) hemiLight.intensity = 0.9;   // first-person keeps its own lighting; only the haze follows the weather
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
+  document.body.classList.toggle('rovermode', mode === 'rover'); setDashLook(false); monClock = 0;
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
   fpStartState(); document.getElementById('arrive').style.display = 'none'; sim.arriveUntil = 0;
@@ -1649,7 +2048,7 @@ document.getElementById('evaBtn').onclick = () => {
 // the first-person start state: at the habitat, looking along the planned route, fresh consumables, no SEP alert, paused until ▶ Start
 // (used when entering the view and again after every return to the habitat, normal or ABORT)
 function fpStartState() {
-  resetSim(); sim.running = false; sim.resetAt = 0;
+  resetSim(); sim.running = false; sim.resetAt = 0; sim.yaw = null;
   setArLine(plan, 0x5dff9d);       // the planned route line again (an ABORT had replaced it with the amber return line)
   const st = stateAt(sim.active, 0), a = pointAtDist(sim.active, 30);
   camera.position.set(st.p.x, heightAt(st.p.x, st.p.z) + params[mode].eye, st.p.z);
@@ -1673,12 +2072,14 @@ document.getElementById('goBtn').onclick = () => {
 };
 function exitFP() {
   sim.running = false; sim.resetAt = 0;
-  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true;
-  cmGroup.visible = document.getElementById('showCm').checked; if (cmPath) cmPath.visible = document.getElementById('showCmPath').checked; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
+  setVex(2); hab.scale.setScalar(HAB_K); fp = false; controls.enabled = true;
   if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && minOn.size > 0; sciSync(); hudEl.style.display = 'none'; hudCtl.style.display = 'none';
-  panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
+  panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode', 'rovermode'); setDashLook(false);
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
+  if (baseTube) baseTube.visible = true;
+  if (layer !== 'wx') minMesh.visible = !!MIN && minOn.size > 0; else minMesh.visible = false;
+  wxRender();                       // restore the weather haze / sunlight of the map view
 }
 document.getElementById('exitBtn').onclick = exitFP;
 document.getElementById('speedBtn').onclick = e => { speedUp = SPEEDS[(SPEEDS.indexOf(speedUp) + 1) % SPEEDS.length]; e.target.textContent = `Sim speed ×${speedUp}`; };
@@ -1706,12 +2107,13 @@ function setArLine(P, colour) {
 document.getElementById('abortBtn').onclick = () => {
   if (!sim.active || sim.aborted || sim.out) return;
   const st = stateAt(sim.active, sim.t), k = cellAt(st.p.x, st.p.z), here = [Math.floor(k / N), k % N];
-  const path = astar(cost, here, HAB_DOOR); if (!path) { toast('No safe return route found!'); return; }
+  const door = doorsToward(st.p.x, st.p.z)[0], path = astar(cost, here, door.cell); if (!path) { toast('No safe return route found!'); return; }
   // inside the habitat's own grid cell the way home is a single point: nothing to walk, so do not start an ABORT
   // (this used to give NaN values and an instant "abort complete" with no way to continue)
   if (path.length < 2) { toast('You are already at the habitat: nothing to abort'); return; }
   sim.base = totals(st); sim.t = 0; sim.aborted = true; sim.lastStop = 0; if (sim.leak) sim.leak.t0 = 0;   // the leak loss so far is in base now
   const smooth = smoothReturn(path, st.p);                              // straight shortcuts + rounded corners, starting exactly where the crew stands
+  smooth.push({ ...door.mouth });                                       // ... and ending at the airlock hatch
   const P = { path, stopIdx: [0, smooth.length - 1], dwell: new Set(), stops: [null, 0], b: budgetPts(smooth, mode) };
   P.pts = smooth.map(q => new THREE.Vector3(q.x, heightRaw(q.x, q.z) + 2.5, q.z));
   sim.active = P; setArLine(P, 0xffb347);
@@ -1742,8 +2144,9 @@ addEventListener('keydown', e => { if (!fp) return;
   if (e.key === 'c' || e.key === 'C') { mouseLook.tx = mouseLook.ty = 0; } });
 const _dir = new THREE.Vector3();
 function applyMouseLook(dt) {          // rotate the view around the body (walking) direction
-  const k = Math.min(1, dt * 8);
-  mouseLook.yaw += (mouseLook.tx - mouseLook.yaw) * k; mouseLook.pitch += (mouseLook.ty - mouseLook.pitch) * k;
+  const dash = dashLook && mode === 'rover', k = Math.min(1, dt * (dash ? 4 : 8));
+  const tx = dash ? 0 : mouseLook.tx, ty = dash ? MON_PITCH : mouseLook.ty;
+  mouseLook.yaw += (tx - mouseLook.yaw) * k; mouseLook.pitch += (ty - mouseLook.pitch) * k;
   _dir.subVectors(look, camera.position).normalize();
   const A = Math.atan2(_dir.x, _dir.z) - mouseLook.yaw * Math.PI / 180;
   const P = Math.max(-1.3, Math.min(1.3, Math.asin(Math.max(-1, Math.min(1, _dir.y))) + mouseLook.pitch * Math.PI / 180));
@@ -1846,7 +2249,7 @@ function buildNavBase() {                 // grey hill-shaded terrain, blocked (
 const LEG_COL = ['#56b35f', '#4a93c4', '#d06464'];
 function drawNav(p, hdg, st) {
   const W = nav.width, H = nav.height, x = nctx, P = sim.active, ax = W / 2, ay = H * 0.72;
-  const s = W / 130, ci = (p.z + SIZE / 2) / CELL, cj = (p.x + SIZE / 2) / CELL, th = -hdg * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
+  const s = Math.min(W / 130, H / 55), ci = (p.z + SIZE / 2) / CELL, cj = (p.x + SIZE / 2) / CELL, th = -hdg * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
   const toScr = (j, i) => { const dx = (j - cj) * s, dy = (i - ci) * s; return [ax + dx * cs - dy * sn, ay + dx * sn + dy * cs]; };
   x.clearRect(0, 0, W, H); x.save();
   x.beginPath(); x.roundRect(2, 2, W - 4, H - 4, 22); x.clip();
@@ -1924,11 +2327,35 @@ function updateMapPreview(dt) {
   drawProfile(st);
 }
 
+// ---- rover heading: the rover points along the route line under it (not at a far look-ahead point), and where the line
+// turns sharply (leaving a site after arriving, or a hairpin) it stops and turns on the spot before driving on
+const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+const ROVER_TURN = { start: 25 * Math.PI / 180, rate: 50 * Math.PI / 180 };   // stop-and-turn above 25° off the line, at 50°/s
+function roverWant(P, st) {                 // direction of the route just ahead of the rover (yaw: 0 = +z, measured towards +x)
+  // never look past the next stop: drive straight in, and only once it is reached does the next leg (often back the way it came) count
+  const stopD = P.b.cumD[P.stopIdx[nextStop(P, st.n)]], end = stopD - st.d > 0.5 ? Math.min(stopD, P.b.dist) : P.b.dist;
+  const dA = Math.min(end, st.d + 6); if (dA - st.d < 1.5) return null;    // too close to the stop to tell: keep the heading
+  const a = pointAtDist(P, dA), dx = a.x - st.p.x, dz = a.z - st.p.z;
+  return dx * dx + dz * dz > 0.25 ? Math.atan2(dx, dz) : null;
+}
 function updateFP(dt) {
-  const r = advance(dt, sim.running ? speedUp : 0); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
+  let turning = false;
+  if (mode === 'rover' && sim.active) {     // decide before moving: hold position while the rover turns towards the line
+    const s0 = stateAt(sim.active, sim.t), want = roverWant(sim.active, s0);
+    if (sim.yaw == null && want != null) sim.yaw = want;
+    turning = sim.running && !sim.out && want != null && s0.d < sim.active.b.dist - 1 && Math.abs(angDiff(want, sim.yaw)) > ROVER_TURN.start;
+  }
+  const r = advance(dt, sim.running && !turning ? speedUp : 0); if (!r) return; const { st, ns } = r, P = sim.active, M = params[mode];
+  if (mode === 'rover') {                   // follow the line: tight while driving, a steady turn on the spot while turning
+    const want = roverWant(P, st);
+    if (want != null && sim.yaw != null) {
+      const e = angDiff(want, sim.yaw);
+      sim.yaw += turning ? Math.sign(e) * Math.min(Math.abs(e), ROVER_TURN.rate * dt * Math.min(3, Math.max(1, speedUp / 5))) : e * Math.min(1, dt * 8);
+    }
+  }
   // draw only the leg ahead (current position -> next stop), so the way home is not drawn as a second line beside the way out
   if (arLine) { const cnt = arLine.geometry.attributes.position.count, a = Math.max(0, st.n - 1), z = Math.min(cnt - 1, P.stopIdx[ns] + 1); arLine.geometry.setDrawRange(a, Math.max(2, z - a + 1)); }
-  const p = st.p, moving = sim.running && sim.t < P.b.time && !st.dwelling;
+  const p = st.p, moving = sim.running && sim.t < P.b.time && !st.dwelling && !turning;
   const bob = moving && mode === 'suit' ? Math.sin(sim.t * 3.5) * 0.04 : 0;
   camera.position.set(p.x, heightAt(p.x, p.z) + M.eye + bob, p.z);
   const lookAhead = 35 + Math.min(150, (st.spd || 0) * speedUp * 0.35);   // look further ahead at high sim speed
@@ -1938,7 +2365,10 @@ function updateFP(dt) {
     if (dir.lengthSq() > 1) { dir.normalize(); ahead = new THREE.Vector3(p.x + dir.x * lookAhead, 0, p.z + dir.z * lookAhead); }
   }
   const target = new THREE.Vector3(ahead.x, heightAt(ahead.x, ahead.z) + M.eye * 0.8, ahead.z);
-  if (camera.position.distanceTo(target) > 3) look.lerp(target, Math.min(1, dt * 6));
+  if (mode === 'rover' && sim.yaw != null) {   // the driver faces the rover's nose, so the view, the rover and the line agree
+    const hx = Math.sin(sim.yaw), hz = Math.cos(sim.yaw), fx = p.x + hx * 30, fz = p.z + hz * 30;
+    look.set(fx, heightAt(fx, fz) + M.eye * 0.8, fz);
+  } else if (camera.position.distanceTo(target) > 3) look.lerp(target, Math.min(1, dt * 6));
   applyMouseLook(dt);
 
   const sup = supply(), tot = totals(st), hdg = heading();
@@ -1975,7 +2405,8 @@ function updateFP(dt) {
   drawArrow(turn);
   const dir = Math.abs(turn) < 12 ? 'Continue straight' : `Bear ${turn > 0 ? 'right' : 'left'} ${Math.abs(turn).toFixed(0)}°`;
   const done = sim.t >= P.b.time;
-  set('hInstr', done ? (sim.aborted ? '✓ Back inside habitat airlock (abort complete)' : '✓ EVA complete · back at habitat')
+  set('hInstr', turning ? `↻ Turning towards ${w.short} · ${Math.abs(angDiff(roverWant(P, st) ?? sim.yaw, sim.yaw) * 180 / Math.PI).toFixed(0)}° to go`
+    : done ? (sim.aborted ? '✓ Back inside habitat airlock (abort complete)' : '✓ EVA complete · back at habitat')
     : !sim.running ? (sim.t === 0 && !sim.aborted ? `Ready at habitat · press ▶ Start ${mode === 'suit' ? 'EVA' : 'drive'} below to set off` : 'Paused · press ▶ Resume below')
     : st.dwelling ? `Science stop at ${WPS[P.stops[sim.lastStop]].short} · ${fmtClock(P.b.cumT[st.n] - sim.t)} left`
     : `${dir} · ${remain.toFixed(0)} m to ${w.short}${sim.aborted ? ' (ABORT route)' : ''}`);
@@ -1998,6 +2429,16 @@ function updateFP(dt) {
   if (sim.sep && !sim.aborted) warn.push('☢ SEP alert — return to shelter');
   if (sim.leak && !sim.aborted && !done) warn.unshift(sim.sf >= SF_GO ? '💨 Leak — reserve still OK, plan early return' : '💨 Leak — ABORT now');
   if (!done && empty) warn.unshift(`✖ ${tot.o2 >= sup.o2 ? 'O₂' : 'battery'} depleted before reaching the habitat`);
+  if (wxOn()) {                     // weather of the current EVA hour (EMARS timeline, departure + elapsed time)
+    const w = wxAt(wxState.dep + tot.t / 3600), WR = WXR[mode], k = 1 + 0.6 * w.tau;
+    scene.fog.near = 150 * SC / k; scene.fog.far = 1500 * SC / k;
+    scene.fog.color.copy(SKY).lerp(HAZE, Math.min(0.8, w.tau / 5)); scene.background = scene.fog.color;
+    document.getElementById('wxHudTxt').innerHTML = `${wxWhen(wxState.dep + tot.t / 3600)} LMST<br>T ${w.tair.toFixed(0)} °C air · ${w.ts.toFixed(0)} °C ground<br>Wind ${w.wind.toFixed(1)} m/s · dust τ ${w.tau.toFixed(2)} · vis ~${w.vis.toFixed(0)} km`;
+    if (!done && w.tau >= WR.tauNoGo) warn.push(`🌪 Dust τ ${w.tau.toFixed(1)} over the limit — return to habitat`);
+    if (!done && w.wind >= WR.windNoGo) warn.push(`💨 Wind ${w.wind.toFixed(0)} m/s over the limit — seek shelter`);
+    if (!done && WR.daylight && w.lmst > WXR.daylight[1] - 0.75 && w.lmst < 23) warn.push(`🌇 Sunset ${w.lmst >= WXR.daylight[1] ? 'passed' : 'soon'} — head home`);
+    document.getElementById('wxHud').style.borderColor = (w.tau >= WR.tauNoGo || w.wind >= WR.windNoGo) ? 'rgba(255,90,77,.9)' : '';
+  }
   set('hWarn', warn.join('   '));
   const spare = (() => { if (!sim.leak) return ''; const L = sim.leak, left = (L.res === 'o2' ? sup.o2 - tot.o2 : sup.wh - tot.wh), base = P.b.time > 0 ? P.b[L.res] / P.b.time : 0, m = Math.max(0, Math.floor(left / (L.rate + base) / 60));
     return ` — ${m >= 60 ? `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m` : `${m} min`} of ${L.res === 'o2' ? 'O₂' : 'battery'} to spare`; })();
@@ -2029,9 +2470,171 @@ function updateFP(dt) {
     set('dAtt', `${pitch.toFixed(0)}° / ${roll.toFixed(0)}°`); drawAttitude(pitch, roll);
     const whPerM = P.b.dist > 0 ? P.b.wh / P.b.dist : 1; set('dRange', `${((sup.wh - tot.wh) / whPerM / 1000).toFixed(0)} km`);
     if (Math.abs(roll) > 15 && moving) set('hWarn', `⚠ Roll ${roll.toFixed(0)}° — tip-over margin reduced   ` + document.getElementById('hWarn').textContent);
+    updateCockpit(p, pitch, roll);
+    // the dashboard monitor's map turns with the rover (not with the driver's head)
+    const vhdg = (Math.atan2(back.x, -back.z) * 180 / Math.PI + 360) % 360;
+    drawNav(p, vhdg, st);
+    if (now - monClock > 120) {                                        // ~8 updates a second is plenty for a dash screen
+      monClock = now;
+      const etaS = Math.max(0, P.b.cumT[P.stopIdx[ns]] - sim.t);
+      drawMonitor({ clock: fmtClock(tot.t), speed: moving ? st.spd * 3.6 : 0, dest: w.id === 'H' ? 'HABITAT' : w.short,
+        dist: remain >= 1000 ? `${(remain / 1000).toFixed(2)} km` : `${remain.toFixed(0)} m`, eta: fmtT(etaS),
+        bat: Math.max(0, whLeft), o2: Math.max(0, o2Left), grade: `${gmax.toFixed(0)}° in ${gat.toFixed(0)} m`, gradeWarn: gmax > M.limit * 0.7,
+        att: `${pitch.toFixed(0)}° / ${roll.toFixed(0)}°`, attWarn: Math.abs(roll) > 15, instr: document.getElementById('hInstr').textContent, warn: warn[0] || '' });
+    }
   }
-  drawCompass(hdg); if (mode === 'rover') drawNav(p, hdg, st); else drawMinimap(p, hdg);
+  drawCompass(hdg); if (mode !== 'rover') drawMinimap(p, hdg);
 }
+
+// =================== rover cockpit (first-person, rover mode) ===================
+// An open-frame crew rover drawn around the driver's eye: roll cage, light bar, nose, wheels, the passenger seat, and a
+// dashboard monitor on an arm (map · speed · destination). It is its own small scene, drawn after the terrain with a fresh
+// depth buffer, so the frame never cuts into the ground. Units: metres, origin = driver's eye, forward = -z, right = +x.
+const cockpit = new THREE.Scene(), cockpitCam = new THREE.PerspectiveCamera(64, innerWidth / innerHeight, 0.03, 30);
+cockpit.add(new THREE.HemisphereLight(0xfff2e6, 0x4a3426, 0.9));
+const cpSun = new THREE.DirectionalLight(0xfff0dd, 1.6); cockpit.add(cpSun, cpSun.target);
+const rig = new THREE.Group(); rig.rotation.order = 'YXZ'; cockpit.add(rig);
+const CPM = {
+  frame: new THREE.MeshStandardMaterial({ color: 0xa89e90, roughness: 0.45, metalness: 0.65 }),   // weathered steel tubes
+  fender: new THREE.MeshStandardMaterial({ color: 0x45484c, roughness: 0.7, metalness: 0.3, side: THREE.DoubleSide }),
+  body:  new THREE.MeshStandardMaterial({ color: 0xc9cdd1, roughness: 0.55, metalness: 0.15, flatShading: true }),
+  dark:  new THREE.MeshStandardMaterial({ color: 0x2b3036, roughness: 0.7, metalness: 0.2 }),
+  tire:  new THREE.MeshStandardMaterial({ color: 0x1c1e21, roughness: 0.95 }),
+  hub:   new THREE.MeshStandardMaterial({ color: 0x9aa1a8, roughness: 0.4, metalness: 0.7 }),
+  seat:  new THREE.MeshStandardMaterial({ color: 0x3a3f46, roughness: 0.85 }),
+  lamp:  new THREE.MeshBasicMaterial({ color: 0xeaf6ff })
+};
+const cpBox = (w, h, d, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); rig.add(o); return o; };
+function cpTube(a, b, r = 0.035, m = CPM.frame) {             // a tube between two points
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), v = B.clone().sub(A), o = new THREE.Mesh(new THREE.CylinderGeometry(r, r, v.length(), 10), m);
+  o.position.copy(A).addScaledVector(v, 0.5); o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), v.normalize()); rig.add(o); return o;
+}
+{
+  // open-frame exploration buggy for one: a single seat on the centre line, tall roll hoop, front equipment rack with the
+  // headlights on its nose, big ribbed fenders over chunky all-terrain tyres, and a cargo bed behind the seat for samples
+  const XL = -1.06, XR = 1.06, XC = 0, TOP = 0.78, FZ = -0.55, RZ = 0.55;
+  const mesh = new THREE.MeshBasicMaterial({ color: 0x8d9296, wireframe: true });
+  const meshPanel = (w, h, nx, ny, x, y, z, rx = 0, ry = 0) => { const o = new THREE.Mesh(new THREE.PlaneGeometry(w, h, nx, ny), mesh); o.position.set(x, y, z); o.rotation.set(rx, ry, 0); rig.add(o); return o; };
+  // chassis (runs back under the cargo bed) and the floor grating in front of the seat
+  cpBox(2.3, 0.1, 4.3, XC, -1.42, 0.15, CPM.dark);
+  meshPanel(1.9, 1.6, 24, 20, XC, -1.36, -0.55, -Math.PI / 2);
+  // front equipment rack with a mesh lid and a low rail
+  cpBox(1.9, 0.3, 0.62, XC, -1.22, -1.78, CPM.dark);
+  meshPanel(1.86, 0.58, 24, 8, XC, -1.06, -1.78, -Math.PI / 2);
+  cpTube([XL + 0.18, -1.0, -1.48], [XR - 0.18, -1.0, -1.48], 0.022); cpTube([XL + 0.18, -1.0, -2.08], [XR - 0.18, -1.0, -2.08], 0.022);
+  // headlights: a bar of lamps across the nose of the rack, two big round lamps at its corners (all face forward)
+  cpBox(1.5, 0.12, 0.1, XC, -1.3, -2.12, CPM.dark);
+  for (const dx of [-0.5, -0.25, 0, 0.25, 0.5]) cpBox(0.18, 0.06, 0.02, XC + dx, -1.3, -2.175, CPM.lamp);
+  for (const dx of [-0.82, 0.82]) {
+    const h = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.12, 18).rotateX(Math.PI / 2), CPM.dark); h.position.set(XC + dx, -1.18, -2.13); rig.add(h);
+    const l = new THREE.Mesh(new THREE.CircleGeometry(0.09, 18).rotateY(Math.PI), CPM.lamp); l.position.set(XC + dx, -1.18, -2.195); rig.add(l);
+  }
+  // roll hoop: front uprights with a bend, high roof rails, rear uprights, cross bars, one roof diagonal, low side rails
+  for (const x of [XL, XR]) {
+    const xi = x + (x === XL ? 0.14 : -0.14);
+    cpTube([x, -1.36, -1.45], [x, -0.25, -1.12], 0.04); cpTube([x, -0.25, -1.12], [xi, TOP, FZ], 0.04);
+    cpTube([xi, TOP, FZ], [xi, TOP, RZ], 0.04); cpTube([xi, TOP, RZ], [x, -1.36, 0.98], 0.04);
+    cpTube([x, -0.86, -1.3], [x, -0.86, 0.9], 0.03);
+  }
+  cpTube([XL + 0.14, TOP, FZ], [XR - 0.14, TOP, FZ], 0.04); cpTube([XL + 0.14, TOP, RZ], [XR - 0.14, TOP, RZ], 0.04);
+  cpTube([XL + 0.14, TOP, FZ], [XR - 0.14, TOP, RZ], 0.03);
+  cpTube([XL, -0.9, -1.22], [XR, -0.9, -1.22], 0.035);                                            // dash cross bar (the display sits on it)
+  // a small antenna dish on the front roof bar (no lamps up top: the lights are at the front)
+  cpTube([XC, TOP, FZ], [XC, TOP + 0.12, FZ], 0.02);
+  { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.05, 0.05, 20), CPM.hub); d.position.set(XC, TOP + 0.15, FZ); rig.add(d); }
+  // the one seat, on the centre line just behind the eye, with a tall mesh back
+  cpBox(0.62, 0.12, 0.58, XC, -1.18, 0.12, CPM.seat);
+  for (const x of [XC - 0.3, XC + 0.3]) cpTube([x, -1.12, 0.4], [x, -0.15, 0.5], 0.022);
+  cpTube([XC - 0.3, -0.15, 0.5], [XC + 0.3, -0.15, 0.5], 0.022);
+  meshPanel(0.58, 0.95, 8, 14, XC, -0.64, 0.45, -0.1);
+  // drive handles either side of the seat
+  for (const x of [XC - 0.42, XC + 0.42]) { cpTube([x, -1.0, -0.4], [x, -0.82, -0.32], 0.02, CPM.dark); cpBox(0.06, 0.05, 0.18, x, -0.8, -0.3, CPM.dark); }
+  // cargo bed for samples and resources: a tray behind the seat with low walls, a mesh tailgate, tie-down rails, and a load on board
+  { const z0 = 0.75, z1 = 2.2, zc = (z0 + z1) / 2, d = z1 - z0, yF = -1.3, hW = 0.36, wB = 1.8;
+    cpBox(wB, 0.06, d, XC, yF, zc, CPM.body);                                                     // bed floor
+    cpBox(0.05, hW, d, XC - wB / 2, yF + hW / 2, zc, CPM.body); cpBox(0.05, hW, d, XC + wB / 2, yF + hW / 2, zc, CPM.body);   // side walls
+    cpBox(wB, hW, 0.05, XC, yF + hW / 2, z0, CPM.body);                                           // front wall (behind the seat)
+    meshPanel(wB, hW, 18, 4, XC, yF + hW / 2, z1, 0, Math.PI);                                    // mesh tailgate
+    for (const x of [XC - wB / 2, XC + wB / 2]) cpTube([x, yF + hW + 0.03, z0], [x, yF + hW + 0.03, z1], 0.025);   // tie-down rails
+    // on board: two sealed sample boxes, a core-tube rack, a few rocks
+    cpBox(0.5, 0.26, 0.38, XC - 0.5, yF + 0.16, z0 + 0.35, CPM.dark); cpBox(0.5, 0.26, 0.38, XC - 0.5, yF + 0.16, z0 + 0.8, CPM.dark);
+    for (let k = 0; k < 5; k++) cpTube([XC + 0.15 + k * 0.1, yF + 0.04, z0 + 0.3], [XC + 0.15 + k * 0.1, yF + 0.42, z0 + 0.3], 0.03, CPM.hub);
+    const rockM = new THREE.MeshStandardMaterial({ color: 0x8a5a3c, roughness: 1, flatShading: true });
+    for (const [x, z, r] of [[0.45, 1.6, 0.13], [0.65, 1.85, 0.1], [0.3, 1.95, 0.09], [-0.2, 1.8, 0.12]]) {
+      const o = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), rockM); o.position.set(XC + x, yF + r * 0.8, z); o.rotation.set(r * 9, r * 13, 0); rig.add(o);
+    }
+  }
+  // wheels: chunky tyres, big ribbed fenders over them (rear axle under the cargo bed)
+  for (const [x, z, side] of [[XL - 0.38, -1.38, -1], [XR + 0.38, -1.38, 1], [XL - 0.38, 1.5, -1], [XR + 0.38, 1.5, 1]]) {
+    const w = new THREE.Group(); w.position.set(x, -1.45, z); rig.add(w);
+    w.add(new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.44, 28).rotateZ(Math.PI / 2), CPM.tire));
+    for (let k = 0; k < 16; k++) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.06, 0.12), CPM.tire); const a = k / 16 * Math.PI * 2; t.position.set(0, Math.cos(a) * 0.56, Math.sin(a) * 0.56); t.rotation.x = a; w.add(t); }
+    w.add(new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.46, 18).rotateZ(Math.PI / 2), CPM.hub));
+    const f = new THREE.Group(); f.position.set(x, -1.45, z); rig.add(f);
+    f.add(new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 0.56, 24, 1, true, 0, Math.PI).rotateZ(Math.PI / 2), CPM.fender));
+    const plate = new THREE.Mesh(new THREE.CircleGeometry(0.68, 24, 0, Math.PI).rotateY(Math.PI / 2), CPM.fender); plate.position.x = side * 0.28; f.add(plate);
+    for (let k = 1; k < 8; k++) {
+      const a = k / 8 * Math.PI, r = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.4), CPM.dark);
+      r.position.set(side * 0.3, Math.sin(a) * 0.46, Math.cos(a) * 0.46); r.rotation.x = -a + Math.PI / 2; f.add(r);
+    }
+  }
+}
+// the dashboard display: one long panoramic screen on the dash cross bar, centred in front of the seat, between the roll-hoop
+// uprights (the frame never cuts through it), tilted back towards the driver: speed / destination, attitude indicator, map
+const monCv = document.createElement('canvas'); monCv.width = 2048; monCv.height = 500;
+const monCtx = monCv.getContext('2d'), monTex = new THREE.CanvasTexture(monCv); monTex.colorSpace = THREE.SRGBColorSpace; monTex.anisotropy = 8;
+const monitor = new THREE.Group(); monitor.position.set(0, -0.68, -1.22); monitor.rotation.x = -0.38; rig.add(monitor);
+monitor.add(new THREE.Mesh(new THREE.BoxGeometry(1.66, 0.46, 0.06).translate(0, 0, -0.035), CPM.body));                // light frame
+monitor.add(new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 0.02).translate(0, 0, -0.016), CPM.dark));                  // black glass edge (behind the screen)
+monitor.add(new THREE.Mesh(new THREE.PlaneGeometry(1.56, 0.38), new THREE.MeshBasicMaterial({ map: monTex })));
+cpTube([-0.25, -0.9, -1.22], [-0.25, -0.84, -1.18], 0.03, CPM.dark); cpTube([0.25, -0.9, -1.22], [0.25, -0.84, -1.18], 0.03, CPM.dark);   // mounts on the cross bar
+const MON_PITCH = -30;                                   // head pitch (°) that puts the display in the middle of the view
+let monClock = 0;
+function drawMonitor(d) {                                // d: values from updateFP (speed, destination, distance, ETA, battery, O2, grade, instruction)
+  const x = monCtx, W = monCv.width, H = monCv.height, L = 400, A = 400, M = L + A;
+  x.fillStyle = '#081016'; x.fillRect(0, 0, W, H);
+  // map: fills everything right of the info column and the attitude indicator
+  x.save(); x.beginPath(); x.rect(M, 0, W - M, H); x.clip(); x.fillStyle = '#10181d'; x.fillRect(M, 0, W - M, H);
+  x.drawImage(nav, M, 0, W - M, H);
+  x.fillStyle = 'rgba(8,16,22,.72)'; x.fillRect(M, H - 58, W - M, 58);                                     // instruction strip on the map
+  x.fillStyle = d.warn ? '#ffb347' : '#d8edf3'; x.font = '500 30px "Segoe UI", sans-serif'; x.textAlign = 'left';
+  x.fillText((d.warn || d.instr).slice(0, 80), M + 28, H - 18); x.restore();
+  // attitude indicator (artificial horizon: pitch ladder, roll scale) with the pitch / roll read-out under it
+  x.fillStyle = '#0a1419'; x.fillRect(L, 0, A, H); x.fillStyle = 'rgba(120,230,255,.25)'; x.fillRect(M - 2, 24, 2, H - 48);
+  x.drawImage(att, L + (A - 380) / 2, 14, 380, 380);
+  x.fillStyle = '#7f98a2'; x.font = '600 22px "Segoe UI", sans-serif'; x.textAlign = 'center'; x.fillText('PITCH / ROLL', L + A / 2, 432);
+  x.fillStyle = d.attWarn ? '#ffb347' : '#e8f3f7'; x.font = '600 32px "Segoe UI", sans-serif'; x.fillText(d.att, L + A / 2, 472);
+  // small info column on the left
+  x.fillStyle = '#0d171d'; x.fillRect(0, 0, L, H); x.fillStyle = 'rgba(120,230,255,.25)'; x.fillRect(L - 2, 24, 2, H - 48);
+  const lab = (t, y) => { x.fillStyle = '#7f98a2'; x.font = '600 22px "Segoe UI", sans-serif'; x.textAlign = 'left'; x.fillText(t, 34, y); };
+  lab('SPEED', 58);
+  x.fillStyle = '#e8f3f7'; x.font = '600 76px "Segoe UI", sans-serif'; x.fillText(d.speed.toFixed(1), 34, 136);
+  const sw = x.measureText(d.speed.toFixed(1)).width;
+  x.fillStyle = '#9fb7c0'; x.font = '500 26px "Segoe UI", sans-serif'; x.fillText('km/h', 44 + sw, 136);
+  lab('DESTINATION', 200);
+  x.fillStyle = '#37e0ff'; x.font = '600 44px "Segoe UI", sans-serif'; x.fillText(d.dest, 34, 250);
+  x.fillStyle = '#e8f3f7'; x.font = '500 30px "Segoe UI", sans-serif'; x.fillText(`${d.dist} · ${d.eta}`, 34, 296);
+  lab('BATTERY', 362);
+  x.fillStyle = '#7f98a2'; x.font = '600 22px "Segoe UI", sans-serif'; x.fillText('CABIN O₂', 210, 362);
+  x.font = '600 36px "Segoe UI", sans-serif';
+  x.fillStyle = d.bat < 30 ? '#ffb347' : '#e8f3f7'; x.fillText(`${d.bat.toFixed(0)}%`, 34, 406);
+  x.fillStyle = d.o2 < 30 ? '#ffb347' : '#e8f3f7'; x.fillText(`${d.o2.toFixed(0)}%`, 210, 406);
+  x.fillStyle = d.gradeWarn ? '#ffb347' : '#7f98a2'; x.font = '500 22px "Segoe UI", sans-serif'; x.fillText(`Grade ${d.grade} · EVA ${d.clock}`, 34, 456);
+  monTex.needsUpdate = true;
+}
+// place the rover around the eye: heading = the driving direction, pitch / roll = the ground under it
+function updateCockpit(p, pitchDeg, rollDeg) {
+  const v = new THREE.Vector3().subVectors(look, camera.position).setY(0);
+  if (v.lengthSq() > 1e-6) rig.rotation.y = Math.atan2(-v.x, -v.z);
+  rig.rotation.x = pitchDeg * Math.PI / 180; rig.rotation.z = rollDeg * Math.PI / 180;      // + = right side up
+  cockpitCam.quaternion.copy(camera.quaternion); cockpitCam.fov = camera.fov; cockpitCam.aspect = camera.aspect; cockpitCam.updateProjectionMatrix();
+  cpSun.position.copy(sun.position).normalize().multiplyScalar(10);
+}
+// look down at the monitor (V or the button): the head tilts down smoothly, like a person glancing at the dash
+let dashLook = false;
+function setDashLook(on) { dashLook = on; document.body.classList.toggle('dashlook', on); const b = document.getElementById('dashBtn'); if (b) b.textContent = on ? '⬆ Look ahead (V)' : '⬇ Look at monitor (V)'; }
+document.getElementById('dashBtn').onclick = () => setDashLook(!dashLook);
+addEventListener('keydown', e => { if (fp && mode === 'rover' && (e.key === 'v' || e.key === 'V')) setDashLook(!dashLook); });
 
 const clock = new THREE.Clock();
 // the point the map view looks at cannot be dragged off the map
@@ -2039,7 +2642,295 @@ function keepOnMap() {
   const t = controls.target, lim = SIZE / 2, x = Math.max(-lim, Math.min(lim, t.x)), z = Math.max(-lim, Math.min(lim, t.z));
   if (x !== t.x || z !== t.z) { camera.position.x += x - t.x; camera.position.z += z - t.z; t.x = x; t.z = z; }
 }
-recompute(); buildMinimapBase();
+// =================== Weather layer: controls and map visuals ===================
+const $ = id => document.getElementById(id);
+const planning = () => document.body.classList.contains('planning');
+function renderWxSeg() {                  // scenario buttons: in the Weather layer menu and in the mission planner (same state)
+  if (!WX) return;
+  const SHORT = { clear: 'Clear', dusty: 'Dusty', storm: 'Dust storm' };
+  document.querySelectorAll('.wxSeg').forEach(seg => {
+    seg.innerHTML = WX.scenarios.map((s, k) => `<button data-k="${k}" class="${k === wxState.sc ? 'on' : ''}" title="${s.label} (MY${s.mars_year}): ${s.note}">${SHORT[s.id] || s.label}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b => b.onclick = () => setScenario(+b.dataset.k));
+  });
+}
+function setScenario(k) {
+  wxState.sc = k; wxReset(); renderWxSeg();
+  if (planning()) { buildPlanner(); return; }
+  if (sciRouteKey === 'science' && basePlan) {
+    const best = wxBest();
+    wxState.dep = best ?? Math.round((10 - wxSc().hours[0].lmst + 24) % 24);   // no GO hour: show 10:00 LMST on sol 1
+    if (best == null) toast(`${wxSc().label}: no GO departure in these 3 sols`);
+  }
+  if (basePlan) applyPlan(); else wxRender();
+}
+function wxRender() {
+  if (!WX) return;
+  $('wxHud').style.display = wxOn() ? '' : 'none';
+  applyWxVisual();
+  const M = WXR[mode], w = wxAt(wxState.dep);
+  $('wxDep').max = wxN() - 1; $('wxDep').value = wxState.dep;
+  set('wxDepTxt', `${wxWhen(wxState.dep)} LMST`);
+  $('wxTauLim').value = M.tauNoGo; set('wxTauLimTxt', M.tauNoGo.toFixed(1));
+  $('wxWindLim').value = M.windNoGo; set('wxWindLimTxt', `${M.windNoGo} m/s`);
+}
+// map view: haze from dust, sunlight from local time and dust (display only)
+const hemiLight = scene.children.find(o => o.isHemisphereLight);
+const HAZE = new THREE.Color(0x9a6a48);
+function sunDir(w) {
+  const r = Math.PI / 180, phi = WX.point.lat * r, dec = Math.asin(Math.sin(25.19 * r) * Math.sin(w.ls * r)), H = (w.lmst - 12) * 15 * r;
+  const el = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) + Math.PI;   // from north, clockwise
+  return { el, v: new THREE.Vector3(Math.cos(el) * Math.sin(az), Math.sin(el), -Math.cos(el) * Math.cos(az)) };
+}
+function applyWxVisual() {
+  if (fp) return;
+  if (!wxOn()) { scene.fog = null; scene.background = SPACE_BG; sun.position.set(-1200, 900, -600); sun.intensity = 2.2; if (hemiLight) hemiLight.intensity = 0.9; return; }
+  const w = wxAt(wxState.dep), s = sunDir(w), day = Math.max(0, Math.sin(s.el));
+  sun.position.copy(s.v.clone().multiplyScalar(2000)); if (s.el < 0.05) sun.position.y = 100;
+  sun.intensity = 0.3 + 1.9 * Math.sqrt(day) * Math.exp(-0.35 * w.tau / Math.max(0.2, day));
+  if (hemiLight) hemiLight.intensity = 0.35 + 0.55 * Math.sqrt(day);
+  scene.fog = new THREE.FogExp2(HAZE.clone().multiplyScalar(0.35 + 0.65 * Math.sqrt(day)), 0.00005 * w.tau / SC);
+  scene.background = SPACE_BG.clone().lerp(scene.fog.color, Math.min(1, w.tau / 4) * 0.7);
+}
+function wxSetDep(h) { wxState.dep = Math.max(0, Math.min(wxN() - 1, h)); if (basePlan) applyPlan(); else wxRender(); }
+if (WX) {
+  renderWxSeg();
+  $('wxDep').oninput = e => wxSetDep(+e.target.value);
+  $('wxPlay').onclick = () => {
+    if (wxState.play) { clearInterval(wxState.play); wxState.play = null; set('wxPlay', '▶ Play'); return; }
+    set('wxPlay', '⏸ Pause'); wxState.play = setInterval(() => wxSetDep((wxState.dep + 1) % wxN()), 600);
+  };
+  const limit = (k, v) => { WXR[mode][k] = v; wxReset(); if (planning()) buildPlanner(); else if (basePlan) applyPlan(); else wxRender(); };
+  $('wxTauLim').oninput = e => limit('tauNoGo', +e.target.value);
+  $('wxWindLim').oninput = e => limit('windNoGo', +e.target.value);
+} else { $('wxLayerBtn').style.display = 'none'; $('toPlan').style.display = 'none';
+  $('navPlan').disabled = true; $('navPlan').querySelector('small').textContent = 'Needs the weather data (weather_gale.json)'; }
+// entering the Weather layer starts at the best GO departure of the current route
+document.getElementById('wxLayerBtn').addEventListener('click', () => {
+  if (!WX || sciRouteKey !== 'science' || !basePlan || wxState.touched) return;
+  wxState.touched = true; const b = wxBest(); if (b != null && b !== wxState.dep) wxSetDep(b);
+});
+
+// =================== MISSION PLANNER: science value → weather → mission options → confirm ===================
+// After the objectives are picked (Science value), "Next" evaluates every departure hour of the weather scenario for
+// Habitat → A → B → Habitat and, separately, for Habitat → A → Habitat and Habitat → B → Habitat. It lists the best
+// departures and builds mission options: one EVA to both sites, or two EVAs (one site each, the second at the next good
+// departure) when one EVA is too long for the O₂ / battery or the time limits.
+const REST_H = 2;                                 // crew turnaround between two EVAs (suit recharge, rest), hours
+const MP = { opts: [], deps: [], sel: -1, sortie: 0, note: '', sites: [], built: false };
+const siteLite = s => ({ name: s.name, x: s.x, y: s.y, lon: s.lon, lat: s.lat, V: s.V, R: s.R, scores: s.scores, objectives: s.objectives, rt_used_pct: s.rt_used_pct });
+function stopsFrom(sites) {                       // the route stops for one or two sites (one site: Habitat → it → Habitat)
+  for (const n of [1, 2]) { const s = sites[n - 1] || sites[0];
+    Object.assign(WPS[n], { name: s.name, short: s.name, lon: s.lon, lat: s.lat, cell: [cellOf(s.y), cellOf(s.x)], site: s, dup: n === 2 && !sites[1], off: false }); }
+}
+function withStops(sites, fn) {                   // evaluate with other stops, then put the current ones back
+  const keep = [1, 2].map(n => ({ ...WPS[n], cell: [...WPS[n].cell] }));
+  stopsFrom(sites);
+  try { return fn(); } finally { [1, 2].forEach((n, i) => Object.assign(WPS[n], keep[i])); }
+}
+function topDeps(scan, n = 5, after = -1, gap = 2) {   // best GO departures, at least `gap` hours apart
+  const out = [];
+  for (const e of scan.filter(e => e.go && e.depH >= after).sort((a, b) => b.sf - a.sf)) {
+    if (out.every(o => Math.abs(o.depH - e.depH) >= gap)) out.push(e);
+    if (out.length >= n) break;
+  }
+  return out;
+}
+function summary(e) {
+  const sup = supply(), b = e.plan ? e.plan.b : null;
+  return { go: e.go, sf: e.sf, depH: e.depH, time: b ? b.time : 0, dist: b ? b.dist : 0, o2: b ? 100 * b.o2 / sup.o2 : 0, wh: b ? 100 * b.wh / sup.wh : 0,
+    heat: b ? b.heatWh : 0, rerouted: e.rerouted, reasons: e.reasons, tau: e.win ? e.win.tauMax : 0, wind: e.win ? e.win.windMax : 0, tmin: e.win ? e.win.tMin : 0, lim: e.lim };
+}
+const sortie = (sites, e) => ({ sites: sites.map(siteLite), depH: e.depH, s: summary(e) });
+function setModeQuiet(m) {                        // switch the travel mode without re-planning (the caller recomputes)
+  if (mode === m) return;
+  mode = m; document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x.dataset.m === mode));
+  set('evaBtn', mode === 'suit' ? '▶ Start first-person EVA (helmet HUD)' : '▶ Start drive (rover windshield HUD)'); set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive');
+}
+function withMode(m, fn) { const keep = mode; mode = m; try { return fn(); } finally { mode = keep; } }
+function buildPlanner() {
+  MP.opts = []; MP.deps = []; MP.sel = -1; MP.note = ''; MP.built = true;
+  const S = sciSitesNow.slice(0, 2), [A, B] = S; MP.sites = S;
+  renderPlanner(true);
+  if (!A || !WX) { renderPlanner(); return; }
+  setTimeout(() => {                              // let the "Planning…" text paint first: the first scans run A* several times
+    const scanOf = sites => withStops(sites, () => wxScanAll());
+    const both = B ? [A, B] : [A], full = scanOf(both), top = topDeps(full, 5);
+    // departures table: the best GO departures; if none, the best NO-GO hours in daylight, with their reasons
+    MP.deps = top.length ? top : full.filter(e => e.plan && !(e.win && e.win.dark)).sort((a, b) => b.sf - a.sf).slice(0, 3);
+    MP.depSites = both;
+    const M0 = mode, mName = m => m === 'suit' ? 'EVA' : 'drive';
+    const add = o => MP.opts.push({ mode: M0, ...o });
+    top.slice(0, 3).forEach(e => add({ kind: 'one', title: B ? `One ${mName(M0)} · ${A.name} → ${B.name}` : `One ${mName(M0)} · ${A.name}`, sorties: [sortie(both, e)] }));
+    const only = [];                              // single-site sorties that are GO, kept for the fallback options below
+    if (B) {                                      // split: one site per EVA, the second at the best departure after the first is back
+      const sa = scanOf([A]), sb = scanOf([B]);
+      for (const [X, Y, sx, sy] of [[A, B, sa, sb], [B, A, sb, sa]]) {
+        const fs = topDeps(sx, 2); only.push(...fs.map(f => [X, Y, f]));
+        const f = fs[0]; if (!f) continue;
+        const s2 = topDeps(sy, 1, f.depH + f.plan.b.time / 3600 + REST_H)[0];
+        if (s2) add({ kind: 'split', title: `Two ${mName(M0)}s · ${X.name}, then ${Y.name}`, sorties: [sortie([X], f), sortie([Y], s2)] });
+      }
+    }
+    const complete = () => MP.opts.some(o => o.kind !== 'only' && o.sorties.every(s => s.s.go));
+    // on foot and no option reaches every site: offer the pressurized rover (one drive to all sites)
+    if (!complete() && M0 === 'suit') withMode('rover', () => {
+      const r = topDeps(scanOf(both), 2);
+      r.forEach(e => MP.opts.push({ mode: 'rover', kind: 'one', title: `Rover · one drive · ${both.map(s => s.name).join(' → ')}`, sorties: [sortie(both, e)] }));
+      if (r.length) MP.note += `On foot, ${B ? `${A.name} → ${B.name}` : A.name} does not fit the suit O₂ / battery and time limits; the rover can do it. `;
+    });
+    // and the sites that work on foot on their own, at their best departures
+    for (const [X, Y, f] of only) if (MP.opts.length < 5)
+      add({ kind: 'only', title: `Only ${X.name}${complete() ? '' : ` (${Y.name} has no GO ${mName(M0)})`}`, sorties: [sortie([X], f)] });
+    MP.opts = MP.opts.filter((o, i, a) => a.findIndex(p => p.title === o.title && p.mode === o.mode && p.sorties[0].depH === o.sorties[0].depH) === i).slice(0, 5);
+    MP.opts.forEach(o => o.allGo = o.sorties.every(s => s.s.go));
+    // recommended: the safest complete option in this travel mode (one EVA, then split), then the rover, then a single site
+    const minSf = o => Math.min(...o.sorties.map(s => s.s.sf)), ok = MP.opts.filter(o => o.allGo);
+    const pool = [o => o.mode === M0 && o.kind === 'one', o => o.mode === M0 && o.kind === 'split', o => o.kind !== 'only', () => true]
+      .map(f => ok.filter(f)).find(p => p.length) || [];
+    const rec = pool.sort((a, b) => minSf(b) - minSf(a))[0]; if (rec) rec.rec = true;
+    if (!top.length) {
+      const cnt = {}; for (const e of full) if (!(e.win && e.win.dark)) for (const r of e.reasons) { const k = r.replace(/[0-9.×]+/g, '#'); cnt[k] = (cnt[k] || 0) + 1; }
+      const main = Object.entries(cnt).sort((a, b) => b[1] - a[1])[0];
+      MP.note = `${B ? `${A.name} → ${B.name} in one ${mName(M0)}` : `${A.name}`} is NO-GO at every hour of these 3 sols${main ? ` (most often: ${main[0].replace(/#/g, '…')})` : ''}.${B ? ` Split options visit one site per ${mName(M0)}.` : ''} ` + MP.note;
+    }
+    renderPlanner();
+    const first = MP.opts.findIndex(o => o.rec); if (first >= 0) selectOption(first, 0);
+  }, 30);
+}
+function planReset() { MP.built = false; MP.opts = []; MP.sel = -1; if (planning()) closeDrawer(); }
+function sortieLine(s, k, n) {
+  const back = s.depH + s.s.time / 3600, sites = s.sites.map(x => x.name).join(' → ');
+  return `<b>${n > 1 ? `EVA ${k + 1} · ` : ''}${wxWhen(s.depH)} → ${s.s.time ? fmtClock((wxAt(back).lmst) * 3600) : '–'} LMST</b> · Habitat → ${sites} → Habitat`
+    + `<small>${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · O₂ ${s.s.o2.toFixed(0)}% · battery ${s.s.wh.toFixed(0)}% · ×${s.s.sf.toFixed(2)} ${s.s.go ? '<span class="st go">GO</span>' : '<span class="st nogo">NO-GO</span>'}</small>`
+    + `<small>🌪 τ ${s.s.tau.toFixed(1)} · wind ${s.s.wind.toFixed(0)} m/s · min ${s.s.tmin.toFixed(0)} °C${s.s.rerouted ? ' · weather re-route' : ''}${s.s.heat > 0.5 ? ` · heater ${s.s.heat.toFixed(0)} Wh` : ''}${s.s.reasons.length ? ` · ⛔ ${s.s.reasons.join(', ')}` : ''}</small>`;
+}
+function renderPlanner(busy = false) {
+  const S = MP.sites, objs = sciPickText();
+  $('planLead').innerHTML = !S.length ? 'Pick objectives in Science Objectives first.'
+    : `Sites for <b>${objs}</b>: ${S.map(s => `${s.name} (value ${Math.round(s.V * 100)})`).join(', ')} · ${MODES[mode].name}. Every departure hour of the scenario is checked with the weather-aware route; pick an option, check the badge, then <b>Confirm</b>.`;
+  if (busy) { $('planDeps').innerHTML = '<div class="small">Planning… (checking 72 departure hours)</div>'; $('planOpts').innerHTML = ''; $('planNote').textContent = ''; return; }
+  const both = MP.depSites || [];
+  set('planDepHdr', both.length > 1 ? `Best departures · Habitat → ${both[0].name} → ${both[1].name} → Habitat` : both.length ? `Best departures · Habitat → ${both[0].name} → Habitat` : 'Best departures');
+  $('planDeps').innerHTML = MP.deps.length
+    ? `<table class="deps"><tr><th>Depart</th><th>Back</th><th>Time</th><th>Safety</th><th></th></tr>${MP.deps.map((e, i) => {
+        const b = e.plan ? e.plan.b.time : 0, back = wxAt(e.depH + b / 3600);
+        return `<tr class="row" data-i="${i}" title="${e.reasons.join(' · ') || 'GO'}"><td>${wxWhen(e.depH)}</td><td>${b ? fmtClock(back.lmst * 3600) : '–'}</td><td>${b ? fmtT(b) : '–'}</td><td>×${e.sf.toFixed(2)}</td><td><span class="st ${e.go ? 'go' : 'nogo'}">${e.go ? 'GO' : 'NO-GO'}</span></td></tr>`; }).join('')}</table>`
+    : '<div class="small">No departure to show.</div>';
+  $('planDeps').querySelectorAll('tr.row').forEach(tr => tr.onclick = () => {   // a departure row = the one-EVA option at that hour
+    const e = MP.deps[+tr.dataset.i]; let i = MP.opts.findIndex(o => o.kind === 'one' && o.sorties[0].depH === e.depH);
+    if (i < 0) { MP.opts.push({ kind: 'one', title: `One EVA · ${both.map(s => s.name).join(' → ')}`, sorties: [sortie(both, e)], allGo: e.go }); i = MP.opts.length - 1; }
+    selectOption(i, 0);
+  });
+  $('planOpts').innerHTML = MP.opts.length ? MP.opts.map((o, i) => `<div class="ocard${i === MP.sel ? ' sel' : ''}" data-i="${i}">
+      <div class="oh"><span>Option ${i + 1} · ${o.title}${o.rec ? '<span class="rec">Recommended</span>' : ''}</span><span class="st ${o.allGo ? 'go' : 'nogo'}">${o.allGo ? 'GO' : 'NO-GO'}</span></div>
+      ${o.sorties.map((s, k) => `<div class="sortie${i === MP.sel && k === MP.sortie ? ' on' : ''}" data-k="${k}">${sortieLine(s, k, o.sorties.length)}</div>`).join('')}</div>`).join('')
+    : '<div class="small">No GO mission option in this scenario. Try another weather scenario, the rover, or fewer objectives.</div>';
+  $('planOpts').querySelectorAll('.ocard').forEach(c => c.onclick = e => { const sEl = e.target.closest('.sortie'); selectOption(+c.dataset.i, sEl ? +sEl.dataset.k : 0); });
+  $('planNote').textContent = (MP.note ? MP.note + ' ' : '') + `Two EVAs are at least ${REST_H} h apart (crew turnaround). Times are local mean solar time at Gale.`;
+}
+// show an option's EVA on the map: its stops, its departure hour, the Weather layer
+function selectOption(i, k = 0) {
+  const o = MP.opts[i]; if (!o) return;
+  MP.sel = i; MP.sortie = k; const s = o.sorties[k];
+  setModeQuiet(o.mode || mode);                   // a rover option switches the travel mode
+  stopsFrom(s.sites); sciRouteKey = 'science'; placeWaypoints(); fillStops();
+  wxState.dep = s.depH; wxState.touched = true;
+  if (layer !== 'wx') setLayer('wx', false);
+  recompute();
+  set('stopSrc', `Mission option ${i + 1}${o.sorties.length > 1 ? ` · EVA ${k + 1} of ${o.sorties.length}` : ''} · ${o.title}`);
+  renderPlanner();
+}
+// Confirm: only for a GO option, and only while the badge (top right) shows GO for exactly that option
+function planConfirmState() {
+  if (!planning()) return;
+  const o = MP.opts[MP.sel], s = o && o.sorties[MP.sortie];
+  let why = '';
+  if (!o) why = 'Pick a mission option to confirm.';
+  else if (!o.allGo) why = 'This option has a NO-GO EVA: pick a GO option.';
+  else if (!curEval || wxState.dep !== s.depH || layer !== 'wx') why = 'The map no longer shows the selected option: click it again.';
+  else if (!curEval.go) why = 'The badge shows NO-GO: the mission cannot be confirmed.';
+  $('confirmBtn').disabled = !!why; $('confirmWhy').textContent = why;
+}
+const SKEY = 'ares_scheduled_missions_v1';
+const loadMissions = () => { try { return JSON.parse(localStorage.getItem(SKEY)) || []; } catch (e) { return []; } };
+const saveMissions = a => { try { localStorage.setItem(SKEY, JSON.stringify(a)); return true; } catch (e) { toast('Could not save: browser storage is blocked'); return false; } };
+$('confirmBtn').onclick = () => {
+  planConfirmState(); if ($('confirmBtn').disabled) return;
+  const o = MP.opts[MP.sel], list = loadMissions(), M = WXR[mode];
+  const sig = x => `${x.mode}|${x.scenario.k}|${x.sorties.map(s => `${s.depH}:${s.sites.map(q => `${Math.round(q.x)},${Math.round(q.y)}`).join(';')}`).join('/')}`;
+  const dupe = list.find(m => sig(m) === sig({ mode, scenario: { k: wxState.sc }, sorties: o.sorties }));
+  if (dupe) { toast(`Already scheduled as ${dupe.name}`); return; }
+  const m = { id: Date.now().toString(36), name: `MSN-${String(list.length + 1).padStart(2, '0')}`, savedAt: new Date().toISOString(),
+    mode, modeName: MODES[mode].name, scenario: { k: wxState.sc, id: wxSc().id, label: wxSc().label, my: wxSc().mars_year }, dustX: wxState.dustX,
+    limits: { tau: M.tauNoGo, wind: M.windNoGo }, objectives: [...sciPick], objText: sciPickText(), title: o.title,
+    sorties: o.sorties.map(s => ({ sites: s.sites, depH: s.depH, s: s.s })) };
+  list.push(m); if (!saveMissions(list)) return;
+  renderSched(); toast(`✓ ${m.name} confirmed · saved under SCHEDULED`);
+  $('confirmWhy').textContent = `${m.name} saved. Open SCHEDULED to replay it.`;
+};
+$('toPlan').onclick = () => { openSection('plan'); buildPlanner(); };
+// PLAN → Weather & departure: the same step as "Next" in Science Objectives (it needs picked objectives first)
+$('navPlan').onclick = () => {
+  closeMenus();
+  if ($('toPlan').disabled) { openSection('science'); toast('Pick objectives in Science Objectives first'); return; }
+  $('toPlan').click();
+};
+$('planBack').onclick = () => openSection('science');
+
+// =================== SCHEDULED MISSIONS: saved in this browser, replayed on the map ===================
+let schedSel = null;                              // { id, k } of the mission / EVA on the map
+function renderSched() {
+  const list = loadMissions(), menu = $('schedMenu'), box = $('schedList');
+  set('schedNavBtn', `MISSIONS${list.length ? ` (${list.length})` : ''}`); $('schedNavBtn').insertAdjacentHTML('beforeend', '<span class="car">▼</span>');
+  menu.innerHTML = list.length ? list.map(m => `<button class="mi" data-id="${m.id}">${m.name} · ${m.objText}<small>${wxWhen0(m)} · ${m.sorties.length > 1 ? `${m.sorties.length} EVAs` : 'one EVA'} · ${m.modeName} · ${m.scenario.label}</small></button>`).join('')
+      + '<button class="mi" data-all="1">All scheduled missions…</button>'
+    : '<div class="empty">No confirmed missions yet.<br>Science Objectives → Next → pick an option → Confirm.</div><button class="mi" data-all="1">Open scheduled missions</button>';
+  menu.querySelectorAll('.mi').forEach(b => b.onclick = () => { closeMenus(); if (b.dataset.all) openSection('scheduled'); else playMission(b.dataset.id, 0); });
+  box.innerHTML = list.length ? list.map(m => `<div class="mcard${schedSel && schedSel.id === m.id ? ' sel' : ''}">
+      <div class="mh"><span>${m.name} · ${m.title}</span><span class="st go">CONFIRMED</span></div>
+      <div class="mm">${m.objText} · ${m.modeName} · ${m.scenario.label} (MY${m.scenario.my}) · saved ${new Date(m.savedAt).toLocaleString()}</div>
+      ${m.sorties.map((s, k) => `<div class="mm">${m.sorties.length > 1 ? `EVA ${k + 1}: ` : ''}${wxWhenM(m, s.depH)} LMST · Habitat → ${s.sites.map(x => x.name).join(' → ')} → Habitat · ${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · ×${s.s.sf.toFixed(2)}</div>`).join('')}
+      <div class="btns">${m.sorties.map((s, k) => `<button class="btn" data-play="${m.id}" data-k="${k}">▶ ${m.sorties.length > 1 ? `EVA ${k + 1}` : 'Simulate'}</button>`).join('')}
+        <button class="btn" data-fp="${m.id}">🧑‍🚀 First-person</button><button class="btn del" data-del="${m.id}">🗑 Delete</button></div></div>`).join('')
+    : '<div class="small" style="margin-top:10px">No confirmed missions yet. Pick objectives in Science Objectives, press Next, pick a GO option and press Confirm.</div>';
+  box.querySelectorAll('[data-play]').forEach(b => b.onclick = () => playMission(b.dataset.play, +b.dataset.k));
+  box.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { playMission(b.dataset.fp, schedSel && schedSel.id === b.dataset.fp ? schedSel.k : 0); if (plan) $('evaBtn').click(); });
+  box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const m = loadMissions().find(x => x.id === b.dataset.del); if (!m || !confirm(`Delete ${m.name}? This cannot be undone.`)) return;
+    saveMissions(loadMissions().filter(x => x.id !== m.id)); if (schedSel && schedSel.id === m.id) schedSel = null; renderSched();
+  });
+}
+function wxWhenM(m, h) { if (!WX || !WX.scenarios[m.scenario.k]) return `hour ${h}`; const keep = wxState.sc; wxState.sc = m.scenario.k; const t = wxWhen(h); wxState.sc = keep; return t; }
+const wxWhen0 = m => wxWhenM(m, m.sorties[0].depH);
+// load a saved mission EVA (travel mode, weather scenario, flight rules, stops, departure) and play the traverse on the map
+function playMission(id, k = 0) {
+  const m = loadMissions().find(x => x.id === id); if (!m || !WX) return;
+  const s = m.sorties[k]; if (!s) return;
+  if (mode !== m.mode) {
+    mode = m.mode; document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x.dataset.m === mode));
+    set('evaBtn', mode === 'suit' ? '▶ Start first-person EVA (helmet HUD)' : '▶ Start drive (rover windshield HUD)'); set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive');
+  }
+  wxState.sc = WX.scenarios[m.scenario.k] ? m.scenario.k : 0; wxState.dustX = m.dustX ?? 1;
+  WXR[mode].tauNoGo = m.limits.tau; WXR[mode].windNoGo = m.limits.wind; wxReset(); renderWxSeg();
+  stopsFrom(s.sites); sciRouteKey = 'science'; placeWaypoints(); fillStops();
+  wxState.dep = s.depH; wxState.touched = true;
+  if (layer !== 'wx') setLayer('wx', false);
+  schedSel = { id, k };
+  recompute();
+  set('stopSrc', `Scheduled ${m.name}${m.sorties.length > 1 ? ` · EVA ${k + 1} of ${m.sorties.length}` : ''} · ${m.title}`);
+  openSection('scheduled'); renderSched();
+  if (plan) {
+    sim.preview = true; crew.visible = true; set('previewBtn', '⏸ Pause preview');
+    const bb = new THREE.Box3().setFromPoints(plan.pts), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());   // fly to the whole route
+    sciFly(c.x, heightAt(c.x, c.z), c.z, Math.max(1200 * SC, 1.4 * Math.hypot(sz.x, sz.z)));
+  }
+  toast(`${m.name}${m.sorties.length > 1 ? ` · EVA ${k + 1}` : ''}: departs ${wxWhen(s.depH)} LMST · ${curEval && curEval.go ? 'GO' : 'now NO-GO — check the badge'}`);
+}
+renderSched();
+window.addEventListener('storage', e => { if (e.key === SKEY) renderSched(); });   // another tab confirmed a mission
+
+recompute(); buildMinimapBase(); mmReady = true;
 
 // ---- intro hand-over: the camera flies in from space once the intro screen has finished ----
 const FLY = { active: false, pending: false, t0: 0, dur: 3600, tgt: controls.target.clone(), tgtFrom: controls.target.clone(), end: new THREE.Spherical(), from: new THREE.Spherical(), maxD: 0 };
@@ -2053,7 +2944,7 @@ function stepFly() {
   if (!FLY.active) return;
   const t = Math.min(1, (performance.now() - FLY.t0) / FLY.dur), e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   setFly(e); if (t >= 1) {
-    FLY.active = false; controls.enabled = true; document.body.classList.remove('flying');   // the map is in place: show its labels
+    FLY.active = false; controls.enabled = true; document.body.classList.remove('flying'); dispatchEvent(new Event('fly-done'));   // the map is in place: labels fade in, the map tip may show
     if (FLY.maxD) { controls.maxDistance = FLY.maxD; FLY.maxD = 0; }
     if (FLY.far) { camera.far = FLY.far; FLY.far = 0; camera.updateProjectionMatrix(); }
   }
@@ -2092,6 +2983,9 @@ renderer.setAnimationLoop(() => {
   if (fp) updateFP(dt); else { stepFly(); controls.update(); keepOnMap(); updateMapPreview(dt); }
   updateLabels();
   renderer.render(scene, camera);
+  if (fp && mode === 'rover') {                     // the rover cockpit on top, with its own depth buffer
+    renderer.autoClear = false; renderer.clearDepth(); renderer.render(cockpit, cockpitCam); renderer.autoClear = true;
+  }
 });
 // keep the minimap's blocked-cell tint in sync with the current cost map
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', buildMinimapBase));
@@ -2105,17 +2999,18 @@ addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; cam
   const hiddenToday = () => { try { return localStorage.getItem(KEY) === today(); } catch (e) { return false; } };
   const open = () => { document.getElementById('tipHide').checked = false; el.style.display = 'flex'; };
   const close = () => { if (document.getElementById('tipHide').checked) { try { localStorage.setItem(KEY, today()); } catch (e) { /* storage blocked */ } } el.style.display = 'none'; };
-  document.getElementById('tipOk').onclick = close;
-  el.addEventListener('click', e => { if (e.target === el) close(); });
-  addEventListener('keydown', e => { if (el.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Enter')) close(); });
+  document.getElementById('tipOk').onclick = close;                    // only "Got it" closes the tip (no click-outside / key close)
   const tipBtn = document.getElementById('tipOpen'); if (tipBtn) tipBtn.onclick = open;   // optional: no re-open button in the Info tab any more
-  const first = () => { if (!hiddenToday()) open(); };
-  if (window.__introDone) first(); else addEventListener('intro-done', first, { once: true });
+  const first = () => { if (!hiddenToday()) setTimeout(open, 300); };
+  // show it only after the camera's zoom-in onto the picked map has finished
+  const afterFly = () => (FLY.pending || FLY.active) ? addEventListener('fly-done', first, { once: true }) : first();
+  if (window.__introDone) afterFly(); else addEventListener('intro-done', afterFly, { once: true });
 })();
 // =================== menus · drawer · info tab ===================
 set('limWalk', `${MODES.suit.limit}°`); set('limRover', `${MODES.rover.limit}°`);
 const drawerEl = document.getElementById('drawer'), infoEl = document.getElementById('infoView');
-const SEC_TITLE = { mission: 'Mission · EVA-07', compare: 'Mission readiness', conditions: 'Route conditions', profile: 'Elevation profile', display: 'Display options', track: 'Crew track · EVA', science: 'Science value · Moon to Mars' };
+const SEC_TITLE = { mission: 'EVA stops', compare: 'GO / NO-GO', conditions: 'Route conditions', profile: 'Elevation profile', track: 'Preview & EVA', science: 'Science Objectives',
+  plan: 'Weather & departure', scheduled: 'Missions' };
 // each top-level item opens only its own dropdown (hover with a mouse, tap/click otherwise)
 const navItems = document.querySelectorAll('.navitem');
 let navTimer = 0;
@@ -2158,15 +3053,17 @@ document.addEventListener('pointerdown', e => { if (!e.target.closest('.navitem'
   document.addEventListener('pointerdown', e => { if (!e.target.closest('#siteLoc')) setOpen(false); });
   addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
 }
+let sciShown = false;                  // Science Objectives has been opened at least once (by the user)
 function closeDrawer() {
-  if (SCI && !fp) { openSection('science'); setFolded(true); return; }   // Science value stays reachable: folded, not closed
+  document.body.classList.remove('planning');
+  if (SCI && !fp && sciShown) { openSection('science'); setFolded(true); return; }   // once opened, Science Objectives stays reachable: folded, not closed
   drawerEl.classList.remove('open'); document.body.classList.remove('drawer-open');
 }
 function closeInfo() { infoEl.classList.remove('open'); document.getElementById('infoNavBtn').classList.remove('on'); }
-// MISSION / ROUTE / CREW sections become cards in the left column (built once from the drawer's sections); Science value stays on the right
+// PLAN / READINESS sections become cards in the left column (built once from the drawer's sections); Science Objectives, Weather & departure and Missions stay on the right
 const dockEl = document.getElementById('leftDock'), dockCards = {};
 for (const id of Object.keys(SEC_TITLE)) {
-  if (id === 'science') continue;
+  if (id === 'science' || id === 'plan' || id === 'scheduled') continue;   // these stay in the right drawer
   const sec = drawerEl.querySelector(`.sec[data-sec="${id}"]`); if (!sec) continue;
   const card = document.createElement('div'); card.className = 'panel glass dockCard'; card.hidden = true; card.dataset.card = id;
   card.innerHTML = '<div class="dhead"><h2></h2><button class="xbtn dfold" title="Fold / unfold" aria-label="Fold">▲</button><button class="xbtn dclose" title="Close" aria-label="Close">×</button></div>';
@@ -2181,6 +3078,7 @@ for (const id of Object.keys(SEC_TITLE)) {
 }
 function openSection(id) {
   closeInfo(); closeMenus();
+  if (id === 'science') sciShown = true;
   const card = dockCards[id];
   if (card) {                                          // left column: opened cards stay until their × is pressed
     if (card.hidden) { card.hidden = false; dockEl.appendChild(card); }
@@ -2193,6 +3091,8 @@ function openSection(id) {
   drawerEl.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
   set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open'); document.body.classList.add('drawer-open');
   drawerEl.classList.toggle('fold-able', id === 'science'); setFolded(false);
+  document.body.classList.toggle('planning', id === 'plan');      // the Confirm button shows only in the mission planner
+  if (id === 'plan') planConfirmState();
 }
 function openInfo(id) {
   closeMenus(); closeDrawer(); infoEl.classList.add('open'); document.getElementById('infoNavBtn').classList.add('on');
@@ -2201,13 +3101,18 @@ function openInfo(id) {
 }
 document.querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => openSection(b.dataset.sec)));
 document.querySelectorAll('button[data-info]').forEach(b => b.addEventListener('click', () => openInfo(b.dataset.info)));
-document.getElementById('drClose').onclick = closeDrawer;
+document.getElementById('drClose').onclick = () => {
+  if (!drawerEl.classList.contains('fold-able')) return closeDrawer();
+  // × on Science Objectives: close it for real (it comes back from PLAN → Science Objectives)
+  sciShown = false; setFolded(false);
+  drawerEl.classList.remove('open', 'fold-able'); document.body.classList.remove('drawer-open', 'planning');
+};
 // Science value folds up to its title bar (▼ to unfold) instead of closing, so it can always be brought back
 function setFolded(f) {
   drawerEl.classList.toggle('folded', f);
   set('drFold', f ? '▼' : '▲'); document.getElementById('drFold').setAttribute('aria-label', f ? 'Unfold the panel' : 'Fold the panel');
   const sci = drawerEl.classList.contains('fold-able');
-  if (sci) set('drTitle', f && typeof sciPickText === 'function' && SCI ? `Science value · ${sciPick.size ? sciPickText() : 'pick objectives'}` : SEC_TITLE.science);
+  if (sci) set('drTitle', f && typeof sciPickText === 'function' && SCI ? `Science Objectives · ${sciPick.size ? sciPickText() : 'pick objectives'}` : SEC_TITLE.science);
 }
 document.querySelector('#drawer .dhead').addEventListener('click', e => {
   if (!drawerEl.classList.contains('fold-able') || e.target.id === 'drClose') return;
@@ -2217,10 +3122,12 @@ document.getElementById('infoClose').onclick = closeInfo;
 document.getElementById('gonogo').onclick = () => openSection(plan ? 'compare' : 'science');
 document.getElementById('evaTop').onclick = () => {
   const b = document.getElementById('evaBtn');
-  if (!plan) { openSection('science'); toast('No route yet: pick objectives in Science value first'); }
+  if (!plan) { openSection('science'); toast('No route yet: pick objectives in Science Objectives first'); }
   else if (b.disabled) { openSection('compare'); toast('NO-GO: no traversable route'); } else b.click();
 };
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive')));
+// a new travel mode changes every route and budget: the mission options are rebuilt, the weather layer shows the new limits
+document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => { if (planning()) buildPlanner(); else wxRender(); }));
 addEventListener('keydown', e => { if (e.key === 'Escape' && !fp) { closeMenus(); closeDrawer(); closeInfo(); } });
 await Promise.race([texReady, new Promise(r => setTimeout(r, 30000))]);   // the map image (large) must be on the terrain first
 renderer.render(scene, camera);

@@ -92,11 +92,19 @@
     Object.assign(title.style, { transform: `translate(${dx}px, ${dy}px) scale(${s})`, letterSpacing: lsTo });
     body.classList.remove('intro-pending');                           // top bar and panels fade in while the logo flies
     window.__introDone = true; window.dispatchEvent(new Event('intro-done'));
-    const land = reduce ? 0 : DOCK_MS - 200;
-    setTimeout(() => {                                                // nearly there: the real brand appears underneath, the flying copy fades
+    // the hand-over happens when the flight has really ended (the logo's transform transition finishes exactly on its target),
+    // not 200 ms earlier: the easing is slow at the end, so the old timing showed the real brand logo pop in a few px
+    // ahead of the flying copy, which then faded out over it (the visible jump). Now the flying copy is swapped for the
+    // real brand in the same frame, at the same spot.
+    let swapped = false;
+    const swap = () => {
+      if (swapped) return; swapped = true;
+      logo.style.transition = 'none'; title.style.transition = 'none';
       body.classList.remove('brand-hidden'); logo.style.opacity = title.style.opacity = 0;
-    }, land);
-    setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, land + 300);
+      setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, 100);
+    };
+    logo.addEventListener('transitionend', e => { if (e.propertyName === 'transform') swap(); });
+    setTimeout(swap, reduce ? 0 : DOCK_MS + 120);                     // fallback if the browser never reports the end (hidden tab)
   }
 
   // landing-site choice: logo + title move up, two cards appear; the picked site's data is then loaded by the app.
