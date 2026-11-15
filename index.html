@@ -19,7 +19,6 @@
   #c{position:fixed;inset:0}
 
   /* the thick habitat window frame around the screen was removed: the page now fills the whole browser window */
-  #frameLbl{position:fixed;bottom:12px;right:44px;font-size:10.5px;letter-spacing:.28em;color:rgba(200,240,255,.5);pointer-events:none}
 
   /* ---------- glass surfaces ---------- */
   .glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -49,8 +48,8 @@
   .sub .mi small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
 
   /* the app UI waits under the intro, then fades in while the logo docks */
-  #topnav,#gonogo,#layerBox,#frame,#frameLbl,#credit,#vexNote{transition:opacity .9s ease .15s}
-  body.intro-pending #topnav,body.intro-pending #gonogo,body.intro-pending #layerBox,body.intro-pending #frame,body.intro-pending #frameLbl,body.intro-pending #credit,body.intro-pending #vexNote{opacity:0}
+  #topnav,#gonogo,#layerBox,#frame,#credit{transition:opacity .9s ease .15s}
+  body.intro-pending #topnav,body.intro-pending #gonogo,body.intro-pending #layerBox,body.intro-pending #frame,body.intro-pending #credit{opacity:0}
   body.brand-hidden #brandLogo,body.brand-hidden #brandName{visibility:hidden}
   #topnav .spacer{flex:1}
   #topnav .seg{margin-right:8px}
@@ -93,7 +92,7 @@
   @media (max-width:860px){
     #brandName{font-size:13.5px;letter-spacing:.14em} #brand{margin-right:6px} .navbtn .car{display:none}
     #topnav{padding:0 12px 0 16px} #topnav .seg button{padding:6px 8px;font-size:11.5px}
-    #evaTop{padding:8px 12px} #frameLbl{display:none}
+    #evaTop{padding:8px 12px}
   }
   .panel h1{font-size:15px;margin:0 0 2px;letter-spacing:.06em}
   .panel .sub{font-size:11.5px;color:var(--dim);margin-bottom:8px}
@@ -192,8 +191,6 @@
 
   /* ---------- data credit + display-scale note (kept from the Gale build) ---------- */
   #credit{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:10.5px;color:rgba(200,230,240,.6);pointer-events:none;z-index:5;white-space:nowrap}
-  #vexNote{position:fixed;bottom:30px;right:44px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px;pointer-events:none}
-  .hudmode #vexNote{bottom:auto;top:8px;right:14px}
   @media (max-width:1180px){ #credit{display:none} }
 
 /* ---------- first-visit tip: how to move around the map ---------- */
@@ -226,7 +223,6 @@
 </div>
 <script src="web/js/intro.js"></script>
 <canvas id="c"></canvas>
-<div id="frameLbl">HABITAT VIEWPORT · TRANSPARENT DISPLAY</div>
 <div id="labels"></div>
 
 <!-- ================= TOP NAV (menus) ================= -->
@@ -440,7 +436,6 @@
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
-<div id="vexNote">terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)</div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
 <div id="tip" role="dialog" aria-modal="true" aria-label="How to move around the map">
@@ -906,12 +901,11 @@ function setVex(v) {
   hab.position.y = heightAt(hab.position.x, hab.position.z);
   wpViz.forEach(o => { const y = heightAt(o.ground.x, o.ground.z); o.ground.y = y; o.anchor.y = y + (o.w.id === 'H' ? 60 * SC : 225 * SC); if (o.beacon) o.beacon.position.y = y + 110 * SC; });
   if (arLine) { const a = arLine.geometry.attributes.position; for (let k = 0; k < a.count; k++) a.setY(k, heightAt(a.getX(k), a.getZ(k)) + 0.25); a.needsUpdate = true; arLine.geometry.computeBoundingSphere(); }
-  set('vexNote', VEX === 1 ? 'terrain at true height ×1, overall tilt levelled (display only)' : 'terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)');
 }
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
-const panels = ['topnav', 'drawer', 'infoView', 'gonogo', 'frameLbl', 'credit'].map(id => document.getElementById(id));
+const panels = ['topnav', 'drawer', 'infoView', 'gonogo', 'credit'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
