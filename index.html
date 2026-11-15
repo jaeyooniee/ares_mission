@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- SI (Super Intelligence) disclosure: this file, index.html, was written with the assistance of Claude (Anthropic, Claude Opus 5.5) through Claude Code. The page code and text were generated with the model and edited by the team. No NASA logos or branding are used in this file. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Martian Map – EVA Planner, Helmet HUD & Rover HUD</title>
@@ -173,10 +174,11 @@
   .wlabel{position:fixed;transform:translate(-50%,-100%);font-size:11.5px;padding:3px 7px;border-radius:6px;white-space:nowrap;pointer-events:none;
     background:rgba(5,20,28,.7);border:1px solid rgba(55,224,255,.55);color:#dff9ff}
   /* ---------- Curiosity ground truth (CheMin) layer ---------- */
-  .cmlabel{position:fixed;transform:translate(-50%,-100%);font-size:10.5px;padding:2px 6px;border-radius:5px;white-space:nowrap;pointer-events:none;
+  .cmlabel{position:fixed;transform:translate(-50%,-100%);font-size:10.5px;padding:2px 6px;border-radius:5px;white-space:nowrap;pointer-events:auto;cursor:pointer;
     background:rgba(28,20,4,.72);border:1px solid rgba(245,200,80,.45);color:#f7e6b5}
   .cmlabel.near{border-color:#ffd24a;color:#fff3c4;font-weight:600;box-shadow:0 0 8px rgba(255,200,60,.5)}
-  .hudmode .cmlabel{background:transparent;border:0;color:#ffe08a;text-shadow:0 0 6px rgba(255,190,40,.9);font-family:"SF Mono",Menlo,Consolas,monospace}
+  .cmlabel:hover,.cmlabel.open{border-color:#ffd24a;color:#fff}
+  .hudmode .cmlabel{pointer-events:none;background:transparent;border:0;color:#ffe08a;text-shadow:0 0 6px rgba(255,190,40,.9);font-family:"SF Mono",Menlo,Consolas,monospace}
   #cmPop{position:fixed;z-index:60;display:none;width:300px;max-height:70vh;overflow:auto;padding:10px 12px;border-radius:10px;font-size:12px;line-height:1.35;
     background:rgba(16,12,6,.94);border:1px solid rgba(245,200,80,.6);color:#f4ecd8;box-shadow:0 6px 24px rgba(0,0,0,.5)}
   #cmPop h4{margin:0 0 2px;font-size:14px;color:#ffd970} #cmPop .cmsub{color:#c9b98f;font-size:11px;margin-bottom:6px}
@@ -356,7 +358,7 @@
       <label class="chk" style="margin-top:8px"><input type="checkbox" id="showCm" autocomplete="off"> Curiosity drill sites (CheMin)</label>
       <label class="chk"><input type="checkbox" id="showCmPath" autocomplete="off"> Curiosity rover traverse</label>
       <div class="small" id="cmLegend" style="margin-top:3px;opacity:.85">Reference only, not used in route scoring: drill samples are ~2–6 cm, a CRISM pixel is ≈18 m.
-        <span style="color:#ffd24a">Gold</span> = within 200 m of the planned route. Click a pin for the measured minerals.</div>
+        <span style="color:#ffd24a">Gold</span> = within 200 m of the planned route. Click a pin or its label for the measured minerals (again to close).</div>
       </div>
     </div>
   </div>
@@ -464,7 +466,7 @@
       <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
       <div class="sub">Habitat transparent display → helmet / rover HUD</div>
       <div class="note" id="aboutNote">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
-      <p>Plan an EVA on the map: pick a travel mode, check the route and the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. Use the menus at the top for details; switch data layers and the CRISM minerals overlay at the bottom left.</p>
+      <p>Pick a landing site on the start screen (Gale, Jezero, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
     </div>
     <div class="ipane" data-info="controls">
       <h1>Map controls</h1>
@@ -472,6 +474,8 @@
         <li><b>Left-drag</b> — move the map position</li>
         <li><b>Right-drag</b> — tilt and rotate the view</li>
         <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
+        <li><b>Location ▼</b> (top bar) — switch to Gale, Jezero or your custom site</li>
+        <li><b>Click a drill-site pin</b> (Gale, LAYERS → Curiosity drill sites) — its measured minerals</li>
       </ul>
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
     </div>
@@ -480,10 +484,12 @@
       <table class="src">
         <tr><td>Elevation · slope</td><td id="srcElev">HiRISE DEM of Gale (1 m source, shown at 16 m)</td></tr>
         <tr><td>Imagery</td><td id="srcImg">USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
-        <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
+        <tr><td>Routes · budget</td><td>Planned in the page: A* on the slope / cost grid of the DEM, with the team pipeline's models (Tobler walking speed × suit factor, Pandolf metabolic O₂ at Mars gravity; rover speed and Wh/km)</td></tr>
         <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
         <tr><td>Science value</td><td id="srcSci">Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
-        <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos</td></tr>
+        <tr id="srcCm"><td>Ground truth (Gale)</td><td>Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook (clay wt% from Thorpe et al. 2022); Curiosity traverse: NASA MMGIS. Shown in LAYERS on the map only, as reference: not used in route scoring</td></tr>
+        <tr><td>Custom sites</td><td>Built in your browser from your own files with the same rules as Gale and Jezero (DEM; optional image, CRISM MTRDR, THEMIS; rover traverse from NASA MMGIS). Nothing is uploaded; the site is kept in this browser and can be downloaded as a package</td></tr>
+        <tr><td>Not in this build</td><td>Soft soil, boulders, live space weather (DONKI), radiation, rover photos</td></tr>
       </table>
       <p class="small" style="margin-top:12px" id="srcFoot">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
     </div>
@@ -1014,7 +1020,7 @@ const wpViz = WPS.map((w, n) => {
 // CheMin drill sites + Curiosity traverse: ground truth for Gale only (web/data/chemin.json, from the ui-1 build)
 let CHEMIN = null;
 if (SITE_ID === 'gale') { try { CHEMIN = await (await fetch('web/data/chemin.json')).json(); } catch (e) { console.warn('[chemin] not loaded', e); } }
-document.getElementById('cmBox').hidden = !CHEMIN;
+document.getElementById('cmBox').hidden = !CHEMIN; document.getElementById('srcCm').hidden = !CHEMIN;
 // =================== Curiosity ground truth layer (CheMin drill sites + traverse) ===================
 // Reference only: these points do NOT feed the CRISM categories or the route (scale: cm samples vs 18 m pixels).
 /*LONG LINE 837 len 34404*/
@@ -1031,16 +1037,19 @@ const cmSites = (CHEMIN?.sites || []).map(s => {
   const has = s.samples.length > 0, g = new THREE.Group();
   const stick = new THREE.Mesh(new THREE.CylinderGeometry(1.6 * SC, 1.6 * SC, 70 * SC, 8), has ? cmMatData : cmMatNo); stick.position.y = 35 * SC;
   const head = new THREE.Mesh(new THREE.OctahedronGeometry(9 * SC), has ? cmMatData : cmMatNo); head.position.y = 76 * SC;
-  g.add(stick, head); cmGroup.add(g);
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(32 * SC, 10, 8), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })); hit.position.y = 60 * SC;
+  g.add(stick, head, hit); cmGroup.add(g);
   const el = document.createElement('div'); el.className = 'cmlabel'; el.style.display = 'none'; labelsEl.appendChild(el);
   const o = { s, x, z, has, g, stick, head, el, near: false, routeM: null };
-  stick.userData.cm = head.userData.cm = o; return o;
+  stick.userData.cm = head.userData.cm = hit.userData.cm = o;
+  el.addEventListener('click', e => { e.stopPropagation(); if (!fp) cmShow(o, e.clientX, e.clientY); });
+  return o;
 }).filter(Boolean);
 let cmPath = null;
 function cmRefresh() {                    // heights follow the display exaggeration (2× map, 1× first person)
   for (const o of cmSites) o.g.position.set(o.x, heightAt(o.x, o.z), o.z);
   if (cmPath) { scene.remove(cmPath); cmPath.traverse(m => m.geometry && m.geometry.dispose()); }
-  cmPath = new THREE.Group(); cmPath.visible = document.getElementById('showCmPath').checked;
+  cmPath = new THREE.Group(); cmPath.visible = document.getElementById('showCmPath').checked && !document.body.classList.contains('hudmode');
   for (const seg of CHEMIN?.traverse || []) {
     const pts = seg.map(([lon, lat]) => { const [x, z] = cmToXZ(lon, lat); return new THREE.Vector3(x, heightAt(x, z) + 3 * SC, z); }).filter(p => cmInside(p.x, p.z));
     if (pts.length < 2) continue;
@@ -1059,20 +1068,30 @@ function cmNear() {                       // distance from each drill site to th
   }
 }
 function cmLabels() {
-  const on = cmGroup.visible;
-  for (const o of cmSites) {
+  const on = cmGroup.visible, placed = [];
+  // near-route sites first, then sites with CheMin data; a label that would overlap one already placed is hidden (zoom in to see it)
+  const order = [...cmSites].sort((a, b) => (b.near - a.near) || (b.has - a.has));
+  for (const o of order) {
     if (!on) { o.el.style.display = 'none'; continue; }
     const g = new THREE.Vector3(o.x, o.g.position.y + (fp ? 25 : 95 * SC), o.z), sp = g.clone().project(camera), dist = camera.position.distanceTo(g);
-    const show = !(sp.z > 1 || sp.z < -1) && (fp ? dist < 800 : (o.near || camera.position.y < 2200 * SC));
+    let show = !(sp.z > 1 || sp.z < -1) && (fp ? dist < 800 : true);
+    const nm = o.s.name.split(' / ')[0], txt = fp ? `▲ CheMin ${nm} · ${dist.toFixed(0)} m` : `▲ ${nm}${o.has ? '' : ' (no CheMin)'}`;
+    const px = (sp.x * 0.5 + 0.5) * innerWidth, py = (-sp.y * 0.5 + 0.5) * innerHeight, w = txt.length * 6.2 + 12, h = 18;
+    const box = [px - w / 2, py - h, px + w / 2, py];
+    if (show && placed.some(b => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) show = false;
     o.el.style.display = show ? 'block' : 'none'; if (!show) continue;
-    o.el.className = 'cmlabel' + (o.near ? ' near' : '');
-    o.el.style.left = `${(sp.x * 0.5 + 0.5) * innerWidth}px`; o.el.style.top = `${(-sp.y * 0.5 + 0.5) * innerHeight}px`;
-    const nm = o.s.name.split(' / ')[0];
-    o.el.textContent = fp ? `▲ CheMin ${nm} · ${dist.toFixed(0)} m` : `▲ ${nm}${o.has ? '' : ' (no CheMin)'}`;
+    placed.push(box);
+    o.el.className = 'cmlabel' + (o.near ? ' near' : '') + (cmOpen === o ? ' open' : '');
+    o.el.style.left = `${px}px`; o.el.style.top = `${py}px`;
+    o.el.textContent = txt;
   }
 }
 const cmPop = document.createElement('div'); cmPop.id = 'cmPop'; document.body.appendChild(cmPop);
+let cmOpen = null;                         // the drill site whose popup is open (clicking it again closes it)
+function cmHide() { cmPop.style.display = 'none'; cmOpen = null; }
 function cmShow(o, cx, cy) {
+  if (cmOpen === o && cmPop.style.display === 'block') { cmHide(); return; }
+  cmOpen = o;
   const s = o.s, esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   let h = `<span class="x" id="cmX">✕</span><h4>${esc(s.name)}</h4><div class="cmsub">Curiosity drill site · first drilled sol ${s.sol} · ${Math.abs(s.lat).toFixed(4)}°S ${s.lon.toFixed(4)}°E` +
           (o.routeM !== null ? `<br>${o.routeM.toFixed(0)} m from the planned route${o.near ? ' (nearby)' : ''}` : '') + `</div>`;
@@ -1088,7 +1107,7 @@ function cmShow(o, cx, cy) {
   cmPop.innerHTML = h; cmPop.style.display = 'block';
   const w = 300, hgt = Math.min(cmPop.offsetHeight, innerHeight * 0.7);
   cmPop.style.left = `${Math.min(innerWidth - w - 16, cx + 14)}px`; cmPop.style.top = `${Math.max(10, Math.min(innerHeight - hgt - 10, cy - 20))}px`;
-  document.getElementById('cmX').onclick = () => { cmPop.style.display = 'none'; };
+  document.getElementById('cmX').onclick = cmHide;
 }
 {
   const ray = new THREE.Raycaster(), ptr = new THREE.Vector2(); let down = null;
@@ -1097,11 +1116,16 @@ function cmShow(o, cx, cy) {
     if (!down || fp || !cmGroup.visible) return; const moved = Math.hypot(e.clientX - down[0], e.clientY - down[1]); down = null; if (moved > 5) return;
     ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, camera);
     const hit = ray.intersectObjects(cmGroup.children, true).find(h => h.object.userData.cm);
-    if (hit) cmShow(hit.object.userData.cm, e.clientX, e.clientY); else cmPop.style.display = 'none';
+    if (hit) cmShow(hit.object.userData.cm, e.clientX, e.clientY); else cmHide();
+  });
+  renderer.domElement.addEventListener('pointermove', e => {         // pointer cursor over a drill-site pin
+    if (fp || !cmGroup.visible || e.buttons) return;
+    ptr.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(ptr, camera);
+    renderer.domElement.style.cursor = ray.intersectObjects(cmGroup.children, true).some(h => h.object.userData.cm) ? 'pointer' : '';
   });
 }
 cmRefresh();
-document.getElementById('showCm').onchange = e => { cmGroup.visible = e.target.checked; if (!e.target.checked) cmPop.style.display = 'none'; };
+document.getElementById('showCm').onchange = e => { cmGroup.visible = e.target.checked; if (!e.target.checked) cmHide(); };
 document.getElementById('showCmPath').onchange = e => { if (cmPath) cmPath.visible = e.target.checked; };
 // crew marker
 const crew = new THREE.Group();
@@ -1583,6 +1607,7 @@ const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('
 const panels = ['topnav', 'drawer', 'leftDock', 'infoView', 'gonogo', 'credit'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; setVex(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; controls.enabled = false; crew.visible = false;
+  cmGroup.visible = false; if (cmPath) cmPath.visible = false; cmHide();   // map-only reference layers (CheMin pins, Curiosity traverse)
   if (mouseLook.on) flashLookHint();
   paint('img'); optTube.visible = retTube.visible = strTube.visible = false; wire.visible = false; minMesh.visible = false; sciSync();
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
@@ -1618,7 +1643,8 @@ document.getElementById('goBtn').onclick = () => {
 };
 function exitFP() {
   sim.running = false; sim.resetAt = 0;
-  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
+  setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true;
+  cmGroup.visible = document.getElementById('showCm').checked; if (cmPath) cmPath.visible = document.getElementById('showCmPath').checked; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
   if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && minOn.size > 0; sciSync(); hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
