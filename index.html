@@ -21,6 +21,16 @@
   /* the old thick window frame was removed: the page now fills the whole browser window */
   #frameLbl{position:fixed;top:16px;left:50%;transform:translateX(-50%);font-size:10.5px;letter-spacing:.28em;color:rgba(200,240,255,.5);pointer-events:none}
 
+  /* ---------- first-visit tip: how to move around the map ---------- */
+  #tip{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,8,12,.5)}
+  .tipBox{width:min(92vw,400px);background:rgba(10,22,30,.94);border:1px solid var(--line);border-radius:14px;padding:20px 24px;box-shadow:0 0 40px rgba(55,224,255,.14);line-height:1.5}
+  .tipBox h3{margin:0 0 10px;font-size:15px;letter-spacing:.06em}
+  .tipBox ul{margin:0 0 8px;padding-left:20px;font-size:13.5px}
+  .tipBox li{margin:4px 0} .tipBox li b{color:var(--cyan)}
+  .tipBox .tipTouch{font-size:11.5px;color:var(--dim);margin-bottom:12px}
+  #tipOk{width:100%;margin-top:12px;padding:9px;font-size:14px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
+  #tipOpen{color:var(--cyan);cursor:pointer;text-decoration:underline;font-size:11.5px}
+
   /* ---------- panels ---------- */
   .panel{position:fixed;top:24px;max-height:calc(100% - 48px);overflow-y:auto;width:330px;
     background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
@@ -137,6 +147,7 @@
 <div id="left" class="panel">
   <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
   <div class="sub">Habitat transparent display → helmet / rover HUD</div>
+  <div class="sub" style="margin-top:-4px"><a id="tipOpen">How to move around the map</a></div>
   <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
 
   <h2>Mission · EVA-07</h2>
@@ -258,6 +269,19 @@
 <div id="vexNote" style="position:fixed;top:8px;right:14px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px">terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)</div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
+<div id="tip" role="dialog" aria-modal="true" aria-label="How to move around the map">
+  <div class="tipBox">
+    <h3>Moving around the map</h3>
+    <ul>
+      <li><b>Left-drag</b> — tilt and rotate the view</li>
+      <li><b>Right-drag</b> — move the map position</li>
+      <li><b>Mouse wheel</b> — zoom in and out</li>
+    </ul>
+    <div class="tipTouch">Touch screen: one finger tilts and rotates, two fingers zoom and move the map.</div>
+    <label class="chk"><input type="checkbox" id="tipHide"> Don't show again today</label>
+    <button id="tipOk">Got it</button>
+  </div>
+</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -423,7 +447,12 @@ scene.background = SPACE_BG;
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 20000 * Math.max(1, SC));
 const MAP_CAM = () => { camera.position.set(1300 * SC, 2500 * SC, 3000 * SC); controls.target.set(0, 0, 0); controls.update(); };
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.maxPolarAngle = Math.PI * 0.47; MAP_CAM();
+controls.maxPolarAngle = Math.PI * 0.47;
+// map controls: left-drag tilts / rotates, right-drag moves the map position, wheel zooms (the first-visit tip explains this)
+controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+controls.screenSpacePanning = false;             // move along the ground, not along the screen
+MAP_CAM();
 scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a2418, 0.9));
 const sun = new THREE.DirectionalLight(0xfff0dd, 2.2); sun.position.set(-1200, 900, -600); scene.add(sun);
 
@@ -872,6 +901,11 @@ function updateFP(dt) {
 }
 
 const clock = new THREE.Clock();
+// the point the map view looks at cannot be dragged off the map
+function keepOnMap() {
+  const t = controls.target, lim = SIZE / 2, x = Math.max(-lim, Math.min(lim, t.x)), z = Math.max(-lim, Math.min(lim, t.z));
+  if (x !== t.x || z !== t.z) { camera.position.x += x - t.x; camera.position.z += z - t.z; t.x = x; t.z = z; }
+}
 recompute(); buildMinimapBase();
 
 // ---- intro hand-over: the camera flies in from space once the intro screen has finished ----
@@ -895,13 +929,29 @@ if (!window.__introDone && !matchMedia('(prefers-reduced-motion: reduce)').match
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), tt = performance.now();
   wpViz.forEach(v => v.beacon && (v.beacon.material.opacity = 0.45 + 0.3 * Math.sin(tt / 300)));
-  if (fp) updateFP(dt); else { stepFly(); controls.update(); updateMapPreview(dt); }
+  if (fp) updateFP(dt); else { stepFly(); controls.update(); keepOnMap(); updateMapPreview(dt); }
   updateLabels();
   renderer.render(scene, camera);
 });
 // keep the minimap's blocked-cell tint in sync with the current cost map
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', buildMinimapBase));
 addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); drawProfile(); });
+// ---- first-visit tip: how to move around the map.
+// "Don't show again today" is remembered in this browser (localStorage, keyed by the local date), so no backend is needed.
+// If storage is blocked (private window) the tip simply shows on every visit.
+(function () {
+  const KEY = 'ares_map_tip_hidden_on', el = document.getElementById('tip');
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+  const hiddenToday = () => { try { return localStorage.getItem(KEY) === today(); } catch (e) { return false; } };
+  const open = () => { document.getElementById('tipHide').checked = false; el.style.display = 'flex'; };
+  const close = () => { if (document.getElementById('tipHide').checked) { try { localStorage.setItem(KEY, today()); } catch (e) { /* storage blocked */ } } el.style.display = 'none'; };
+  document.getElementById('tipOk').onclick = close;
+  el.addEventListener('click', e => { if (e.target === el) close(); });
+  addEventListener('keydown', e => { if (el.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Enter')) close(); });
+  document.getElementById('tipOpen').onclick = open;
+  const first = () => { if (!hiddenToday()) open(); };
+  if (window.__introDone) first(); else addEventListener('intro-done', first, { once: true });
+})();
 window.__siteReady = true; window.dispatchEvent(new Event('site-ready'));
 </script>
 </body>
