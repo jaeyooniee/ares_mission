@@ -18,24 +18,83 @@
     font-family:-apple-system,"Segoe UI",Inter,Roboto,sans-serif}
   #c{position:fixed;inset:0}
 
-  /* the old thick window frame was removed: the page now fills the whole browser window */
-  #frameLbl{position:fixed;top:16px;left:50%;transform:translateX(-50%);font-size:10.5px;letter-spacing:.28em;color:rgba(200,240,255,.5);pointer-events:none}
+  /* the thick habitat window frame around the screen was removed: the page now fills the whole browser window */
+  #frameLbl{position:fixed;bottom:12px;right:44px;font-size:10.5px;letter-spacing:.28em;color:rgba(200,240,255,.5);pointer-events:none}
 
-  /* ---------- first-visit tip: how to move around the map ---------- */
-  #tip{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,8,12,.5)}
-  .tipBox{width:min(92vw,400px);background:rgba(10,22,30,.94);border:1px solid var(--line);border-radius:14px;padding:20px 24px;box-shadow:0 0 40px rgba(55,224,255,.14);line-height:1.5}
-  .tipBox h3{margin:0 0 10px;font-size:15px;letter-spacing:.06em}
-  .tipBox ul{margin:0 0 8px;padding-left:20px;font-size:13.5px}
-  .tipBox li{margin:4px 0} .tipBox li b{color:var(--cyan)}
-  .tipBox .tipTouch{font-size:11.5px;color:var(--dim);margin-bottom:12px}
-  #tipOk{width:100%;margin-top:12px;padding:9px;font-size:14px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
-  #tipOpen{color:var(--cyan);cursor:pointer;text-decoration:underline;font-size:11.5px}
+  /* ---------- glass surfaces ---------- */
+  .glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .panel{position:fixed;overflow-y:auto;border-radius:14px;padding:14px 16px;box-shadow:0 0 30px rgba(55,224,255,.06) inset}
 
-  /* ---------- panels ---------- */
-  .panel{position:fixed;top:24px;max-height:calc(100% - 48px);overflow-y:auto;width:330px;
-    background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
-    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 0 30px rgba(55,224,255,.06) inset}
-  #left{left:24px} #right{right:24px}
+  /* ---------- top navigation + per-item dropdowns ---------- */
+  /* full-width bar flush with the top / left / right edges, very see-through, only a thin line underneath */
+  #topnav{position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;gap:4px;padding:0 28px;z-index:20}
+  #topnav.glass{background:rgba(8,14,18,.38);border:0;border-bottom:1px solid rgba(255,255,255,.12)}
+  #layerMenu{width:320px;padding:12px 14px}
+  #brand{display:flex;align-items:center;gap:10px;margin-right:18px;white-space:nowrap}
+  #brandLogo{position:relative;width:34px;height:34px;flex:none}
+  #brandLogo img,#introLogo img{display:block;width:100%;height:100%}
+  #brandLogo svg,#introLogo svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+  #brandName{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:16px;font-weight:700;letter-spacing:.24em;color:#eafaff;text-shadow:0 0 10px rgba(55,224,255,.45)}
+  .navitem{position:relative}
+  .navbtn{background:none;border:0;color:#cfe3ea;font-size:12.5px;letter-spacing:.1em;padding:9px 13px;border-radius:8px;cursor:pointer}
+  .navbtn .car{font-size:9px;opacity:.6;margin-left:5px;display:inline-block;transition:transform .2s}
+  .navbtn:hover,.navbtn.on,.navitem.open .navbtn{background:rgba(55,224,255,.12);color:#fff}
+  .navitem.open .car{transform:rotate(180deg)}
+  .sub{position:absolute;top:calc(100% + 13px);left:0;min-width:250px;padding:8px;border-radius:12px;display:none;z-index:21;
+    background:rgba(8,18,25,.95);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .sub::before{content:"";position:absolute;left:0;right:0;top:-15px;height:15px}
+  .navitem.open .sub{display:block}
+  .sub .mi{display:block;width:100%;text-align:left;background:none;border:0;color:#e8f3f7;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .sub .mi:hover{background:rgba(55,224,255,.1)}
+  .sub .mi small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+
+  /* the app UI waits under the intro, then fades in while the logo docks */
+  #topnav,#gonogo,#layerBox,#frame,#frameLbl,#credit,#vexNote{transition:opacity .9s ease .15s}
+  body.intro-pending #topnav,body.intro-pending #gonogo,body.intro-pending #layerBox,body.intro-pending #frame,body.intro-pending #frameLbl,body.intro-pending #credit,body.intro-pending #vexNote{opacity:0}
+  body.brand-hidden #brandLogo,body.brand-hidden #brandName{visibility:hidden}
+  #topnav .spacer{flex:1}
+  #topnav .seg{margin-right:8px}
+  #topnav .seg button{flex:none;padding:6px 11px}
+  #evaTop{background:#e8f3f7;color:#0b1820;border:0;border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap}
+  #evaTop:hover{background:#fff}
+
+  /* ---------- drawer (menu content) ---------- */
+  #drawer{top:140px;right:24px;width:340px;max-height:calc(100% - 164px);display:none;z-index:15}
+  #drawer.open{display:block}
+  .dhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .dhead h2{margin:0}
+  .xbtn{background:none;border:0;color:var(--dim);font-size:20px;cursor:pointer;line-height:1;padding:0 4px}
+  .xbtn:hover{color:#fff}
+  .sec{display:none} .sec.on{display:block}
+
+  /* ---------- always-visible: readiness badge + layers ---------- */
+  /* GO badge: top right, under the Start EVA button · layers: top left, under the brand */
+  #gonogo{position:fixed;top:76px;right:24px;z-index:14;cursor:pointer;gap:16px;min-width:300px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+  /* ---------- info tab ---------- */
+  #infoView{top:76px;left:24px;right:24px;bottom:24px;display:none;grid-template-columns:210px minmax(0,1fr);padding:0;overflow:hidden;z-index:16}
+  #infoView.open{display:grid}
+  #infoNav{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+  .itab{text-align:left;background:none;border:0;color:#cfe3ea;font-size:13px;padding:9px 12px;border-radius:8px;cursor:pointer}
+  .itab:hover{background:rgba(255,255,255,.06)}
+  .itab.on{background:#174052;color:#fff}
+  #infoBody{padding:22px 30px;overflow-y:auto}
+  .ipane{display:none;max-width:760px} .ipane.on{display:block}
+  .ipane h1{font-size:18px;margin:0 0 4px;letter-spacing:.04em}
+  .ipane p{font-size:13px;line-height:1.6;color:#cfe3ea}
+  .ipane .steps{font-size:13px} .ipane .steps li{padding:7px 0}
+  .ipane .small{font-size:12.5px;line-height:1.65}
+  .ipane .src{font-size:12.5px} .ipane .src td{padding:6px 4px}
+
+  @media (max-width:980px){
+    .navbtn{padding:8px 8px;letter-spacing:.04em}
+    #drawer{width:calc(100% - 48px)} #infoView{grid-template-columns:150px minmax(0,1fr)}
+  }
+  @media (max-width:860px){
+    #brandName{font-size:13.5px;letter-spacing:.14em} #brand{margin-right:6px} .navbtn .car{display:none}
+    #topnav{padding:0 12px 0 16px} #topnav .seg button{padding:6px 8px;font-size:11.5px}
+    #evaTop{padding:8px 12px} #frameLbl{display:none}
+  }
   .panel h1{font-size:15px;margin:0 0 2px;letter-spacing:.06em}
   .panel .sub{font-size:11.5px;color:var(--dim);margin-bottom:8px}
   h2{font-size:10.5px;letter-spacing:.16em;color:var(--cyan);margin:14px 0 7px;font-weight:600;text-transform:uppercase}
@@ -94,10 +153,12 @@
   #hud .pillarL,#hud .pillarR{display:none} #hud.rover .pillarL,#hud.rover .pillarR{display:block}
   #hud.rover .pillarL{left:0;clip-path:polygon(0 0,100% 0,40% 100%,0 100%)} #hud.rover .pillarR{right:0;clip-path:polygon(0 0,100% 0,100% 100%,60% 100%)}
   #compass{position:absolute;top:5%;left:50%;transform:translateX(-50%);width:40%;height:40px}
-  .hbox{position:absolute;background:rgba(0,30,40,.32);border:1px solid rgba(120,240,255,.42);border-radius:10px;padding:9px 13px;font-size:12.5px;line-height:1.55}
+  .hbox{position:absolute;background:rgba(0,30,40,.14);border:1px solid rgba(120,240,255,.42);border-radius:10px;padding:9px 13px;font-size:12.5px;line-height:1.55}
   .hbox .lbl{font-size:10px;letter-spacing:.16em;opacity:.8}
   .hbox .big{font-size:21px}
-  #hL{left:9%;top:17%;width:210px} #hR{right:9%;top:17%;width:220px;text-align:right}
+  #hLeft{position:absolute;left:9%;top:15%;width:230px;display:flex;flex-direction:column;gap:10px}
+  #hLeft .hbox{position:static}
+  .hbox .big small{font-size:13px;opacity:.75;margin-left:8px}   /* remaining % beside the time left */
   .hbar{width:100%;height:7px;border:1px solid rgba(120,240,255,.6);border-radius:4px;margin:3px 0 7px;overflow:hidden}
   .hbar i{display:block;height:100%;background:#8ff3ff;box-shadow:0 0 6px #8ff3ff}
   #cross{position:absolute;top:50%;left:50%;width:18px;height:18px;margin:-9px;border:1px solid rgba(143,243,255,.7);border-radius:50%}
@@ -105,23 +166,47 @@
   #instr .main{font-size:15px;color:#fff;text-shadow:0 0 6px #000,0 0 10px rgba(0,200,255,.6)}
   #instr .warn{font-size:13px;color:var(--amber);text-shadow:0 0 8px rgba(255,140,0,.8);margin-top:5px;min-height:18px}
   #lookInd{position:absolute;top:calc(5% + 46px);left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.12em;opacity:.85}
-  #lookHint{position:absolute;top:calc(5% + 64px);left:50%;transform:translateX(-50%);font-size:11px;opacity:.55;white-space:nowrap}
+  #lookHint{position:absolute;top:calc(5% + 64px);left:50%;transform:translateX(-50%);font-size:11px;opacity:0;white-space:nowrap;transition:opacity .5s ease}
+  #lookHint.show{opacity:.55}   /* shown for 2 s at EVA start and when mouse look is switched on */
   #arrow{position:absolute;bottom:23%;left:50%;width:64px;height:64px;transform:translateX(-50%)}
-  #minimap{position:absolute;right:9%;bottom:10%;width:150px;height:150px;border-radius:50%;border:1px solid rgba(120,240,255,.5);background:rgba(0,20,28,.4)}
-  #swx{position:absolute;left:9%;bottom:11%;width:230px;font-size:11.5px}
+  #minimap{position:absolute;right:9%;top:15%;width:150px;height:150px;border-radius:50%;border:1px solid rgba(120,240,255,.5);background:rgba(0,20,28,.4)}
+  #swx{font-size:11.5px}   /* third box of the left column (#hLeft), same 10 px gap as the others */
   #sep{position:absolute;top:27%;left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center}
   #arrive{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#9dffb0;display:none;text-align:center;text-shadow:0 0 10px rgba(80,255,140,.8)}
   #arrive small{font-size:13px;display:block;margin-top:4px}
   #dash{position:absolute;left:50%;bottom:3.5%;transform:translateX(-50%);display:none;gap:22px;align-items:center;padding:8px 18px;border:1px solid rgba(120,240,255,.4);border-radius:12px;background:rgba(0,25,35,.55)}
   #hud.rover #dash{display:flex}
   #dash .k{font-size:10px;letter-spacing:.14em;opacity:.8} #dash .v{font-size:20px}
-  #att{width:84px;height:84px;border-radius:50%;border:1px solid rgba(120,240,255,.6)}
-  #hudCtl{position:fixed;bottom:16px;left:16px;display:none;gap:8px;flex-wrap:wrap;max-width:46%}
+  #att{width:92px;height:92px;border-radius:50%}
+  #hud.rover #dash{gap:14px;padding:5px 12px} #hud.rover #dash .v{font-size:16px} #hud.rover #dash .k{font-size:9px}   /* compact rover dashboard */
+  /* rover only: car-navigation map replaces the round minimap (on foot keeps the round one) */
+  #navmap{position:absolute;right:9%;top:15%;width:380px;height:240px;display:none}
+  #hud.rover #navmap{display:block} #hud.rover #minimap{display:none}
+  #hudCtl{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:none;gap:8px;flex-wrap:wrap;justify-content:center;width:max-content;max-width:92%}
+  /* rover: the dashboard sits above the centred buttons, the instruction and arrow move up with it */
+  #hud.rover #dash{bottom:64px} #hud.rover #instr{bottom:calc(15% + 100px)} #hud.rover #arrow{bottom:calc(23% + 100px)}
   #hudCtl button{pointer-events:auto;background:rgba(0,40,55,.75);border:1px solid rgba(120,240,255,.5);color:#bff7ff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
   #hudCtl button.danger{border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.7)}
-  #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
+  #toast{position:fixed;top:84px;z-index:30;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:6px 12px;border-radius:8px;font-size:12px;display:none}
   ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:rgba(120,230,255,.25);border-radius:3px}
+
+  /* ---------- data credit + display-scale note (kept from the Gale build) ---------- */
   #credit{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);font-size:10.5px;color:rgba(200,230,240,.6);pointer-events:none;z-index:5;white-space:nowrap}
+  #vexNote{position:fixed;bottom:30px;right:44px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px;pointer-events:none}
+  .hudmode #vexNote{bottom:auto;top:8px;right:14px}
+  @media (max-width:1180px){ #credit{display:none} }
+
+/* ---------- first-visit tip: how to move around the map ---------- */
+  #tip{position:fixed;inset:0;z-index:900;display:none;align-items:center;justify-content:center;background:rgba(3,8,12,.5)}
+  .tipBox{width:min(92vw,400px);background:rgba(10,22,30,.94);border:1px solid var(--line);border-radius:14px;padding:20px 24px;box-shadow:0 0 40px rgba(55,224,255,.14);line-height:1.5}
+  .tipBox h3{margin:0 0 10px;font-size:15px;letter-spacing:.06em}
+  .tipBox ul{margin:0 0 8px;padding-left:20px;font-size:13.5px}
+  .tipBox li{margin:4px 0} .tipBox li b{color:var(--cyan)}
+  .tipBox .tipTouch{font-size:11.5px;color:var(--dim);margin-bottom:12px}
+  #tipOk{width:100%;margin-top:12px;padding:9px;font-size:14px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
+  #tipOpen{color:var(--cyan);cursor:pointer;text-decoration:underline;font-size:11.5px}
+
+  
 </style>
 <script type="importmap">
 { "imports": {
@@ -131,8 +216,9 @@
 </script>
 <link rel="stylesheet" href="web/css/intro.css">
 </head>
-<body>
+<body class="brand-hidden">
 <div id="intro" aria-hidden="true">
+  <div id="introBg"></div>
   <canvas id="introStars"></canvas>
   <div id="introLogo"><img src="web/img/logo_base.png" alt="ARES MISSION logo" draggable="false"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 32) scale(1.36) translate(-32 -32)"><path id="introRoute" d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/><circle id="introStart" class="introDot" cx="17" cy="45" r="3.6" fill="#37e0ff"/><circle id="introEnd" class="introDot" cx="47" cy="17" r="2.6" fill="#0a161e" stroke="#37e0ff" stroke-width="2"/></g></svg></div>
   <div id="introTitle"><span id="introGhost"></span><span id="introText"></span><span id="introCursor"></span></div>
@@ -143,88 +229,175 @@
 <div id="frameLbl">HABITAT VIEWPORT · TRANSPARENT DISPLAY</div>
 <div id="labels"></div>
 
-<!-- ================= LEFT PANEL ================= -->
-<div id="left" class="panel">
-  <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
-  <div class="sub">Habitat transparent display → helmet / rover HUD</div>
-  <div class="sub" style="margin-top:-4px"><a id="tipOpen">How to move around the map</a></div>
-  <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
-
-  <h2>Mission · EVA-07</h2>
-  <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><small>Departure / return point</small></div></div>
-  <div class="wp"><div class="dot">1</div><div><b id="wp1Name">WP1</b><br><small id="wp1Txt">–</small></div></div>
-  <div class="wp"><div class="dot">2</div><div><b id="wp2Name">WP2</b><br><small id="wp2Txt">–</small></div></div>
-  <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
-
-  <h2>Travel mode</h2>
+<!-- ================= TOP NAV (menus) ================= -->
+<div id="topnav" class="glass">
+  <div id="brand">
+    <div id="brandLogo"><img src="web/img/logo_base.png" alt="ARES MISSION logo" draggable="false"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="translate(32 32) scale(1.36) translate(-32 -32)"><path d="M17 45 C26 41 26 30 34 28 S44 22 47 17" fill="none" stroke="#37e0ff" stroke-width="3.6" stroke-linecap="round"/><circle cx="17" cy="45" r="3.6" fill="#37e0ff"/><circle cx="47" cy="17" r="2.6" fill="#0a161e" stroke="#37e0ff" stroke-width="2"/></g></svg></div>
+    <div id="brandName">ARES MISSION</div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn">MISSION<span class="car">▼</span></button>
+    <div class="sub">
+      <button class="mi" data-sec="mission">EVA-07 plan<small>Waypoints from CRISM mineral targets</small></button>
+      <button class="mi" data-sec="compare">Mission readiness<small>GO / NO-GO and route comparison</small></button>
+    </div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn">ROUTE<span class="car">▼</span></button>
+    <div class="sub">
+      <button class="mi" data-sec="conditions">Route conditions<small>Precomputed slope limits (walk / rover)</small></button>
+      <button class="mi" data-sec="profile">Elevation profile<small>Optimal vs straight route</small></button>
+      <button class="mi" data-sec="display">Display options<small>Straight-line route, height scale</small></button>
+    </div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn">CREW<span class="car">▼</span></button>
+    <div class="sub">
+      <button class="mi" data-sec="track">Crew track<small>Preview the traverse on the map</small></button>
+      <button class="mi" data-sec="track">First-person EVA<small>Helmet HUD or rover windshield HUD</small></button>
+    </div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn">LAYERS<span class="car">▼</span></button>
+    <div class="sub" id="layerMenu">
+      <h2 style="margin-top:0">Layers (data overlay)</h2>
+      <div class="btns" id="layers">
+        <button class="btn on" data-l="img">Imagery</button>
+        <button class="btn" data-l="elev">Elevation</button>
+        <button class="btn" data-l="slope">Slope</button>
+        <button class="btn" data-l="cost">Cost map</button>
+      </div>
+      <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
+      <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay</label>
+      <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
+    </div>
+  </div>
+  <div class="navitem">
+    <button class="navbtn" id="infoNavBtn">INFO<span class="car">▼</span></button>
+    <div class="sub">
+      <button class="mi" data-info="about">About this build</button>
+      <button class="mi" data-info="pipeline">Pipeline</button>
+      <button class="mi" data-info="assump">Model assumptions</button>
+      <button class="mi" data-info="sources">Data sources</button>
+      <button class="mi" data-info="controls">Map controls</button>
+    </div>
+  </div>
+  <div class="spacer"></div>
   <div class="seg" id="modeSeg">
-    <button data-m="suit" class="on">🧑‍🚀 On foot (suit)</button>
-    <button data-m="rover">🚙 Pressurized rover</button>
+    <button data-m="suit" class="on">🧑‍🚀 On foot</button>
+    <button data-m="rover">🚙 Rover</button>
   </div>
-
-  <h2>Layers (data overlay)</h2>
-  <div class="btns" id="layers">
-    <button class="btn on" data-l="img">Imagery</button>
-    <button class="btn" data-l="elev">Elevation</button>
-    <button class="btn" data-l="slope">Slope</button>
-    <button class="btn" data-l="cost">Cost map</button>
-  </div>
-  <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
-  <label class="chk"><input type="checkbox" id="showMin"> CRISM minerals overlay</label>
-  <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
-
-  <h2>Route</h2>
-  <div class="small">Routes are precomputed by the Python pipeline from the real DEM (on foot: slope limit <b>18°</b>; rover: <b>28°</b>). The route sliders of the synthetic demo were removed.</div>
-  <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
-
-  <h2>Pipeline</h2>
-  <ol class="steps">
-    <li>① Crop the Gale DEM <span class="tag py">Python</span> <span class="small">HiRISE 1 m → 2 m grid (rasterio)</span></li>
-    <li>② Slope · roughness <span class="tag py">Python</span> <span class="small">gradient + 5×5 window</span></li>
-    <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·roughness; over the limit = blocked</span></li>
-    <li>④ Destinations + optimal route <span class="tag py">Python</span> <span class="small">CRISM mineral patches → one clay + one sulfate stop; H → stops → H, smoothed</span></li>
-    <li>⑤ Time · O₂ · energy <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (Mars gravity) / rover energy model</span></li>
-    <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">16 m mesh, route tubes, AR line, HUD</span></li>
-  </ol>
+  <button id="evaTop">▶ Start EVA</button>
 </div>
 
-<!-- ================= RIGHT PANEL ================= -->
-<div id="right" class="panel">
-  <h2 style="margin-top:2px">Mission readiness</h2>
-  <div id="gonogo" class="go"><div class="big" id="gnTxt">GO</div><div class="why" id="gnWhy">–</div></div>
+<!-- ================= ALWAYS VISIBLE ================= -->
+<div id="gonogo" class="go" title="Open mission readiness"><div class="big" id="gnTxt">GO</div><div class="why" id="gnWhy">–</div></div>
 
-  <h2>Route comparison</h2>
-  <div class="cmp">
-    <div class="h"></div><div class="h opt">■ Optimal</div><div class="h str">■ Straight</div>
-    <div>Distance</div><div id="oD"></div><div id="sD"></div>
-    <div>Max slope</div><div id="oS"></div><div id="sS"></div>
-    <div>Travel time</div><div id="oT"></div><div id="sT"></div>
-    <div id="rLbl1">O₂ used</div><div id="oO"></div><div id="sO"></div>
-    <div id="rLbl2">Battery used</div><div id="oE"></div><div id="sE"></div>
-    <div>Blocked cells</div><div id="oB"></div><div id="sB"></div>
+<!-- ================= DRAWER (menu content) ================= -->
+<div id="drawer" class="panel glass">
+  <div class="dhead"><h2 id="drTitle">–</h2><button class="xbtn" id="drClose" aria-label="Close">×</button></div>
+
+  <div class="sec" data-sec="mission">
+    <div class="wp"><div class="dot">H</div><div><b>Habitat</b><br><small>Departure / return point</small></div></div>
+    <div class="wp"><div class="dot">1</div><div><b id="wp1Name">WP1</b><br><small id="wp1Txt">–</small></div></div>
+    <div class="wp"><div class="dot">2</div><div><b id="wp2Name">WP2</b><br><small id="wp2Txt">–</small></div></div>
+    <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
+    <div class="note" style="margin-top:10px">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Stops are one clay and one sulfate patch picked from CRISM. See Info → About this build.</div>
   </div>
 
-  <h2>Elevation profile</h2>
-  <canvas id="profile"></canvas>
-  <div class="small" style="margin-top:3px">Dashed lines = waypoints · white dot = crew position</div>
+  <div class="sec" data-sec="compare">
+    <div class="small" style="margin-bottom:8px">GO when the safety factor (supply ÷ need) is at least ×1.5. The badge at top right always shows the current state.</div>
+    <div class="cmp">
+      <div class="h"></div><div class="h opt">■ Optimal</div><div class="h str">■ Straight</div>
+      <div>Distance</div><div id="oD"></div><div id="sD"></div>
+      <div>Max slope</div><div id="oS"></div><div id="sS"></div>
+      <div>Travel time</div><div id="oT"></div><div id="sT"></div>
+      <div id="rLbl1">O₂ used</div><div id="oO"></div><div id="sO"></div>
+      <div id="rLbl2">Battery used</div><div id="oE"></div><div id="sE"></div>
+      <div>Blocked cells</div><div id="oB"></div><div id="sB"></div>
+    </div>
+  </div>
 
-  <h2>Crew track</h2>
-  <div class="row"><span>Progress</span><b id="trkP">0%</b></div>
-  <div class="row"><span>Status</span><b id="trkS">At habitat</b></div>
-  <div class="btns" style="margin-top:6px"><button class="btn" id="previewBtn">▶ Preview traverse</button><button class="btn" id="resetBtn">↺ Reset</button></div>
+  <div class="sec" data-sec="conditions">
+    <div class="row"><span>On foot (suit) · slope limit</span><b id="limWalk">–</b></div>
+    <div class="row"><span>Pressurized rover · slope limit</span><b id="limRover">–</b></div>
+    <div class="small" style="margin-top:6px">Routes are precomputed by the Python pipeline from the real DEM (cost = 1 + w·slope + k·roughness; cells over the limit are blocked). The route sliders of the synthetic demo were removed — switch the travel mode at the top to load the other route.</div>
+  </div>
 
-  <button id="evaBtn">▶ Start first-person EVA (helmet HUD)</button>
+  <div class="sec" data-sec="profile">
+    <canvas id="profile"></canvas>
+    <div class="small" style="margin-top:4px">Dashed lines = waypoints · white dot = crew position</div>
+  </div>
 
-  <h2>Data used in this build</h2>
-  <table class="src">
-    <tr><td>Elevation · slope</td><td>HiRISE DEM of Gale (1 m source, shown at 16 m)</td></tr>
-    <tr><td>Imagery</td><td>USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
-    <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
-    <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
-    <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos</td></tr>
-  </table>
-  <h2>Model assumptions</h2>
-  <div class="small" id="assump"></div>
+  <div class="sec" data-sec="display">
+    <label class="chk"><input type="checkbox" id="showStraight" checked> Show straight-line route (comparison)</label>
+    <div class="small" style="margin-top:8px">Map view: terrain height ×2 and the overall tilt levelled for display only. Slopes, routes and budgets use true heights.</div>
+  </div>
+
+  <div class="sec" data-sec="track">
+    <div class="row"><span>Progress</span><b id="trkP">0%</b></div>
+    <div class="row"><span>Status</span><b id="trkS">At habitat</b></div>
+    <div class="btns" style="margin-top:8px"><button class="btn" id="previewBtn">▶ Preview traverse</button><button class="btn" id="resetBtn">↺ Reset</button></div>
+    <button id="evaBtn">▶ Start first-person EVA (helmet HUD)</button>
+  </div>
+</div>
+
+<!-- ================= INFO TAB ================= -->
+<div id="infoView" class="panel glass">
+  <div id="infoNav">
+    <h2 style="margin:4px 12px 10px">Info</h2>
+    <button class="itab" data-info="about">About this build</button>
+    <button class="itab" data-info="pipeline">Pipeline</button>
+    <button class="itab" data-info="assump">Model assumptions</button>
+    <button class="itab" data-info="sources">Data sources</button>
+    <button class="itab" data-info="controls">Map controls</button>
+    <div style="flex:1"></div>
+    <button class="itab" id="infoClose">← Back to map</button>
+  </div>
+  <div id="infoBody">
+    <div class="ipane" data-info="about">
+      <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
+      <div class="sub">Habitat transparent display → helmet / rover HUD</div>
+      <div class="note">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
+      <p>Plan an EVA on the map: pick a travel mode, check the route and the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. Use the menus at the top for details; switch data layers and the CRISM minerals overlay at the bottom left.</p>
+    </div>
+    <div class="ipane" data-info="pipeline">
+      <h1>Pipeline</h1>
+      <ol class="steps">
+        <li>① Crop the Gale DEM <span class="tag py">Python</span> <span class="small">HiRISE 1 m → 2 m grid (rasterio)</span></li>
+        <li>② Slope · roughness <span class="tag py">Python</span> <span class="small">gradient + 5×5 window</span></li>
+        <li>③ Cost map <span class="tag py">Python</span> <span class="small">1 + w·slope + k·roughness; over the limit = blocked</span></li>
+        <li>④ Destinations + optimal route <span class="tag py">Python</span> <span class="small">CRISM mineral patches → one clay + one sulfate stop; H → stops → H, smoothed</span></li>
+        <li>⑤ Time · O₂ · energy <span class="tag py">Python</span> <span class="small">Tobler + Pandolf (Mars gravity) / rover energy model</span></li>
+        <li>⑥ 3D display · HUD <span class="tag js">Three.js</span> <span class="small">16 m mesh, route tubes, AR line, HUD</span></li>
+      </ol>
+    </div>
+    <div class="ipane" data-info="assump">
+      <h1>Model assumptions</h1>
+      <div class="small" id="assump"></div>
+    </div>
+    <div class="ipane" data-info="controls">
+      <h1>Map controls</h1>
+      <ul class="steps">
+        <li><b>Left-drag</b> — move the map position</li>
+        <li><b>Right-drag</b> — tilt and rotate the view</li>
+        <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
+      </ul>
+      <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
+      <button class="btn" id="tipOpen">Show the first-visit tip again</button>
+    </div>
+    <div class="ipane" data-info="sources">
+      <h1>Data used in this build</h1>
+      <table class="src">
+        <tr><td>Elevation · slope</td><td>HiRISE DEM of Gale (1 m source, shown at 16 m)</td></tr>
+        <tr><td>Imagery</td><td>USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
+        <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
+        <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
+        <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos</td></tr>
+      </table>
+      <p class="small" style="margin-top:12px">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
+    </div>
+  </div>
 </div>
 
 <!-- ================= HUD ================= -->
@@ -234,27 +407,28 @@
   <div id="cross"></div>
   <div id="lookInd"></div>
   <div id="lookHint">🖱 Move the mouse to look around · M toggles mouse look · C re-centres</div>
+  <div id="hLeft">   <!-- left column: consumables on top, next waypoint under them -->
   <div class="hbox" id="hL">
-    <div class="lbl" id="hL1">O₂ RESERVE</div><div class="big" id="hO2">100%</div><div class="hbar"><i id="hO2bar" style="width:100%"></i></div>
-    <div class="lbl" id="hL2">SUIT BATTERY</div><div class="big" id="hBat">100%</div><div class="hbar"><i id="hBatbar" style="width:100%"></i></div>
+    <div class="lbl" id="hL1">O₂ RESERVE</div><div class="big"><span id="hO2">–</span><small id="hO2p">100%</small></div><div class="hbar"><i id="hO2bar" style="width:100%"></i></div>
+    <div class="lbl" id="hL2">SUIT BATTERY</div><div class="big"><span id="hBat">–</span><small id="hBatp">100%</small></div><div class="hbar"><i id="hBatbar" style="width:100%"></i></div>
     <div class="lbl">EVA ELAPSED</div><div id="hTime">00:00</div>
   </div>
   <div class="hbox" id="hR">
     <div class="lbl">NEXT WAYPOINT</div><div class="big" id="hWp">–</div>
     <div class="lbl" style="margin-top:4px">DISTANCE</div><div id="hDist">–</div>
     <div class="lbl" style="margin-top:4px">GRADE AHEAD</div><div id="hGrade">–</div>
-    <div class="lbl" style="margin-top:4px">RETURN-TO-HAB SAFETY FACTOR</div><div class="big" id="hSF">–</div>
-    <div id="hRet" style="font-size:11.5px">–</div>
+  </div>
+  <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px">(sample data)</div></div>
   </div>
   <canvas id="arrow" width="128" height="128"></canvas>
   <div id="instr"><div class="main" id="hInstr">–</div><div class="warn" id="hWarn"></div></div>
-  <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px">(sample data)</div></div>
   <canvas id="minimap" width="300" height="300"></canvas>
+  <canvas id="navmap" width="760" height="480"></canvas>
   <div id="sep">☢ SEP EVENT DETECTED — elevated proton flux<br><span style="font-size:12px">Shelter recommended · press ABORT to route home</span></div>
   <div id="arrive"></div>
   <div id="dash">
     <div><div class="k">SPEED</div><div class="v" id="dSpd">0.0 km/h</div></div>
-    <canvas id="att" width="168" height="168"></canvas>
+    <canvas id="att" width="240" height="240"></canvas>
     <div><div class="k">PITCH / ROLL</div><div class="v" id="dAtt">0° / 0°</div></div>
     <div><div class="k">RANGE</div><div class="v" id="dRange">– km</div></div>
   </div>
@@ -266,7 +440,7 @@
   <button id="sepBtn">☢ Inject SEP alert</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
-<div id="vexNote" style="position:fixed;top:8px;right:14px;z-index:6;font-size:11px;color:#ffd08a;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:6px">terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)</div>
+<div id="vexNote">terrain height ×2, overall tilt levelled (display only; slopes and routes use true heights)</div>
 <div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
 <div id="tip" role="dialog" aria-modal="true" aria-label="How to move around the map">
@@ -607,6 +781,7 @@ function makeTube(pts, color) {
 }
 const fmtT = s => { const m = Math.round(s / 60); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; };
 const fmtClock = s => { const m = Math.floor(s / 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+const fmtLeft = s => !isFinite(s) ? '—' : s >= 99 * 3600 ? '99h+' : `${Math.floor(Math.max(0, s) / 3600)}h ${String(Math.floor(Math.max(0, s) % 3600 / 60)).padStart(2, '0')}m`;   // time left as "7h 40m"
 const set = (id, v) => document.getElementById(id).textContent = v;
 
 // pipeline route rows: [x, y, z, dist_m, slope_deg, t_min, o2_kg, rover_wh]  (x east, y south, metres from the area's NW corner)
@@ -736,10 +911,11 @@ function setVex(v) {
 let fp = false, speedUp = 15;
 const SPEEDS = [1, 2, 5, 15];   // simulation speed choices, cycled by the button
 const hudEl = document.getElementById('hud'), hudCtl = document.getElementById('hudCtl');
-const panels = ['left', 'right', 'frameLbl'].map(id => document.getElementById(id));
+const panels = ['topnav', 'drawer', 'infoView', 'gonogo', 'frameLbl', 'credit'].map(id => document.getElementById(id));
 document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
+  if (mouseLook.on) flashLookHint();
   paint('img'); optTube.visible = retTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
@@ -794,7 +970,11 @@ addEventListener('mousemove', e => {
 document.documentElement.addEventListener('mouseleave', () => { mouseLook.tx = mouseLook.ty = 0; });
 function setMouseLook(on) { mouseLook.on = on; if (!on) mouseLook.tx = mouseLook.ty = 0;
   document.getElementById('lookBtn').textContent = `🖱 Mouse look: ${on ? 'ON' : 'OFF'}`;
-  document.getElementById('lookHint').style.display = on ? '' : 'none'; }
+  if (on) flashLookHint(); else document.getElementById('lookHint').classList.remove('show'); }
+function flashLookHint() {             // the mouse-look hint shows for 2 s, then fades out
+  const el = document.getElementById('lookHint'); el.classList.add('show');
+  clearTimeout(flashLookHint.t); flashLookHint.t = setTimeout(() => el.classList.remove('show'), 2000);
+}
 document.getElementById('lookBtn').onclick = () => setMouseLook(!mouseLook.on);
 addEventListener('keydown', e => { if (!fp) return;
   if (e.key === 'm' || e.key === 'M') setMouseLook(!mouseLook.on);
@@ -826,6 +1006,7 @@ function buildMinimapBase() {
     if (!isFinite(cost[k])) { r = 150; g = 38; b = 30; }
     img.data[q] = r; img.data[q + 1] = g; img.data[q + 2] = b; img.data[q + 3] = 255; }
   c.putImageData(img, 0, 0);
+  buildNavBase();                         // rover sat-nav base uses the same blocked cells
 }
 function heading() { camera.getWorldDirection(_dir); return (Math.atan2(_dir.x, -_dir.z) * 180 / Math.PI + 360) % 360; }
 function drawCompass(hdg) {
@@ -856,13 +1037,91 @@ function drawArrow(turn) {
   actx.strokeStyle = sim.aborted ? '#ffb347' : '#5dff9d'; actx.shadowColor = actx.strokeStyle; actx.shadowBlur = 12; actx.lineWidth = 7; actx.lineJoin = 'round';
   actx.beginPath(); actx.moveTo(-26, 18); actx.lineTo(0, -24); actx.lineTo(26, 18); actx.stroke(); actx.restore();
 }
+// rover attitude indicator in the style of an aircraft one: fixed roll scale on the bezel, horizon + pitch ladder that move, fixed vehicle symbol
 function drawAttitude(pitch, roll) {
-  const W = att.width; tctx.clearRect(0, 0, W, W); tctx.save(); tctx.beginPath(); tctx.arc(W / 2, W / 2, W / 2 - 2, 0, 7); tctx.clip();
-  tctx.translate(W / 2, W / 2); tctx.rotate(-roll * Math.PI / 180); const off = pitch * 2.2;
-  tctx.fillStyle = 'rgba(80,170,210,.45)'; tctx.fillRect(-W, -W * 2 + off, W * 2, W * 2);
-  tctx.fillStyle = 'rgba(150,80,40,.55)'; tctx.fillRect(-W, off, W * 2, W * 2);
-  tctx.strokeStyle = '#bff7ff'; tctx.lineWidth = 2; tctx.beginPath(); tctx.moveTo(-W, off); tctx.lineTo(W, off); tctx.stroke(); tctx.restore();
-  tctx.strokeStyle = '#ffb347'; tctx.lineWidth = 3; tctx.beginPath(); tctx.moveTo(W / 2 - 30, W / 2); tctx.lineTo(W / 2 - 8, W / 2); tctx.moveTo(W / 2 + 8, W / 2); tctx.lineTo(W / 2 + 30, W / 2); tctx.stroke();
+  const W = att.width, c = W / 2, R = c - 3, r = R * 0.78, k = r / 30, D = Math.PI / 180, x = tctx;   // k = px per degree of pitch
+  x.clearRect(0, 0, W, W);
+  x.fillStyle = '#0c1013'; x.beginPath(); x.arc(c, c, R, 0, 7); x.fill();                       // bezel
+  x.save(); x.beginPath(); x.arc(c, c, r, 0, 7); x.clip();
+  x.translate(c, c); x.rotate(-roll * D); const off = pitch * k;
+  x.fillStyle = '#2b3a44'; x.fillRect(-W, -W * 2 + off, W * 2, W * 2);                          // sky
+  x.fillStyle = '#3d2c22'; x.fillRect(-W, off, W * 2, W * 2);                                   // ground
+  x.strokeStyle = '#fff'; x.lineWidth = 3; x.beginPath(); x.moveTo(-W, off); x.lineTo(W, off); x.stroke();
+  x.lineWidth = 2; x.fillStyle = 'rgba(255,255,255,.85)'; x.font = `${Math.round(W * 0.065)}px Menlo, monospace`; x.textBaseline = 'middle';
+  for (const p of [-20, -10, 10, 20]) {                                                          // pitch ladder every 10°
+    const y = off - p * k, hw = r * (Math.abs(p) === 10 ? 0.22 : 0.34);
+    x.beginPath(); x.moveTo(-hw, y); x.lineTo(hw, y); x.stroke();
+    x.textAlign = 'left'; x.fillText(Math.abs(p), hw + 5, y);
+  }
+  x.fillStyle = '#fff'; x.beginPath(); x.moveTo(0, -r + 2); x.lineTo(-7, -r + 14); x.lineTo(7, -r + 14); x.fill();   // roll pointer (turns with the horizon)
+  x.restore();
+  x.strokeStyle = 'rgba(255,255,255,.9)'; x.lineCap = 'round';                                    // fixed roll scale: 0, 10, 20, 30, 60, 90°
+  for (const a of [0, 10, 20, 30, 60, 90]) for (const sgn of a ? [-1, 1] : [1]) {
+    const t = sgn * a * D, l = a === 0 || a === 30 || a === 90 ? 0.14 : a === 60 ? 0.12 : 0.08;
+    x.lineWidth = a === 0 ? 3 : 2; x.beginPath();
+    x.moveTo(c + Math.sin(t) * (R - 2), c - Math.cos(t) * (R - 2)); x.lineTo(c + Math.sin(t) * (R - 2 - R * l), c - Math.cos(t) * (R - 2 - R * l)); x.stroke();
+  }
+  x.strokeStyle = '#ffb347'; x.lineWidth = 4; x.beginPath();                                     // fixed vehicle symbol: wings + centre cup + dot
+  x.moveTo(c - r * 0.62, c); x.lineTo(c - r * 0.2, c); x.moveTo(c + r * 0.2, c); x.lineTo(c + r * 0.62, c); x.stroke();
+  x.lineWidth = 3; x.beginPath(); x.arc(c, c, r * 0.13, 0, Math.PI); x.stroke();
+  x.fillStyle = '#ffb347'; x.beginPath(); x.arc(c, c, 3.5, 0, 7); x.fill();
+  x.strokeStyle = 'rgba(120,240,255,.45)'; x.lineWidth = 2; x.beginPath(); x.arc(c, c, R, 0, 7); x.stroke();
+}
+
+// rover navigation map in the style of a car sat-nav: heading-up, vehicle near the bottom, route ahead, legs bar
+const nav = document.getElementById('navmap'), nctx = nav.getContext('2d');
+const navBase = document.createElement('canvas'); navBase.width = N; navBase.height = N;
+function buildNavBase() {                 // grey hill-shaded terrain, blocked (too steep for the rover) in muted red
+  const c = navBase.getContext('2d'), img = c.createImageData(N, N), h = data.h;
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const k = idx(i, j), q = k * 4, t = (h[k] - hMin) / (hMax - hMin);
+    const hs = ((h[idx(i, Math.max(j - 1, 0))] - h[idx(i, Math.min(j + 1, N - 1))]) + (h[idx(Math.max(i - 1, 0), j)] - h[idx(Math.min(i + 1, N - 1), j)])) / (4 * CELL);
+    let v = Math.max(40, Math.min(200, 92 + 46 * t - 420 * hs)), r = v, g = v + 3, b = v + 6;
+    if (!isFinite(cost[k])) { r = v * 0.55 + 70; g = v * 0.4; b = v * 0.4; }
+    img.data[q] = r; img.data[q + 1] = g; img.data[q + 2] = b; img.data[q + 3] = 255;
+  }
+  c.putImageData(img, 0, 0);
+}
+const LEG_COL = ['#56b35f', '#4a93c4', '#d06464'];
+function drawNav(p, hdg, st) {
+  const W = nav.width, H = nav.height, x = nctx, P = sim.active, ax = W / 2, ay = H * 0.72;
+  const s = W / 130, ci = (p.z + SIZE / 2) / CELL, cj = (p.x + SIZE / 2) / CELL, th = -hdg * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
+  const toScr = (j, i) => { const dx = (j - cj) * s, dy = (i - ci) * s; return [ax + dx * cs - dy * sn, ay + dx * sn + dy * cs]; };
+  x.clearRect(0, 0, W, H); x.save();
+  x.beginPath(); x.roundRect(2, 2, W - 4, H - 4, 22); x.clip();
+  x.fillStyle = 'rgba(22,25,27,.15)'; x.fillRect(0, 0, W, H);                                   // see-through background
+  x.save(); x.translate(ax, ay); x.rotate(th); x.scale(s, s); x.translate(-cj, -ci);
+  x.globalAlpha = 0.5; x.drawImage(navBase, 0, 0); x.globalAlpha = 1;                            // terrain slightly transparent; route, pins and arrow stay solid
+  const pts = P.pts.map(q => [(q.x + SIZE / 2) / CELL, (q.z + SIZE / 2) / CELL]), cur = Math.max(0, st.n - 1); x.lineCap = x.lineJoin = 'round';   // smooth route points, in cell units
+  x.strokeStyle = 'rgba(190,140,255,.35)'; x.lineWidth = 5 / s; x.beginPath();                   // whole route (driven part stays faint)
+  pts.forEach(([a, b], n) => n ? x.lineTo(a, b) : x.moveTo(a, b)); x.stroke();
+  x.strokeStyle = sim.aborted ? '#ffb347' : '#c48cff'; x.lineWidth = 9 / s; x.beginPath();       // route ahead
+  x.moveTo(cj, ci); for (let n = cur + 1; n < pts.length; n++) x.lineTo(pts[n][0], pts[n][1]); x.stroke();
+  x.restore();
+  x.font = '600 20px "Segoe UI", sans-serif'; x.textAlign = 'center';                             // waypoint pins
+  WPS.forEach(w => { const [sx, sy] = toScr(w.cell[1], w.cell[0]); if (sx < -40 || sx > W + 40 || sy < -40 || sy > H + 40) return;
+    x.fillStyle = w.id === 'H' ? '#e8f3f7' : '#37e0ff'; x.beginPath(); x.arc(sx, sy, 13, 0, 7); x.fill();
+    x.fillStyle = '#0b1820'; x.fillText(w.id, sx, sy + 7);
+    x.fillStyle = 'rgba(255,255,255,.9)'; x.fillText(w.id === 'H' ? 'HAB' : w.short, sx, sy - 22); });
+  const fade = x.createLinearGradient(0, 0, 0, H * 0.32); fade.addColorStop(0, 'rgba(10,12,14,.55)'); fade.addColorStop(1, 'rgba(10,12,14,0)');
+  x.fillStyle = fade; x.fillRect(0, 0, W, H * 0.32);                                             // horizon fade at the top
+  x.fillStyle = '#ffb347'; x.strokeStyle = '#3a2410'; x.lineWidth = 3; x.beginPath();             // vehicle arrow
+  x.moveTo(ax, ay - 26); x.lineTo(ax + 18, ay + 18); x.lineTo(ax, ay + 8); x.lineTo(ax - 18, ay + 18); x.closePath(); x.fill(); x.stroke();
+  x.save(); x.translate(W - 44, 44); x.rotate(th);                                                // north pointer
+  x.fillStyle = '#ff5a4d'; x.beginPath(); x.moveTo(0, -20); x.lineTo(8, 0); x.lineTo(-8, 0); x.fill();
+  x.fillStyle = '#e8f3f7'; x.beginPath(); x.moveTo(0, 20); x.lineTo(8, 0); x.lineTo(-8, 0); x.fill(); x.restore();
+  x.fillStyle = '#e8f3f7'; x.font = '600 18px Menlo, monospace'; x.textAlign = 'center'; x.fillText('N', W - 44, 84);
+  const bx = 20, bw = W - 40, by = H - 26, D = P.b.dist || 1, sIdx = P.stopIdx;                   // legs bar + remaining to habitat
+  for (let l = 0; l < sIdx.length - 1; l++) {
+    const a = P.b.cumD[sIdx[l]] / D, b = P.b.cumD[sIdx[l + 1]] / D;
+    x.fillStyle = sim.aborted ? '#ffb347' : LEG_COL[l % LEG_COL.length]; x.fillRect(bx + a * bw, by, (b - a) * bw - 2, 10);
+  }
+  const f = Math.min(1, st.d / D); x.fillStyle = 'rgba(10,12,14,.6)'; x.fillRect(bx, by, f * bw, 10);
+  x.fillStyle = '#fff'; x.fillRect(bx + f * bw - 2, by - 5, 4, 20);
+  x.textAlign = 'left'; x.font = '600 19px Menlo, monospace'; x.fillStyle = '#e8f3f7';
+  x.fillText(`HAB ${(Math.max(0, P.b.dist - st.d) / 1000).toFixed(1)} km · ${fmtT(Math.max(0, P.b.time - sim.t))}`, bx, by - 12);
+  x.restore();
+  x.strokeStyle = 'rgba(120,240,255,.5)'; x.lineWidth = 2; x.beginPath(); x.roundRect(2, 2, W - 4, H - 4, 22); x.stroke();
 }
 
 // =================== per-frame updates ===================
@@ -917,15 +1176,14 @@ function updateFP(dt) {
 
   const sup = supply(), tot = totals(st), hdg = heading();
   // consumables
+  // main number = time left at this route's average use rate; small number beside it = remaining %
   const o2Left = 100 * (1 - tot.o2 / sup.o2), whLeft = 100 * (1 - tot.wh / sup.wh);
-  if (mode === 'suit') {
-    set('hO2', `${o2Left.toFixed(1)}%`); document.getElementById('hO2bar').style.width = `${Math.max(0, o2Left)}%`;
-    set('hBat', `${whLeft.toFixed(1)}%`); document.getElementById('hBatbar').style.width = `${Math.max(0, whLeft)}%`;
-  } else {
-    set('hO2', `${whLeft.toFixed(1)}%`); document.getElementById('hO2bar').style.width = `${Math.max(0, whLeft)}%`;
-    const hrs = (sup.o2 - tot.o2) / (CREW * O2_PP_KGH);
-    set('hBat', `${hrs.toFixed(0)} h left`); document.getElementById('hBatbar').style.width = `${Math.max(0, o2Left)}%`;
-  }
+  const o2Rate = mode === 'suit' ? (P.b.time > 0 ? P.b.o2 / P.b.time : 0) : CREW * O2_PP_KGH / 3600;   // kg/s
+  const whRate = P.b.time > 0 ? P.b.wh / P.b.time : 0;                                                    // Wh/s
+  const o2Sec = o2Rate > 0 ? (sup.o2 - tot.o2) / o2Rate : Infinity, whSec = whRate > 0 ? (sup.wh - tot.wh) / whRate : Infinity;
+  const showRes = (tId, pId, barId, sec, pct) => { set(tId, fmtLeft(sec)); set(pId, `${Math.max(0, pct).toFixed(1)}%`); document.getElementById(barId).style.width = `${Math.max(0, pct)}%`; };
+  if (mode === 'suit') { showRes('hO2', 'hO2p', 'hO2bar', o2Sec, o2Left); showRes('hBat', 'hBatp', 'hBatbar', whSec, whLeft); }
+  else { showRes('hO2', 'hO2p', 'hO2bar', whSec, whLeft); showRes('hBat', 'hBatp', 'hBatbar', o2Sec, o2Left); }   // rover: battery first, then cabin O2
   set('hTime', fmtClock(tot.t));
   // return-to-habitat safety factor (live re-plan)
   const now = performance.now();
@@ -933,11 +1191,8 @@ function updateFP(dt) {
   if (sim.ret) {
     const needO2 = sim.ret.o2, needWh = sim.ret.wh;
     const sfO = needO2 > 1e-6 ? (sup.o2 - tot.o2) / needO2 : 99, sfE = needWh > 1e-6 ? (sup.wh - tot.wh) / needWh : 99;
-    const sf = Math.min(sfO, sfE), el = document.getElementById('hSF');
-    el.textContent = sf > 50 ? '×50+' : `×${sf.toFixed(2)}`; el.style.color = sf >= SF_GO ? '#8ff3ff' : sf >= 1.15 ? 'var(--amber)' : 'var(--red)';
-    set('hRet', `home: ${(sim.ret.dist / 1000).toFixed(2)} km · ${fmtT(sim.ret.time)} · ${sfO < sfE ? 'O₂' : 'battery'}-limited`);
-    sim.sf = sf;
-  } else { set('hSF', '—'); set('hRet', 'no return route!'); sim.sf = 0; }
+    sim.sf = Math.min(sfO, sfE);       // not shown on the HUD any more; still drives the low-reserve / ABORT warnings below
+  } else { sim.sf = 0; }
   // waypoint / instruction
   const w = P.stops[ns] != null ? WPS[P.stops[ns]] : WPS[0];
   set('hWp', w.id === 'H' ? 'HABITAT' : `${w.short}`);
@@ -974,7 +1229,7 @@ function updateFP(dt) {
     const whPerM = P.b.dist > 0 ? P.b.wh / P.b.dist : 1; set('dRange', `${((sup.wh - tot.wh) / whPerM / 1000).toFixed(0)} km`);
     if (Math.abs(roll) > 15 && moving) set('hWarn', `⚠ Roll ${roll.toFixed(0)}° — tip-over margin reduced   ` + document.getElementById('hWarn').textContent);
   }
-  drawCompass(hdg); drawMinimap(p, hdg);
+  drawCompass(hdg); if (mode === 'rover') drawNav(p, hdg, st); else drawMinimap(p, hdg);
 }
 
 const clock = new THREE.Clock();
@@ -1029,7 +1284,49 @@ addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; cam
   const first = () => { if (!hiddenToday()) open(); };
   if (window.__introDone) first(); else addEventListener('intro-done', first, { once: true });
 })();
+// =================== menus · drawer · info tab ===================
+set('limWalk', `${MODES.suit.limit}°`); set('limRover', `${MODES.rover.limit}°`);
+const drawerEl = document.getElementById('drawer'), infoEl = document.getElementById('infoView');
+const SEC_TITLE = { mission: 'Mission · EVA-07', compare: 'Mission readiness', conditions: 'Route conditions', profile: 'Elevation profile', display: 'Display options', track: 'Crew track · EVA' };
+// each top-level item opens only its own dropdown (hover with a mouse, tap/click otherwise)
+const navItems = document.querySelectorAll('.navitem');
+let navTimer = 0;
+const closeMenus = keep => navItems.forEach(n => { if (n !== keep) n.classList.remove('open'); });
+navItems.forEach(n => {
+  n.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(navTimer); closeMenus(n); n.classList.add('open'); });
+  n.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; clearTimeout(navTimer); navTimer = setTimeout(() => n.classList.remove('open'), 220); });
+  n.querySelector('.navbtn').addEventListener('click', e => {
+    if (e.pointerType === 'mouse') { closeMenus(n); n.classList.add('open'); return; }
+    const willOpen = !n.classList.contains('open'); closeMenus(); n.classList.toggle('open', willOpen);
+  });
+});
+document.addEventListener('pointerdown', e => { if (!e.target.closest('.navitem')) closeMenus(); });
+function closeDrawer() { drawerEl.classList.remove('open'); }
+function closeInfo() { infoEl.classList.remove('open'); document.getElementById('infoNavBtn').classList.remove('on'); }
+function openSection(id) {
+  closeInfo(); closeMenus();
+  document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
+  set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open');
+  if (id === 'profile') drawProfile();
+}
+function openInfo(id) {
+  closeMenus(); closeDrawer(); infoEl.classList.add('open'); document.getElementById('infoNavBtn').classList.add('on');
+  document.querySelectorAll('button[data-info]').forEach(b => b.classList.toggle('on', b.dataset.info === id));
+  document.querySelectorAll('.ipane').forEach(p => p.classList.toggle('on', p.dataset.info === id));
+}
+document.querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('click', () => openSection(b.dataset.sec)));
+document.querySelectorAll('button[data-info]').forEach(b => b.addEventListener('click', () => openInfo(b.dataset.info)));
+document.getElementById('drClose').onclick = closeDrawer;
+document.getElementById('infoClose').onclick = closeInfo;
+document.getElementById('gonogo').onclick = () => openSection('compare');
+document.getElementById('evaTop').onclick = () => {
+  const b = document.getElementById('evaBtn');
+  if (b.disabled) { openSection('compare'); toast('NO-GO: no traversable route'); } else b.click();
+};
+document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive')));
+addEventListener('keydown', e => { if (e.key === 'Escape' && !fp) { closeMenus(); closeDrawer(); closeInfo(); } });
 window.__siteReady = true; window.dispatchEvent(new Event('site-ready'));
+
 </script>
 </body>
 </html>

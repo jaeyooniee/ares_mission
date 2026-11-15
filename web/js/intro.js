@@ -5,7 +5,7 @@
   'use strict';
   const intro = document.getElementById('intro');
   if (!intro) { window.__introDone = true; return; }
-  if (new URLSearchParams(location.search).get('intro') === '0') { intro.remove(); window.__introDone = true; return; }
+  if (new URLSearchParams(location.search).get('intro') === '0') { intro.remove(); document.body.classList.remove('brand-hidden'); window.__introDone = true; return; }
 
   const TEXT = 'ARES MISSION';
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -60,17 +60,38 @@
     addEventListener('site-ready', done); setTimeout(done, 20000); waiters.push(done);
   });
 
-  function finish() {
+  // hand-over (ported from index2.html): freeze the logo and title where they are, then fly them onto the top-bar brand.
+  // The 3D camera starts its fly-in as soon as the logo starts to move.
+  function dock() {
     if (finished) return; finished = true;
     removeEventListener('keydown', skipNow); intro.removeEventListener('pointerdown', skipNow);
-    intro.classList.add('done'); body.classList.remove('intro-pending');
+    const logo = document.getElementById('introLogo'), brandLogo = document.getElementById('brandLogo'), brandName = document.getElementById('brandName');
+    if (!brandLogo || !brandName) {                                   // no top bar: plain fade
+      intro.classList.add('done'); body.classList.remove('intro-pending', 'brand-hidden');
+      window.__introDone = true; window.dispatchEvent(new Event('intro-done'));
+      setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, 1400);
+      return;
+    }
+    textEl.textContent = TEXT; route.style.strokeDashoffset = 0;
+    const rL = logo.getBoundingClientRect(), rT = textEl.getBoundingClientRect(), fsT = parseFloat(getComputedStyle(title).fontSize);
+    const tL = brandLogo.getBoundingClientRect(), tN = brandName.getBoundingClientRect(), cs = getComputedStyle(brandName);
+    Object.assign(logo.style, { transition: 'none', transform: 'none', left: rL.left + 'px', top: rL.top + 'px', width: rL.width + 'px', height: rL.height + 'px', opacity: 1 });
+    Object.assign(title.style, { transition: 'none', left: rT.left + 'px', top: (rT.top + rT.height / 2) + 'px', fontSize: fsT + 'px' });
+    intro.classList.add('dock');
+    body.classList.remove('intro-pending');                           // top bar and panels fade in while the logo flies
     window.__introDone = true; window.dispatchEvent(new Event('intro-done'));
-    setTimeout(() => { cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove(); }, 1400);
+    void logo.offsetWidth;                                            // commit the frozen position
+    intro.classList.add('fly'); logo.style.transition = title.style.transition = '';
+    Object.assign(logo.style, { left: tL.left + 'px', top: tL.top + 'px', width: tL.width + 'px', height: tL.height + 'px', filter: 'drop-shadow(0 0 0 rgba(55,224,255,0))' });
+    Object.assign(title.style, { left: tN.left + 'px', top: (tN.top + tN.height / 2) + 'px', fontSize: cs.fontSize, letterSpacing: cs.letterSpacing, textShadow: cs.textShadow });
+    setTimeout(() => {                                                // land: show the real brand, remove the intro
+      body.classList.remove('brand-hidden'); cancelAnimationFrame(raf); removeEventListener('resize', onResize); intro.remove();
+    }, reduce ? 50 : 1250);
   }
 
   async function run() {
     intro.classList.add('on');
-    if (reduce) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await whenSiteReady(); return finish(); }
+    if (reduce) { textEl.textContent = TEXT; intro.classList.add('logo', 'lift'); await sleep(900); await whenSiteReady(); return dock(); }
     await sleep(350);  intro.classList.add('logo');                    // 1. logo appears in the centre, route line draws itself
     await sleep(2100); intro.classList.add('lift');                    // 2. logo slides left and shrinks, cursor starts blinking to its right
     await sleep(950);
@@ -81,7 +102,7 @@
     textEl.textContent = TEXT;
     await sleep(1100);                                                 // 4. hold, then fade into the app
     await whenSiteReady();
-    finish();
+    dock();
   }
 
   intro.addEventListener('pointerdown', skipNow); addEventListener('keydown', skipNow);

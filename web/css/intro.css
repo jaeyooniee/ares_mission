@@ -1,9 +1,16 @@
 /* ARES MISSION intro screen.
    Shown before the app, skippable (click / any key), disabled with ?intro=0, calm version when the OS asks for reduced motion. */
 #intro{position:fixed;inset:0;z-index:1000;overflow:hidden;cursor:pointer;color:#dff9ff;
-  background:radial-gradient(ellipse at 50% 56%,#102030 0%,#07101a 52%,#020406 100%);
   font-family:"SF Mono",Menlo,Consolas,"Segoe UI",monospace;transition:opacity 1.1s ease}
 #intro.done{opacity:0;pointer-events:none}
+#introBg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 56%,#102030 0%,#07101a 52%,#020406 100%);transition:opacity 1.1s ease}
+
+/* docking (ported from index2.html): the background fades, then the logo and title fly onto the top-bar brand */
+#intro.dock{pointer-events:none;cursor:default}
+#intro.dock #introBg,#intro.dock #introSkip{opacity:0;transition-delay:0s}
+#intro.dock #introCursor{display:none}
+#intro.fly #introLogo{transition:left 1.15s cubic-bezier(.65,0,.25,1),top 1.15s cubic-bezier(.65,0,.25,1),width 1.15s cubic-bezier(.65,0,.25,1),height 1.15s cubic-bezier(.65,0,.25,1),filter 1.15s ease}
+#intro.fly #introTitle{transition:left 1.15s cubic-bezier(.65,0,.25,1),top 1.15s cubic-bezier(.65,0,.25,1),font-size 1.15s cubic-bezier(.65,0,.25,1),letter-spacing 1.15s cubic-bezier(.65,0,.25,1)}
 
 #introStars{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.6s ease}
 #intro.on #introStars{opacity:1}

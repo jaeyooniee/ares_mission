@@ -31,7 +31,7 @@
  },
  "rover": {
   "slope_limit_deg": 28.0,
-  "speed_ms": 2.5,
+  "speed_ms": 4.1667,
   "wh_per_km": 250
  },
  "assumptions_kept_from_demo": {
