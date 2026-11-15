@@ -275,7 +275,7 @@
     <ul>
       <li><b>Left-drag</b> — tilt and rotate the view</li>
       <li><b>Right-drag</b> — move the map position</li>
-      <li><b>Mouse wheel</b> — zoom in and out</li>
+      <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
     </ul>
     <div class="tipTouch">Touch screen: one finger tilts and rotates, two fingers zoom and move the map.</div>
     <label class="chk"><input type="checkbox" id="tipHide"> Don't show again today</label>
@@ -452,6 +452,8 @@ controls.maxPolarAngle = Math.PI * 0.47;
 controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
 controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 controls.screenSpacePanning = false;             // move along the ground, not along the screen
+controls.zoomToCursor = true;                    // the wheel zooms towards the point under the mouse cursor
+controls.minDistance = 120; controls.maxDistance = 40000 * Math.max(1, SC / 2.8);
 MAP_CAM();
 scene.add(new THREE.HemisphereLight(0xffe2c8, 0x3a2418, 0.9));
 const sun = new THREE.DirectionalLight(0xfff0dd, 2.2); sun.position.set(-1200, 900, -600); scene.add(sun);
