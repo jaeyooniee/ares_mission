@@ -312,9 +312,9 @@
   #minLegend .minItem.off,#minLegend.muted .minItem{background:none;border-color:transparent;color:var(--dim);opacity:.6}
   #minLegend .minItem.off i,#minLegend.muted .minItem i{background:transparent;box-shadow:none;outline:1px solid var(--c);outline-offset:-1px}
   #minLegend .minItem.off:hover,#minLegend.muted .minItem:hover{opacity:.9;border-color:var(--line)}
-  #minLegend .minCtl{font-size:11px;color:var(--dim);padding:2px 4px}
-  #minLegend .minCtl button{background:none;border:0;color:var(--cyan);cursor:pointer;padding:0;font-size:11px}
-  #minLegend .minCtl button:hover{text-decoration:underline}
+  #minLegend .minCtl{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--cyan);padding:2px 4px;cursor:pointer;user-select:none}
+  #minLegend .minCtl input{margin:0;width:13px;height:13px;accent-color:#37e0ff;cursor:pointer}
+  #minLegend .minCtl:hover{text-decoration:underline}
   #sciSites li.empty{display:block;cursor:default;font-size:11.5px;line-height:1.45;color:var(--dim);border-bottom:0}   /* message row, not a 3-column site row */
   #sciSites li.empty:hover{background:none}
   #sciSites .rk{grid-row:span 3;align-self:start;width:20px;height:20px;border-radius:50%;background:#fde725;color:#1b1a05;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -1212,6 +1212,7 @@ function renderMineralFilter() {
 }
 function afterMineralChange() {
   document.querySelectorAll('#minLegend .minItem').forEach(b => b.classList.toggle('off', !minOn.has(b.dataset.k)));
+  const all = document.getElementById('minAll'); if (all) all.checked = !!MIN && minOn.size === Object.keys(MIN.classes).length;   // the box follows the legend
   renderMineralFilter();
   minMesh.visible = minOn.size > 0 && !fp;            // nothing lit = nothing drawn (never in the first-person view)
 }
@@ -1542,11 +1543,11 @@ if (MIN) {
     const dot = document.createElement('i'); b.style.setProperty('--c', `rgb(${c.color.join(',')})`);
     b.append(dot, `${c.label} ${c.area_pct}%`); b.onclick = () => toggleMineral(k); leg.appendChild(b);
   }
-  const ctl = document.createElement('span'); ctl.className = 'minCtl';
-  ctl.innerHTML = 'Show <button type="button" data-all="1">all</button> · <button type="button" data-all="0">none</button>';
-  ctl.querySelectorAll('button').forEach(b => b.onclick = () => setAllMinerals(b.dataset.all === '1')); leg.appendChild(ctl);
+  const ctl = document.createElement('label'); ctl.className = 'minCtl'; ctl.title = 'Show every mineral on the map (untick to hide them all)';
+  ctl.innerHTML = '<input type="checkbox" id="minAll"> Show all';                       // ticked = every mineral lit, unticked = none
+  ctl.querySelector('input').onchange = e => setAllMinerals(e.target.checked); leg.appendChild(ctl);
   document.getElementById('srcMin').textContent = MIN.source;
-} else { document.getElementById('minHdr').style.display = 'none'; }   // the header is a label only: minerals are switched with the legend and Show all / none
+} else { document.getElementById('minHdr').style.display = 'none'; }   // the header is a label only: minerals are switched with the legend and the Show all checkbox
 
 // ===================== SCIENCE VALUE layer =====================
 // Data from Min_trial/science.py (same config and grid as the pipeline):
@@ -3364,11 +3365,10 @@ function renderSched() {
       <div class="mm">${m.siteName || SITE.name} · ${m.objText} · ${m.modeName} · ${m.scenario.label} (MY${m.scenario.my})${m.radiation ? ` · ☢ ${m.radiation.label}` : ''} · saved ${new Date(m.savedAt).toLocaleString()}</div>
       ${m.sorties.map((s, k) => `<div class="mm">${m.sorties.length > 1 ? `EVA ${k + 1}: ` : ''}${wxWhenM(m, s.depH)} LMST · Habitat → ${s.sites.map(x => x.name).join(' → ')} → Habitat · ${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · ×${s.s.sf.toFixed(2)}${s.s.radDose != null ? ` · ☢ ${s.s.radDose.toFixed(0)} µGy` : ''}</div>`).join('')}
       <div class="btns">${m.sorties.map((s, k) => `<button class="btn" data-play="${m.id}" data-k="${k}">▶ ${m.sorties.length > 1 ? `EVA ${k + 1}` : 'Simulate'}</button>`).join('')}
-        <button class="btn" data-fp="${m.id}">🧑‍🚀 First-person</button><button class="btn del" data-del="${m.id}">🗑 Delete</button></div></div>`).join('')
+        <button class="btn del" data-del="${m.id}">🗑 Delete</button></div></div>`).join('')
     : '<div class="small" style="margin-top:10px">No confirmed missions at this site yet. Pick objectives in Science Objectives, press Next, pick a GO option and press Confirm.</div>';
   if (other) box.insertAdjacentHTML('beforeend', `<div class="small" style="margin-top:8px">${other} more mission${other > 1 ? 's' : ''} saved at other sites: switch the location to see ${other > 1 ? 'them' : 'it'}.</div>`);
   box.querySelectorAll('[data-play]').forEach(b => b.onclick = () => playMission(b.dataset.play, +b.dataset.k));
-  box.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { playMission(b.dataset.fp, schedSel && schedSel.id === b.dataset.fp ? schedSel.k : 0); if (plan) $('evaBtn').click(); });
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
     const m = loadMissions().find(x => x.id === b.dataset.del); if (!m || !confirm(`Delete ${m.name}? This cannot be undone.`)) return;
     saveMissions(loadMissions().filter(x => x.id !== m.id)); if (schedSel && schedSel.id === m.id) schedSel = null; renderSched();
