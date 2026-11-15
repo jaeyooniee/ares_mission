@@ -215,6 +215,8 @@
   #sciSites{list-style:none;margin:4px 0 0;padding:0}
   #sciSites li{display:grid;grid-template-columns:22px 1fr auto;column-gap:9px;row-gap:2px;align-items:center;padding:8px 6px;border-radius:8px;cursor:pointer;border-bottom:1px dashed var(--line)}
   #sciSites li:hover{background:rgba(253,231,37,.07)}
+  #sciSites li.empty{display:block;cursor:default;font-size:11.5px;line-height:1.45;color:var(--dim);border-bottom:0}   /* message row, not a 3-column site row */
+  #sciSites li.empty:hover{background:none}
   #sciSites .rk{grid-row:span 3;align-self:start;width:20px;height:20px;border-radius:50%;background:#fde725;color:#1b1a05;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
   #sciSites .nm{font-size:12.5px;font-weight:600}
   #sciSites .v{font-size:13px;font-weight:700;color:#fde725;font-variant-numeric:tabular-nums}
@@ -252,7 +254,6 @@
     <div class="sub">
       <button class="mi" data-sec="mission">EVA plan<small>Habitat and the stops picked from science objectives</small></button>
       <button class="mi" data-sec="compare">Mission readiness<small>GO / NO-GO and route comparison</small></button>
-      <button class="mi" data-sec="science" id="sciMenu">Science value<small>Where is worth visiting, and reachable on foot</small></button>
     </div>
   </div>
   <div class="navitem">
@@ -735,7 +736,23 @@ const terrain = new THREE.Mesh(geo, matImg);
 scene.add(terrain);
 // holographic grid overlay for the habitat display
 // cost-map layer and CRISM mineral overlay: both images cover the same area as the DEM grid
-const MIN = TERRAIN.minerals;
+// CRISM minerals: web/data/minerals.json + minerals.png from Min_trial/gale_minerals_export.py (same 4 m grid and extent as the terrain).
+// The export can be dropped in as it is; without minerals.json the older 4-class block in terrain.json is used.
+let MIN = TERRAIN.minerals || null;
+try {
+  const r = await fetch(DATA + 'minerals.json');
+  if (r.ok) {
+    const M = await r.json(), low = new Set(M.low_confidence || []), g = M.grid;
+    MIN = {
+      file: 'minerals.png', cost_file: TERRAIN.minerals?.cost_file ?? 'cost.png',
+      covers_m: g ? [g.width * g.cell_m, g.height * g.cell_m] : TERRAIN.minerals.covers_m,
+      source: `MRO CRISM MTRDR summary parameters, ${M.source.length} FRT observations: ${M.source.map(f => f.split('_')[0]).join(', ')} (${M.coverage_pct}% coverage). `
+        + 'A pixel is a detection when its index is above the per-mineral robust-z threshold (Min_trial pipeline).',
+      classes: Object.fromEntries(Object.entries(M.minerals).map(([k, v]) => [k, { label: v.label, index: v.index, color: v.color,
+        area_pct: v.area_pct_of_covered, threshold: v.threshold, low: low.has(k) }])),
+    };
+  }
+} catch (e) { console.warn('[minerals] minerals.json not loaded, using terrain.json', e); }
 const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(DATA + file); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = renderer.capabilities.getMaxAnisotropy();
   const rx = SIZE / cover[0], ry = SIZE / cover[1]; t.repeat.set(rx, ry); t.offset.set(0, 1 - ry); return t; };
 const costTex = MIN ? areaTex(MIN.cost_file, MIN.covers_m) : null;
@@ -806,7 +823,10 @@ function paint(force) {
   document.getElementById('lg0').textContent = lg[1]; document.getElementById('lg1').textContent = lg[2];
 }
 if (MIN) {
-  document.getElementById('minLegend').innerHTML = Object.values(MIN.classes).map(c => `<span style="white-space:nowrap"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:rgb(${c.color.join(',')})"></i>${c.label} ${c.area_pct}%</span>`).join('');
+  // legend: colour · name · area %; * = low-confidence detection (hover for the CRISM index and threshold)
+  const cls = Object.values(MIN.classes), lowAny = cls.some(c => c.low);
+  document.getElementById('minLegend').innerHTML = cls.map(c => `<span style="white-space:nowrap" title="${c.index}${c.threshold != null ? ` · robust z ≥ ${c.threshold}` : ''}${c.low ? ' · low confidence' : ''}"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:rgb(${c.color.join(',')})"></i>${c.label}${c.low ? '*' : ''} ${c.area_pct}%</span>`).join('')
+    + (lowAny ? '<span style="opacity:.7">* low confidence</span>' : '');
   document.getElementById('srcMin').textContent = MIN.source;
 } else { document.getElementById('showMin').parentElement.style.display = 'none'; }
 document.getElementById('showMin').onchange = e => { minMesh.visible = e.target.checked; };
@@ -925,7 +945,7 @@ function sciRender() {
   for (const p of sciPins) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.el.remove(); }
   sciPins.length = 0;
   const list = document.getElementById('sciSites'); list.innerHTML = '';
-  if (!sciSitesNow.length) { const li = document.createElement('li'); li.className = 'meta'; li.style.cursor = 'default';
+  if (!sciSitesNow.length) { const li = document.createElement('li'); li.className = 'empty';
     li.textContent = sciPick.size ? 'No reachable place is strong in all of these. Drop one objective to get a science route.'
       : 'Pick one or more objectives: the places strong in all of them are ranked here, and the route visits the best two.';
     list.appendChild(li); }
@@ -989,7 +1009,8 @@ function toggleObjective(key) {
   if (sciPick.has(key)) sciPick.delete(key); else sciPick.add(key);
   document.querySelectorAll('#sciObj .btn').forEach(b => b.classList.toggle('on', sciPick.has(b.dataset.k)));
   sciRender();
-  if (!document.getElementById('showSci').checked) { document.getElementById('showSci').checked = true; sciSync(); }
+  // colours only while objectives are picked (they then mark the qualifying places); nothing picked = the plain brown map
+  if (document.getElementById('showSci').checked !== sciPick.size > 0) { document.getElementById('showSci').checked = sciPick.size > 0; sciSync(); }
   setPriority(sciSitesNow.length ? 'science' : 'none');         // the route always matches what the drawer shows
 }
 // route through the current stops on the current mode's cost map (same A* + smoothing + budget model as the ABORT route)
@@ -1046,7 +1067,6 @@ if (SCI) {
 } else {
   sciRouteKey = 'minerals';                                            // no science data: fall back to the pipeline's EVA-07 route
   document.getElementById('showSci').parentElement.style.display = 'none';
-  document.getElementById('sciMenu').style.display = 'none';
 }
 document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#layers button').forEach(x => x.classList.remove('on')); b.classList.add('on'); layer = b.dataset.l; paint(); });
@@ -1610,7 +1630,6 @@ function openSection(id) {
   document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
   set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open');
   if (id === 'profile') drawProfile();
-  if (id === 'science' && SCI && !document.getElementById('showSci').checked) { document.getElementById('showSci').checked = true; sciSync(); }
 }
 function openInfo(id) {
   closeMenus(); closeDrawer(); infoEl.classList.add('open'); document.getElementById('infoNavBtn').classList.add('on');

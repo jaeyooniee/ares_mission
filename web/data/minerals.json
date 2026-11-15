@@ -1,0 +1,446 @@
+{
+ "source": [
+  "frt00021c92_07_su164j_mtr3.img",
+  "frt0000b6f1_07_su165j_mtr3.img",
+  "frt0001ca91_07_su165j_mtr3.img",
+  "frt0001bba1_07_su165j_mtr3.img",
+  "frt000058a3_07_su165j_mtr3.img"
+ ],
+ "coverage_pct": 98.6,
+ "minerals": {
+  "hematite": {
+   "label": "Crystalline hematite",
+   "index": "BD860_2",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    255,
+    150,
+    30
+   ],
+   "area_pct_of_covered": 0.45,
+   "candidates": [
+    {
+     "x": 195.0,
+     "y": 1121.5,
+     "lon": 137.3143,
+     "lat": -4.71592,
+     "area_m2": 121968,
+     "peak_index": 0.0112
+    },
+    {
+     "x": 4568.4,
+     "y": 1702.7,
+     "lon": 137.38834,
+     "lat": -4.72573,
+     "area_m2": 120816,
+     "peak_index": 0.0178
+    },
+    {
+     "x": 5436.2,
+     "y": 1252.5,
+     "lon": 137.40303,
+     "lat": -4.71813,
+     "area_m2": 44064,
+     "peak_index": 0.0182
+    }
+   ]
+  },
+  "clay": {
+   "label": "Fe/Mg clay (smectite)",
+   "index": "D2300",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    220,
+    60,
+    60
+   ],
+   "area_pct_of_covered": 1.54,
+   "candidates": [
+    {
+     "x": 5466.7,
+     "y": 1596.9,
+     "lon": 137.40355,
+     "lat": -4.72394,
+     "area_m2": 156672,
+     "peak_index": 0.0216
+    },
+    {
+     "x": 6530.5,
+     "y": 1131.5,
+     "lon": 137.42156,
+     "lat": -4.71609,
+     "area_m2": 63360,
+     "peak_index": 0.0147
+    },
+    {
+     "x": 725.5,
+     "y": 5107.8,
+     "lon": 137.32328,
+     "lat": -4.78317,
+     "area_m2": 39888,
+     "peak_index": 0.0179
+    }
+   ]
+  },
+  "clay_oh": {
+   "label": "Fe/Mg-OH clay",
+   "index": "BD2290",
+   "threshold": 3.0,
+   "threshold_type": "robust_z",
+   "color": [
+    255,
+    140,
+    120
+   ],
+   "area_pct_of_covered": 1.73,
+   "candidates": [
+    {
+     "x": 6635.0,
+     "y": 1143.3,
+     "lon": 137.42333,
+     "lat": -4.71629,
+     "area_m2": 160416,
+     "peak_index": 0.0194
+    },
+    {
+     "x": 5238.7,
+     "y": 1833.5,
+     "lon": 137.39969,
+     "lat": -4.72793,
+     "area_m2": 100800,
+     "peak_index": 0.0162
+    },
+    {
+     "x": 4637.4,
+     "y": 2042.9,
+     "lon": 137.38951,
+     "lat": -4.73147,
+     "area_m2": 84960,
+     "peak_index": 0.017
+    }
+   ]
+  },
+  "poly_sulf": {
+   "label": "Polyhydrated sulfate",
+   "index": "SINDEX2",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    60,
+    200,
+    90
+   ],
+   "area_pct_of_covered": 1.26,
+   "candidates": [
+    {
+     "x": 2712.2,
+     "y": 6084.2,
+     "lon": 137.35692,
+     "lat": -4.79964,
+     "area_m2": 58896,
+     "peak_index": 0.0327
+    },
+    {
+     "x": 3912.1,
+     "y": 4399.1,
+     "lon": 137.37723,
+     "lat": -4.77122,
+     "area_m2": 30960,
+     "peak_index": 0.074
+    },
+    {
+     "x": 1934.7,
+     "y": 9407.7,
+     "lon": 137.34375,
+     "lat": -4.85571,
+     "area_m2": 30240,
+     "peak_index": 0.0324
+    }
+   ]
+  },
+  "mono_sulf": {
+   "label": "Monohydrated sulfate",
+   "index": "BD2100_2",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    70,
+    120,
+    240
+   ],
+   "area_pct_of_covered": 1.03,
+   "candidates": [
+    {
+     "x": 2781.7,
+     "y": 6500.2,
+     "lon": 137.35809,
+     "lat": -4.80666,
+     "area_m2": 22176,
+     "peak_index": 0.066
+    },
+    {
+     "x": 5941.0,
+     "y": 9001.2,
+     "lon": 137.41158,
+     "lat": -4.84885,
+     "area_m2": 20880,
+     "peak_index": 0.0556
+    },
+    {
+     "x": 1095.5,
+     "y": 8907.2,
+     "lon": 137.32955,
+     "lat": -4.84727,
+     "area_m2": 20448,
+     "peak_index": 0.0561
+    }
+   ]
+  },
+  "ferric_sulfate": {
+   "label": "Hydroxylated ferric sulfate",
+   "index": "BD2230",
+   "threshold": 3.0,
+   "threshold_type": "robust_z",
+   "color": [
+    170,
+    110,
+    255
+   ],
+   "area_pct_of_covered": 2.23,
+   "candidates": [
+    {
+     "x": 4744.9,
+     "y": 3502.1,
+     "lon": 137.39133,
+     "lat": -4.75608,
+     "area_m2": 160560,
+     "peak_index": 0.038
+    },
+    {
+     "x": 4334.9,
+     "y": 8790.8,
+     "lon": 137.38439,
+     "lat": -4.84531,
+     "area_m2": 29952,
+     "peak_index": 0.0682
+    },
+    {
+     "x": 1737.2,
+     "y": 4303.5,
+     "lon": 137.34041,
+     "lat": -4.7696,
+     "area_m2": 25776,
+     "peak_index": 0.0287
+    }
+   ]
+  },
+  "hydrated": {
+   "label": "Hydrated minerals (H2O)",
+   "index": "BD1900R2",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    140,
+    230,
+    255
+   ],
+   "area_pct_of_covered": 0.82,
+   "candidates": [
+    {
+     "x": 375.0,
+     "y": 9783.0,
+     "lon": 137.31735,
+     "lat": -4.86205,
+     "area_m2": 23328,
+     "peak_index": 0.0475
+    },
+    {
+     "x": 3229.4,
+     "y": 1432.9,
+     "lon": 137.36567,
+     "lat": -4.72117,
+     "area_m2": 22896,
+     "peak_index": 0.0317
+    },
+    {
+     "x": 3197.0,
+     "y": 8425.9,
+     "lon": 137.36512,
+     "lat": -4.83915,
+     "area_m2": 15264,
+     "peak_index": 0.0511
+    }
+   ]
+  },
+  "fine_hematite": {
+   "label": "Fine-grained hematite",
+   "index": "BD530_2",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    240,
+    225,
+    74
+   ],
+   "area_pct_of_covered": 0.49,
+   "candidates": [
+    {
+     "x": 9574.6,
+     "y": 1882.2,
+     "lon": 137.47309,
+     "lat": -4.72875,
+     "area_m2": 343872,
+     "peak_index": 0.2556
+    },
+    {
+     "x": 9319.2,
+     "y": 1933.0,
+     "lon": 137.46877,
+     "lat": -4.72961,
+     "area_m2": 32688,
+     "peak_index": 0.2484
+    },
+    {
+     "x": 9164.9,
+     "y": 2635.0,
+     "lon": 137.46616,
+     "lat": -4.74145,
+     "area_m2": 12384,
+     "peak_index": 0.2504
+    }
+   ]
+  },
+  "olivine": {
+   "label": "Olivine",
+   "index": "OLINDEX3",
+   "threshold": 2.5,
+   "threshold_type": "robust_z",
+   "color": [
+    20,
+    170,
+    150
+   ],
+   "area_pct_of_covered": 0.45,
+   "candidates": [
+    {
+     "x": 1799.7,
+     "y": 9726.1,
+     "lon": 137.34147,
+     "lat": -4.86109,
+     "area_m2": 23184,
+     "peak_index": 0.2602
+    },
+    {
+     "x": 4980.8,
+     "y": 2634.5,
+     "lon": 137.39532,
+     "lat": -4.74145,
+     "area_m2": 19008,
+     "peak_index": 0.1297
+    },
+    {
+     "x": 1943.2,
+     "y": 4879.3,
+     "lon": 137.3439,
+     "lat": -4.77932,
+     "area_m2": 13536,
+     "peak_index": 0.2164
+    }
+   ]
+  },
+  "fe_olivine": {
+   "label": "Fe-olivine / plagioclase",
+   "index": "BD1300",
+   "threshold": 3.0,
+   "threshold_type": "robust_z",
+   "color": [
+    255,
+    255,
+    255
+   ],
+   "area_pct_of_covered": 0.94,
+   "candidates": [
+    {
+     "x": 1850.7,
+     "y": 4932.0,
+     "lon": 137.34233,
+     "lat": -4.78021,
+     "area_m2": 143856,
+     "peak_index": 0.0344
+    },
+    {
+     "x": 2741.8,
+     "y": 4260.1,
+     "lon": 137.35742,
+     "lat": -4.76887,
+     "area_m2": 131760,
+     "peak_index": 0.0374
+    },
+    {
+     "x": 1952.0,
+     "y": 5208.2,
+     "lon": 137.34405,
+     "lat": -4.78487,
+     "area_m2": 53568,
+     "peak_index": 0.0322
+    }
+   ]
+  },
+  "hcp": {
+   "label": "High-Ca pyroxene",
+   "index": "HCPINDEX2",
+   "threshold": 2.0,
+   "threshold_type": "robust_z",
+   "color": [
+    255,
+    105,
+    180
+   ],
+   "area_pct_of_covered": 4.07,
+   "candidates": [
+    {
+     "x": 6535.8,
+     "y": 6340.1,
+     "lon": 137.42165,
+     "lat": -4.80396,
+     "area_m2": 500688,
+     "peak_index": 0.022
+    },
+    {
+     "x": 717.7,
+     "y": 1260.4,
+     "lon": 137.32315,
+     "lat": -4.71826,
+     "area_m2": 432864,
+     "peak_index": 0.0199
+    },
+    {
+     "x": 3958.8,
+     "y": 412.6,
+     "lon": 137.37802,
+     "lat": -4.70396,
+     "area_m2": 294768,
+     "peak_index": 0.0128
+    }
+   ]
+  }
+ },
+ "low_confidence": [
+  "ferric_sulfate",
+  "fine_hematite"
+ ],
+ "grid": {
+  "cell_m": 4.0,
+  "width": 2496,
+  "height": 2505,
+  "area_lonlat": [
+   137.311,
+   -4.866,
+   137.48,
+   -4.697
+  ],
+  "units": "x east, y south (m) from the area's north-west corner"
+ }
+}
