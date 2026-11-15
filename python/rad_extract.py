@@ -6,7 +6,7 @@ TOT_DOSE_E (plastic detector, closest to tissue) and TOT_DOSE_B (silicon) values
 observation, the bytes from its header (START_OBS_MARS = sol + local mean solar time) to its dose values.
 
 Three real windows (as in the team's data-source notes):
-  quiet     sols 543-545   (Feb 2014, the same days as the clear-season EMARS weather)
+  quiet     sols 543-545   (15-17 Feb 2014, Ls 90: the same season as the clear-season EMARS weather, about 22 sols before it)
   elevated  sols 2646-2648 (Jan 2020, solar minimum)
   sep       sols 1811-1813 (10 Sept 2017 solar energetic particle event)
 The page's weather timeline starts at the scenario's first hour (LMST 23:10 of "sol 1") and runs 72 h, so each RAD
@@ -23,7 +23,7 @@ BASE = "https://pds-ppi.igpp.ucla.edu/data/MSL-M-RAD-3-RDR-V1.0/DATA/"
 UA = {"User-Agent": "ares-mission-build/1.0 (rad_extract.py)"}
 SCEN = [
     dict(id="quiet", label="Quiet · Feb 2014", dir="SOL_00450_00583", sol0=543,
-         note="Galactic cosmic-ray background near solar maximum; RAD sols 543-545, the same days as the clear-season weather."),
+         note="Galactic cosmic-ray background near solar maximum; RAD sols 543-545 (Ls 90), the same season as the clear-season weather, about 22 sols before its window."),
     dict(id="elevated", label="Elevated · Jan 2020", dir="SOL_02580_02713", sol0=2646,
          note="Background near the 2019-2020 solar minimum, when the Sun's field shields least; RAD sols 2646-2648."),
     dict(id="sep", label="Solar event · Sept 2017", dir="SOL_01773_01869", sol0=1811,
@@ -71,8 +71,20 @@ def read_sol(d, lbl_name):
     with ThreadPoolExecutor(8) as ex:
         return [r for r in ex.map(one, jobs) if r]
 
-def hourly(obs, t0):
+def despike(obs):
+    """5-point running median of each detector, so lone spikes go (the RAD documentation says data taken while the
+    rover's neutron generator (DAN) fires should be excluded; those show up as single-observation jumps)"""
     obs.sort()
+    med = lambda v: sorted(v)[len(v) // 2]
+    out = []
+    for i, (t, e, b) in enumerate(obs):
+        w = obs[max(0, i - 2):i + 3]
+        bs = [o[2] for o in w if o[2] == o[2]]
+        out.append((t, med([o[1] for o in w]), med(bs) if bs else float("nan")))
+    return out
+
+def hourly(obs, t0):
+    obs = despike(obs)
     out_e, out_b = [], []
     for h in range(HOURS):
         t = t0 + h / 24.0

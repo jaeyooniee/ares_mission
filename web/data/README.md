@@ -72,3 +72,14 @@ Same files and formats. Both are **10 km squares** (624 × 624 at 16 m) built wi
 | THEMIS TI | `30S120E` tile | `30S240E` tile |
 
 Honest notes: at Columbia Hills no reachable place scores ≥ 0.6 for Sample diversity (the mineral families are never strong within 100 m of each other) and Habitability is strong only in a tiny patch; at East Melas, Resources has no strong place. The page says so instead of drawing a route.
+
+## Weather and radiation (every built-in site)
+
+Weather is an **hourly timeline at each site's habitat** (72 h per scenario, starting near local midnight): `weather_gale.json` for Gale and `<site>/weather.json` for Jezero, Mawrth, Meridiani, Columbia Hills and East Melas, all built the same way. Radiation is one file, `radiation_gale.json`: Curiosity RAD is the only radiation detector that has worked on the surface of Mars, so the page moves the Gale measurements to each site with that site's surface pressure (outside Gale the dose is an estimate, not a measurement there). A custom site has no weather file, so its weather and radiation layers, the dust-storm button and PLAN step 2 are off (the plain SEP banner stays).
+
+| File | What it is | How it was made |
+|---|---|---|
+| `weather_gale.json`, `<site>/weather.json` | EMARS v1.0 reanalysis (NASA Ames Mars GCM with TES / MCS assimilation, Penn State): ground and air temperature, pressure, wind, dust opacity; three scenarios (clear MY32, dusty MY29, 2007 global dust storm MY28) | `python/emars_extract.py SITE` or `all` (HTTP range reads of the 4 grid points around the habitat; pressure moved hydrostatically from the GCM ground to the habitat height) |
+| `radiation_gale.json` | Curiosity RAD total dose rate (plastic detector E, µGy/h), one value per hour; three scenarios: Quiet (sols 543-545, 15-17 Feb 2014, Ls 90: the same season as the clear weather scenario, about 22 sols before its window), Elevated (sols 2646-2648, Jan 2020) and the solar event (sols 1811-1813, 10 Sept 2017). Lone spikes removed with a 5-point median | `python/rad_extract.py` (HTTP range reads of NASA PDS PPI MSL-M-RAD-3-RDR-V1.0) |
+
+The page combines them: the dose rate follows this site's surface pressure in the weather scenario against Gale's mean pressure in the same scenario (dose ∝ pressure^-0.29, read at the same local time), is shaded by terrain sky view computed from the DEM, and limits the EVA (LOW below 12 µGy/h, MODERATE 12-18, HIGH 18 and above = NO-GO). The thresholds are team flight-rule assumptions. The injected SEP alert replays the real 10 Sept 2017 rise; the injected dust storm turns the weather into the 2007 storm over one hour and A* re-plans home on the storm's cost map.

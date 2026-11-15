@@ -8,6 +8,7 @@ Live site: https://aresmission.us · Challenge page: https://www.spaceappschalle
 
 ## What it does
 
+- **Weather and radiation (every built-in site)**: hourly EMARS weather scenarios at each site, a Curiosity RAD radiation layer (quiet / elevated / solar event; measured at Gale and moved to each site with its surface pressure), an injectable SEP alert that replays the 10 Sept 2017 event, and an injectable dust storm (the 2007 global storm). A* re-plans the way home from where the crew is.
 - **Seven landing sites**: Gale crater, Jezero crater, Columbia Hills (Spirit) and East Melas (Valles Marineris), 10 × 10 km each, plus Mawrth Vallis (5.1 km) and Meridiani Planum (4.7 km, next to Victoria crater), all on real terrain models, or a **Custom site** built in the browser from your own DEM, image, CRISM and THEMIS files. Switch with **Location ▼** in the top bar.
 - **Science value**: pick objectives (scored against NASA Moon to Mars objectives) and the map shows where the terrain is strong in all of them, with a ranked list of top sites. The route visits the best two.
 - **Route planning**: walking and rover routes on the slope / cost grid of the DEM (A* in the page, then smoothed), with a time, oxygen and energy budget from the team pipeline's models (Tobler walking speed × suit factor, Pandolf metabolic O₂ at Mars gravity, rover speed and Wh/km). Optimal and straight-line routes are compared side by side, with an elevation profile.
@@ -20,7 +21,7 @@ Live site: https://aresmission.us · Challenge page: https://www.spaceappschalle
 - The Gale colour image is a *processed* USGS colour mosaic, not a true-colour photo. Grey strips without colour data use **estimated** colour from brightness. The Jezero, Mawrth and Meridiani images are greyscale, tinted for display. East Melas has no image in the data folder, so its map is shaded relief of the DEM. The Mawrth, Meridiani, Columbia Hills and East Melas science rows are proposed by us (the team table covers Gale and Jezero); see `web/data/README.md`.
 - Science stops come from a simple rule on the mineral maps. It is an assumption, not validated science.
 - Suit battery, rover battery and cabin oxygen are demo assumptions. All time, oxygen and energy values come from simplified models that have not been validated against real rover data.
-- Not in this build: soft soil, boulders, live space weather (DONKI), radiation, rover photos.
+- Not in this build: soft soil, boulders, live space weather (DONKI), rover photos.
 
 Details of every data file: [web/data/README.md](web/data/README.md).
 
@@ -76,6 +77,7 @@ GitHub Pages (`main` branch, repository root) with a custom domain: https://ares
 - NASA/JPL/JHU-APL: MRO CRISM MTRDR summary parameters (minerals)
 - Mars Odyssey THEMIS global thermal inertia mosaic (USGS Astropedia)
 - Curiosity and Perseverance traverses: NASA MMGIS (mars.nasa.gov); Opportunity and Spirit traverses: PDS Analyst's Notebook (`MERB_traverse_5130`, `MERA_traverse`)
+- Curiosity RAD dose rates: NASA PDS Planetary Plasma Interactions node, MSL-M-RAD-3-RDR-V1.0 (`python/rad_extract.py`); EMARS reanalysis (`python/emars_extract.py`)
 - Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook; clay wt% from Thorpe et al. 2022
 
 ## SI (Super Intelligence) disclosure

@@ -119,6 +119,14 @@
   .ipane h1{font-size:18px;margin:0 0 4px;letter-spacing:.04em}
   .ipane p{font-size:13px;line-height:1.6;color:#cfe3ea}
   .ipane .steps{font-size:13px} .ipane .steps li{padding:7px 0}
+  .ipane .lead{font-size:14px;color:#e4f4f8;margin:6px 0 4px}
+  .ipane h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#37e0ff;margin:20px 0 4px}
+  .ipane h3{font-size:13px;color:#eafaff;margin:10px 0 0}
+  .ipane h2+p,.ipane h3+p{margin-top:4px}
+  .ipane .steps.num{counter-reset:st;line-height:1.6;color:#cfe3ea} .ipane .steps.num li{counter-increment:st;padding:8px 0 8px 30px;position:relative}
+  .ipane .steps.num li::before{content:counter(st);position:absolute;left:0;top:9px;width:20px;height:20px;border-radius:50%;border:1px solid #37e0ff;
+    color:#37e0ff;font-size:11px;line-height:20px;text-align:center}
+  .ipane .steps.num li b{color:#eafaff}
   .ipane .small{font-size:12.5px;line-height:1.65}
   .ipane .src{font-size:12.5px} .ipane .src td{padding:6px 4px}
 
@@ -229,6 +237,7 @@
   #arrow{position:absolute;bottom:23%;left:50%;width:64px;height:64px;transform:translateX(-50%)}
   #minimap{position:absolute;right:9%;top:15%;width:150px;height:150px;border-radius:50%;border:1px solid rgba(120,240,255,.5);background:rgba(0,20,28,.4)}
   #swx{font-size:11.5px}   /* third box of the left column (#hLeft), same 10 px gap as the others */
+  #swx.sepOn{border-color:var(--red)!important;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9)}   /* SEP alert: same look as the SEP banner */
   #leak{position:absolute;top:19%;left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center}
   #sep{position:absolute;top:27%;left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.55);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center}
   #arrive{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);font-size:22px;color:#9dffb0;display:none;text-align:center;text-shadow:0 0 10px rgba(80,255,140,.8)}
@@ -321,19 +330,33 @@
   #wxCtl .seg button{padding:5px 4px;font-size:11.5px}
   #wxCtl label.sl b,.plan label.sl b{float:right;font-weight:500;font-variant-numeric:tabular-nums}
   #wxHud{font-size:11.5px}
+  #wxHud.stormOn{border-color:#ffb347!important;color:#ffe2b8;background:rgba(90,55,6,.55);text-shadow:0 0 8px rgba(255,160,40,.9)}   /* dust storm: same look as its banner */
+  #dustHud{position:absolute;top:calc(27% + 96px);left:50%;transform:translateX(-50%);display:none;padding:8px 16px;border:1px solid #ffb347;border-radius:8px;color:#ffe2b8;background:rgba(90,55,6,.55);text-shadow:0 0 8px rgba(255,160,40,.9);font-size:14px;text-align:center}
+  #dustMap{position:fixed;bottom:132px;left:50%;transform:translateX(-50%);z-index:13;display:none;padding:8px 16px;border:1px solid #ffb347;border-radius:8px;color:#ffe2b8;background:rgba(90,55,6,.78);text-shadow:0 0 8px rgba(255,160,40,.9);font-size:14px;text-align:center;font-family:"SF Mono",Menlo,Consolas,monospace;max-width:min(92vw,620px)}
+  #sepMap{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);z-index:13;display:none;padding:8px 16px;border:1px solid var(--red);border-radius:8px;color:#ffd0cc;background:rgba(90,10,6,.75);text-shadow:0 0 8px rgba(255,60,40,.9);font-size:14px;text-align:center;font-family:"SF Mono",Menlo,Consolas,monospace;max-width:min(92vw,620px)}
+  #wxCtl[data-mode=wx] .onlyRad,#wxCtl[data-mode=rad] .onlyWx{display:none}
+  .radLv{display:inline-block;font-size:10px;font-weight:700;padding:0 5px;border-radius:4px;letter-spacing:.04em}
+  .radLv.l0{background:rgba(98,242,154,.18);color:#9dffc4} .radLv.l1{background:rgba(255,179,71,.2);color:#ffd08a} .radLv.l2{background:rgba(255,90,77,.25);color:#ffb3ab}
 
   /* ---------- mission planner (science value → weather → options) ---------- */
   #toPlan{width:100%;margin-top:12px;padding:10px;font-size:13px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
   #toPlan:disabled{opacity:.4;cursor:not-allowed}
   .deps{width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums}
   .deps th{color:var(--dim);font-weight:500;text-align:left;padding:3px 4px;border-bottom:1px solid var(--line)}
-  .deps td{padding:5px 4px;border-bottom:1px dashed var(--line)}
+  .deps td{padding:5px 4px;border-bottom:1px dashed var(--line);white-space:nowrap}
+  .deps td.ds{white-space:normal}
+  .deps tr.row{display:table-row}   /* the general .row rule (flex) would pull the cells out of the header's columns */
   .deps tr.row:hover{background:rgba(55,224,255,.08);cursor:pointer}
+  /* Weather & Departure lead: what is being planned, then what to do */
+  #planLead .lg{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin:2px 0 8px;font-size:12px}
+  #planLead .lg span{color:var(--dim)} #planLead .lg b{color:#eafaff;font-weight:600}
   .st{font-weight:700;font-size:10.5px;letter-spacing:.06em}
   .st.go{background:none;border:0;color:var(--green)} .st.nogo{background:none;border:0;color:var(--red)}
-  .ocard{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:7px 0;cursor:pointer;background:rgba(255,255,255,.03)}
+  .ocard{border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:7px 0;cursor:pointer;background:rgba(255,255,255,.03);transition:border-color .2s,box-shadow .2s,background .2s}
   .ocard:hover{background:rgba(55,224,255,.07)}
-  .ocard.sel{border-color:var(--cyan);background:rgba(55,224,255,.12);box-shadow:0 0 0 1px rgba(55,224,255,.35) inset}
+  /* the picked option (only one at a time): a glowing cyan frame */
+  .ocard.sel{border-color:#37e0ff;background:rgba(55,224,255,.1);
+    box-shadow:0 0 0 1px #37e0ff inset,0 0 12px rgba(55,224,255,.75),0 0 28px rgba(55,224,255,.3)}
   .ocard .oh{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:600}
   .ocard .rec{font-size:10px;font-weight:600;color:#0b1820;background:#fde725;border-radius:4px;padding:1px 5px;margin-left:6px}
   .ocard .sortie{font-size:11.3px;color:#cfe3ea;margin-top:5px;padding:5px 7px;border-radius:7px;background:rgba(0,0,0,.18)}
@@ -364,7 +387,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<link rel="stylesheet" href="web/css/intro.css?v=20261115c"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
+<link rel="stylesheet" href="web/css/intro.css?v=20261115d"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
 </head>
 <body class="brand-hidden">
 <div id="intro" aria-hidden="true">
@@ -388,8 +411,8 @@
   <div id="carDots" role="tablist" aria-label="Landing sites"></div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro-globe.js?v=20261115c"></script>
-<script src="web/js/intro.js?v=20261115c"></script>
+<script src="web/js/intro-globe.js?v=20261115d"></script>
+<script src="web/js/intro.js?v=20261115d"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
@@ -441,6 +464,7 @@
         <button class="btn" data-l="slope">Slope</button>
         <button class="btn" data-l="cost">Cost map</button>
         <button class="btn" data-l="wx" id="wxLayerBtn">Weather (hourly, 3 sols)</button>
+        <button class="btn" data-l="rad" id="radLayerBtn">Radiation (RAD, 3 sols)</button>
       </div>
       <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
       <div id="minOpts">
@@ -448,10 +472,19 @@
         <div id="minLegend" class="small" style="display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:4px"></div>
       </div>
       <!-- shown instead of the CRISM options while the Weather layer is selected -->
+      <!-- shown instead of the CRISM options while the Weather or Radiation layer is selected (Play and Departure are shared) -->
       <div id="wxCtl" style="display:none">
-        <div class="seg wxSeg"></div>
+        <div class="seg wxSeg onlyWx"></div>
+        <div class="seg radSeg onlyRad"></div>
         <div style="margin-top:8px"><button class="btn" id="wxPlay">▶ Play</button></div>
         <label class="sl">Departure <b id="wxDepTxt"></b><input type="range" id="wxDep" min="0" max="71" step="1"></label>
+        <label class="sl onlyRad" title="Flight rule: at or above this dose rate the EVA must stay short and near the habitat">MODERATE from <b id="radModTxt"></b><input type="range" id="radMod" min="6" max="30" step="0.5"></label>
+        <label class="sl onlyRad" title="Flight rule: at or above this dose rate the EVA is NO-GO (shelter)">HIGH (NO-GO) from <b id="radHighTxt"></b><input type="range" id="radHigh" min="8" max="40" step="0.5"></label>
+        <button class="btn onlyWx" id="dustMapBtn" style="margin-top:8px;width:100%;border-color:rgba(255,179,71,.8);color:#ffe2b8;background:rgba(90,55,6,.55)">🌪 Inject dust storm (EMARS 2007)</button>
+        <div class="small onlyWx" style="margin-top:4px">During a traverse on the map (Preview or a scheduled mission) the crew is re-routed home on the storm's cost map.</div>
+        <button class="btn onlyRad" id="sepMapBtn" style="margin-top:8px;width:100%;border-color:rgba(255,90,77,.8);color:#ffd0cc;background:rgba(70,10,6,.55)">☢ Inject SEP alert (RAD, Sept 2017)</button>
+        <div class="small onlyRad" style="margin-top:4px">During a traverse on the map (Preview or a scheduled mission) the crew is re-routed home from where it is.</div>
+        <div class="small" id="envNow" style="margin-top:6px"></div>
       </div>
       <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Scientific value</label>
       <div id="sciLegendBox"><div id="sciLegend"></div><div class="sciScale"><span>low</span><span>high value · dark = out of reach</span></div></div>
@@ -476,7 +509,7 @@
       <button class="mi" data-info="about">About this build</button>
       <button class="mi" data-info="sources">Data sources</button>
       <button class="mi" data-info="controls">Map controls</button>
-      <button class="mi" data-info="weather">Weather model</button>
+      <button class="mi" data-info="weather">Weather &amp; radiation model</button>
     </div>
   </div>
   <div class="spacer"></div>
@@ -529,6 +562,8 @@
     <div class="small" id="planLead"></div>
     <h2>Weather scenario (EMARS, 3 sols)</h2>
     <div class="seg wxSeg"></div>
+    <h2>Radiation scenario (Curiosity RAD, 3 sols)</h2>
+    <div class="seg radSeg"></div>
     <h2>Flight rules · NO-GO at or above</h2>
     <label class="sl" title="Flight rule: dust opacity at or above this is NO-GO">Dust τ limit <b id="wxTauLimTxt"></b><input type="range" id="wxTauLim" min="0.5" max="6" step="0.1"></label>
     <label class="sl" title="Flight rule: 2 m wind at or above this is NO-GO">Wind limit <b id="wxWindLimTxt"></b><input type="range" id="wxWindLim" min="5" max="30" step="1"></label>
@@ -572,16 +607,28 @@
     <button class="itab" data-info="about">About this build</button>
     <button class="itab" data-info="sources">Data sources</button>
     <button class="itab" data-info="controls">Map controls</button>
-    <button class="itab" data-info="weather">Weather model</button>
+    <button class="itab" data-info="weather">Weather &amp; radiation model</button>
     <div style="flex:1"></div>
     <button class="itab" id="infoClose">← Back to map</button>
   </div>
   <div id="infoBody">
     <div class="ipane" data-info="about">
       <h1>🔴 MARTIAN MAP · EVA PLANNER</h1>
-      <div class="sub">Habitat transparent display → helmet / rover HUD</div>
-      <div class="note" id="aboutNote">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.</div>
-      <p>Pick a landing site on the start screen (Gale, Jezero, Mawrth Vallis, Meridiani Planum, Columbia Hills, East Melas, or <b>Custom</b> with your own DEM, image and CRISM data), or switch later with <b>Location ▼</b> in the top bar. Then pick objectives in <b>Science value</b> (right): the route visits the best two places for them. Check the GO / NO-GO badge, preview the traverse, then start the first-person helmet or rover HUD. MISSION, ROUTE and CREW open their cards on the left; data overlays (imagery, elevation, slope, cost map, CRISM minerals, science value, and at Gale the Curiosity drill sites and traverse) are in <b>LAYERS</b>.</p>
+      <p class="lead">Explore Martian terrain, select science objectives, and review your route before starting a first-person EVA on foot or by rover.</p>
+      <h2>Choose a location</h2>
+      <p>Select Gale, Jezero, Mawrth Vallis, Meridiani Planum, Columbia Hills, or East Melas on the start screen. Choose <b>Custom</b> to use your own DEM, imagery, and CRISM data.</p>
+      <p>You can change locations at any time using <b>Location</b> in the top bar.</p>
+      <h2>Plan your EVA</h2>
+      <ol class="steps num">
+        <li><b>Choose science objectives</b><br>Select your goals in <b>Science Objectives</b>. The planner selects the two highest-ranked sites for those goals and builds a round-trip route from the habitat.</li>
+        <li><b>Review the route</b><br>Check the GO / NO-GO status, route conditions, and resource estimates before departure.</li>
+        <li><b>Preview and explore</b><br>Preview the traverse, then start the first-person helmet HUD for walking or rover HUD for driving.</li>
+      </ol>
+      <h2>Map tools</h2>
+      <p>Open <b>MISSION</b>, <b>ROUTE</b>, and <b>CREW</b> to view their panels on the left.</p>
+      <p>Use <b>LAYERS</b> to switch between imagery, elevation, slope, and cost maps, or enable mineral and science-value overlays. At Gale, you can also view Curiosity’s drill sites and traverse.</p>
+      <h2>Terrain &amp; imagery notes</h2>
+      <div id="aboutNote"></div><!-- this site's notes (SITES[...].about), filled in by the script -->
     </div>
     <div class="ipane" data-info="controls">
       <h1>Map controls</h1>
@@ -595,17 +642,17 @@
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
     </div>
     <div class="ipane" data-info="weather">
-      <h1>Weather model · NASA Ames Mars GCM / EMARS</h1>
-      <p>The page reads <code>web/data/weather_gale.json</code>, built by <code>python/emars_extract.py</code> from the public EMARS v1.0 files (Penn State Data Commons). Only the bytes of the grid points around Gale are downloaded (HTTP range requests on the NetCDF-3 files), not the 1–5 GB files.</p>
+      <h1>Weather &amp; radiation model · NASA Ames Mars GCM / EMARS · Curiosity RAD</h1>
+      <p>The page reads the weather of the open landing site: <code>web/data/weather_gale.json</code> for Gale and <code>web/data/&lt;site&gt;/weather.json</code> for Jezero, Mawrth Vallis, Meridiani Planum, Columbia Hills and East Melas, all built by <code>python/emars_extract.py</code> at each site's habitat from the public EMARS v1.0 files (Penn State Data Commons). Only the bytes of the 4 grid points around the site are downloaded (HTTP range requests on the NetCDF-3 files), not the 1–5 GB files. A custom site has no weather data.</p>
       <h2>What the data is</h2>
       <p>EMARS (Ensemble Mars Atmosphere Reanalysis System, Greybush et al. 2019) runs the <b>NASA Ames Mars GCM</b> (github.com/nasa/AmesGCM) and assimilates TES and MCS temperature retrievals. It gives hourly ground and air temperature, surface pressure, winds and dust opacity for Mars Years 24–33. It is a record of past Mars years, <b>not a forecast</b>: no real-time Mars weather forecast exists yet. Real past years are used as <b>scenarios</b>: a clear season (MY32), a dusty season (MY29) and the 2007 global dust storm (MY28).</p>
       <h2>Limits of the GCM and how we handle them</h2>
       <table class="src">
         <tr><td>Running the GCM</td><td>Fortran + MPI on Linux, hours to days per Mars year → we use the published EMARS output instead of running the model</td></tr>
-        <tr><td>Resolution</td><td>One grid cell is about 5° × 6° (≈ 300 × 350 km), so the whole 10 km map is inside one cell → weather is one value per hour for the whole map; it changes the plan through <b>time</b>. Spatial detail comes from the terrain (wind-exposed ridges, hazards in poor visibility)</td></tr>
+        <tr><td>Resolution</td><td>One grid cell is about 5° × 6° (≈ 300 × 350 km), so the whole map (5–10 km) is inside one cell → weather is one value per hour for the whole map; it changes the plan through <b>time</b>. Spatial detail comes from the terrain (wind-exposed ridges, hazards in poor visibility)</td></tr>
         <tr><td>Not a forecast</td><td>Values are the weather of a past Mars year at that season → three real scenarios</td></tr>
         <tr><td>Thin air</td><td>Air density ≈ 0.02 kg/m³: even 20 m/s pushes very little → wind matters through blowing dust and sand on exposed ground; dust and temperature drive the budget</td></tr>
-        <tr><td>Height mismatch</td><td>The GCM's smoothed ground is ≈ 3 km above the Gale floor → pressure moved hydrostatically to the habitat height (about 10–15 % above Curiosity REMS); wind scaled from the lowest model level (~36 m) to 2 m (×0.65)</td></tr>
+        <tr><td>Height mismatch</td><td>The GCM's smoothed ground (a ~300 km average) is not the habitat height (at Gale ≈ 3 km above the crater floor) → at every site the pressure is moved hydrostatically to the habitat height and dust τ scaled with it (at Gale this lands about 10–15 % above Curiosity REMS); wind scaled from the lowest model level (~36 m) to 2 m (×0.65)<span id="wxGround"></span></td></tr>
       </table>
       <h2>How weather enters the route and GO / NO-GO</h2>
       <table class="src">
@@ -615,6 +662,24 @@
         <tr><td>Time of day</td><td>On foot: depart after 06:00 and be back before 18:00 local mean solar time; an EVA longer than the 8 h limit is NO-GO</td></tr>
       </table>
       <p class="small">The route is chosen with the worst weather inside the expected EVA window, then the budget is integrated with the weather of each hour along the way. Every departure hour of the 3 sols is evaluated ("departure-time A*"). All thresholds are team assumptions. Source: Greybush, S. J., et al. (2019), Geosci. Data J. 6, 137–150; dataset doi:10.18113/D3W375.</p>
+      <h2>Radiation · Curiosity RAD, moved to each site</h2>
+      <p>The Radiation layer reads <code>web/data/radiation_gale.json</code>, built by <code>python/rad_extract.py</code> from NASA PDS (Planetary Plasma Interactions node) <b>MSL-M-RAD-3-RDR-V1.0</b>: the total dose rate in RAD's plastic detector E (closest to tissue), in µGy/h, measured about every 17 minutes on the surface of Gale crater by Curiosity. Only the label and the few bytes holding each observation's dose and local time are downloaded. Lone spikes are removed with a 5-point median (the RAD documentation says data taken while the rover's neutron generator fires should be excluded), then one value per hour is taken on the weather timeline.</p>
+      <table class="src">
+        <tr><td>Quiet · Feb 2014</td><td>Galactic cosmic-ray background near solar maximum, ≈ 8.6 µGy/h. RAD sols 543–545 (15–17 Feb 2014, Ls ≈ 90°): the <b>same season</b> as the clear-season weather scenario, about 22 sols before its window</td></tr>
+        <tr><td>Elevated · Jan 2020</td><td>Background near the 2019–2020 solar minimum, ≈ 13 µGy/h (the Sun's magnetic field shields least)</td></tr>
+        <tr><td>Solar event · Sept 2017</td><td>The 10 September 2017 solar energetic particle event, up to ≈ 24 µGy/h (RAD sols 1811–1813)</td></tr>
+      </table>
+      <p class="small">Curiosity RAD is the only radiation detector that has worked on the surface of Mars, so no other landing site has a measurement. The Gale measurements are <b>moved to each site with its own air column</b>: dose ∝ surface pressure<sup>−0.29</sup> (a slope fitted on RAD vs EMARS pressure at Gale, r = −0.47), using this site's pressure in the selected weather scenario against Gale's mean pressure in the same scenario, read at the same local time; a site with thinner air (higher ground) gets a little more. Radiation and weather scenarios can be combined freely; they come from different dates, so they are what-if environments, not one real day. The map colours the dose rate at the departure hour × terrain shielding (share of the sky each cell sees in this site's DEM, horizon angles in 8 directions up to ~900 m; assumed 80 % of the dose comes from the sky).</p>
+      <table class="src">
+        <tr><td>LOW (below 12 µGy/h)</td><td>No radiation limit</td></tr>
+        <tr><td>MODERATE (12–18 µGy/h)</td><td>On foot: EVA ≤ 4 h and never more than 45 min from the habitat along the route, otherwise NO-GO. Rover: the cabin is the shelter (walls assumed to cut 15 %)</td></tr>
+        <tr><td>HIGH (18 µGy/h and above)</td><td>NO-GO, shelter; during an EVA the HUD shows the SEP alert</td></tr>
+      </table>
+      <p class="small">Thresholds are team flight-rule assumptions (no surface radiation limits exist for Mars yet), tunable in the Radiation layer. Departures are ranked by safety factor (capped at ×3) minus the EVA dose per 100 µGy. Values are absorbed dose in the RAD plastic detector, not dose equivalent for organs. Outside Gale the dose is an estimate from the Gale measurements, not a measurement at that site; a custom site has no weather file, so no radiation layer either. Source: NASA PDS PPI node, MSL RAD Reduced Data Records (MSL-M-RAD-3-RDR-V1.0).</p>
+      <h2>SEP alert</h2>
+      <p class="small"><b>Inject SEP alert</b> (helmet / rover HUD, or MAP → Radiation) replays the real 10 Sept 2017 event as Curiosity RAD measured it — the dose rate above its pre-event level, from onset (11 → 24 µGy/h within about 8 h) — starting at that moment, on top of the selected radiation scenario. If a traverse is under way (first person, Preview, or a scheduled mission on the map), A* re-plans at once from where the crew is to the habitat on the current weather-aware cost map, the amber return route is drawn and followed, and the banner gives its length, time and the dose on the way. With no traverse running the alert is placed at the departure hour: while an SEP alert is active no EVA may start (NO-GO). Press the button again to clear it.</p>
+      <h2>Dust storm</h2>
+      <p class="small"><b>Inject dust storm</b> (helmet / rover HUD, or MAP → Weather) turns the weather, from that moment, into the real conditions of the 2007 planet-encircling dust storm at this site (EMARS MY28, the Dust storm weather scenario, same local time): dust τ about 4, strong wind, visibility a few km. The ~300 km GCM grid cannot show a storm front arriving, so the change-over is assumed to take 1 hour from the alert. During a traverse A* re-plans from where the crew is to the habitat on the storm's cost map — lower slope limit, a margin from blocked ground, wind-exposed ridges avoided — and the crew walks it at storm speed. With no traverse running the storm is placed at the departure hour (dust τ over the limit: NO-GO). Press the button again to clear it.</p>
       <h2>Mission planner and scheduled missions</h2>
       <p class="small">Science Objectives → <b>Next</b>: the best departures for Habitat → A → B → Habitat are listed, plus split options (A in one EVA, B in the next good departure) when one EVA is too long for the O₂ / battery or the 8 h limit. Pick an option and press <b>Confirm</b> (only when the badge shows GO); it is saved under SCHEDULED, where it can be replayed on the map.</p>
     </div>
@@ -628,8 +693,9 @@
         <tr id="srcSci"><td>Scientific value</td><td>Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
         <tr id="srcCm"><td>Ground truth (Gale)</td><td>Curiosity CheMin drill sites: NASA PDS CheMin RDR and PDS Analyst's Notebook (clay wt% from Thorpe et al. 2022); Curiosity traverse: NASA MMGIS. Shown in LAYERS on the map only, as reference: not used in route scoring</td></tr>
         <tr><td>Custom sites</td><td>Built in your browser from your own files with the same rules as the built-in sites (DEM; optional image, CRISM MTRDR, THEMIS; rover traverse from NASA MMGIS). Nothing is uploaded; the site is kept in this browser and can be downloaded as a package</td></tr>
-        <tr><td>Weather</td><td>EMARS v1.0 reanalysis (NASA Ames Mars GCM + TES/MCS assimilation, Penn State), hourly point timeline at Gale for 3 real Mars-year scenarios — see Info → Weather model</td></tr>
-        <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos, real-time Mars weather forecast (none exists yet)</td></tr>
+        <tr><td>Radiation</td><td>Curiosity RAD (MSL Radiation Assessment Detector) Reduced Data Records, NASA PDS PPI node MSL-M-RAD-3-RDR-V1.0: surface dose rate at Gale for 3 scenarios, moved to each built-in site with its surface pressure — see Info → Weather &amp; radiation model</td></tr>
+        <tr><td>Weather</td><td>EMARS v1.0 reanalysis (NASA Ames Mars GCM + TES/MCS assimilation, Penn State), hourly point timeline at each built-in landing site for 3 real Mars-year scenarios — see Info → Weather &amp; radiation model</td></tr>
+        <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), rover photos, real-time Mars weather forecast (none exists yet)</td></tr>
       </table>
       <p class="small" style="margin-top:12px" id="srcFoot">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
     </div>
@@ -655,7 +721,7 @@
     <div class="lbl" style="margin-top:4px">GRADE AHEAD</div><div id="hGrade">–</div>
   </div>
   <div class="hbox" id="wxHud" style="display:none"><div class="lbl">MARS WEATHER · EMARS</div><div id="wxHudTxt">–</div></div>
-  <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px">(sample data)</div></div>
+  <div class="hbox" id="swx"><div class="lbl">SPACE WEATHER · DONKI</div><div id="swxTxt">☢ No SEP alert · dose rate nominal</div><div style="opacity:.65;font-size:10.5px" id="swxSrc">(sample data)</div></div>
   </div>
   <canvas id="arrow" width="128" height="128"></canvas>
   <div id="instr"><div class="main" id="hInstr">–</div><div class="warn" id="hWarn"></div></div>
@@ -663,6 +729,7 @@
   <canvas id="navmap" width="1248" height="500"></canvas>
   <div id="leak">💨 SUIT O₂ LEAK<br><span id="leakSub" style="font-size:12px">press ABORT to route home</span></div>
   <div id="sep">☢ SEP EVENT DETECTED — elevated proton flux<br><span style="font-size:12px">Shelter recommended · press ABORT to route home</span></div>
+  <div id="dustHud"></div>
   <div id="arrive"></div>
   <div id="dash">
     <div><div class="k">SPEED</div><div class="v" id="dSpd">0.0 km/h</div></div>
@@ -681,11 +748,14 @@
   <button id="dashBtn">⬇ Look at monitor (V)</button>
   <button id="abortBtn" class="danger">⏎ ABORT – return to habitat</button>
   <button id="sepBtn">☢ Inject SEP alert</button>
+  <button id="dustBtn">🌪 Inject dust storm</button>
   <button id="leakBtn" class="danger">💨 Inject suit leak</button>
   <button id="exitBtn">■ Back to map</button>
 </div>
-<div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
+<div id="credit">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · radiation: NASA/JPL-Caltech/SwRI (Curiosity RAD, PDS) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo</div>
 <div id="toast"></div>
+<div id="sepMap"></div>
+<div id="dustMap"></div>
 <div id="confirmWhy"></div>
 <button id="confirmBtn" disabled>✓ Confirm mission</button>
 <div id="tip" role="dialog" aria-modal="true" aria-label="How to move around the map">
@@ -710,7 +780,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const SITES = {
   gale: {
     name: 'Gale crater', rover: 'Curiosity', data: 'web/data/',
-    about: `Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Routes are precomputed by the Python pipeline. Imagery: <b>HiRISE colour mosaic</b> (USGS, processed colour, not a true-colour photo). <b>Grey-strip areas</b> (no colour data) use <b>estimated</b> colour from brightness, not measured.`,
+    about: `<h3>Gale terrain</h3><p>The Gale map uses a HiRISE digital elevation model covering a 10 km area, resampled from a 1 m source to a 16 m grid. Routes are precomputed through a Python processing pipeline.</p>`
+      + `<h3>Processed colour imagery</h3><p>The USGS HiRISE colour mosaic is processed imagery, rather than a true-colour photograph. Grey-strip areas without colour coverage use colours estimated from brightness; these colours are not directly measured.</p>`,
     elev: 'HiRISE DEM of Gale (1 m source, shown at 16 m)',
     img: 'USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour',
     sci: 'Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives',
@@ -800,7 +871,7 @@ if (SITE_ID0 === 'custom') {
 }
 { // site text: About, Data sources, credit, page title
   const put = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
-  put('aboutNote', SITE.about); put('srcElev', SITE.elev); put('srcImg', SITE.img); put('srcSci', SITE.sci);
+  put('aboutNote', SITE.about.startsWith('<h3>') ? SITE.about : `<h3>${SITE.name} terrain</h3><p>${SITE.about}</p>`); put('srcElev', SITE.elev); put('srcImg', SITE.img); put('srcSci', SITE.sci);
   put('srcFoot', SITE.credit + '.'); put('credit', SITE.credit);
   document.title = `Martian Map – EVA Planner (${SITE.name})`;
 }
@@ -1422,6 +1493,8 @@ function elevShade(k) {
   return Math.max(0.6, Math.min(1.25, 0.92 + 0.77 * (dzdx + dzdy)));      // slopes facing north-west are lit, the others shaded
 }
 const SLOPE = [[0, [0.18, 0.62, 0.3]], [0.45, [0.95, 0.85, 0.2]], [0.75, [0.97, 0.5, 0.12]], [1, [0.85, 0.12, 0.1]]];
+// radiation dose rate 6 → 25 µGy/h: quiet background teal, MODERATE amber, HIGH red
+const RADC = [[0, [0.10, 0.35, 0.40]], [0.15, [0.18, 0.62, 0.55]], [0.37, [0.95, 0.80, 0.25]], [0.6, [0.97, 0.45, 0.15]], [1, [0.85, 0.10, 0.12]]];
 const COSTR = [[0, [0.27, 0.0, 0.33]], [0.25, [0.23, 0.32, 0.55]], [0.5, [0.13, 0.57, 0.55]], [0.75, [0.37, 0.79, 0.38]], [1, [0.99, 0.91, 0.15]]];   // viridis; red = blocked
 const css = st => 'linear-gradient(90deg,' + st.map(([t, c]) => `rgb(${c.map(v => v * 255 | 0)}) ${t * 100}%`).join(',') + ')';
 function paint(force) {
@@ -1437,7 +1510,14 @@ function paint(force) {
   }
   if (L === 'wx') {                       // Weather layer: imagery underneath, haze and sunlight from the weather
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
-    document.getElementById('lg0').textContent = 'EMARS reanalysis · Gale'; document.getElementById('lg1').textContent = 'hourly · 3 sols'; return;
+    document.getElementById('lg0').textContent = `EMARS reanalysis · ${SITE.name}`; document.getElementById('lg1').textContent = 'hourly · 3 sols'; return;
+  }
+  if (L === 'rad' && RAD) {               // Radiation layer: dose rate at the departure hour × terrain shielding, over a hillshade
+    const S = shieldMap(), r = radAt(wxState.dep);
+    for (let k = 0; k < N * N; k++) { const c = ramp(RADC, (r.dose * S[k] - 6) / 19), sh = elevShade(k); colors.set([Math.min(1, c[0] * sh), Math.min(1, c[1] * sh), Math.min(1, c[2] * sh)], k * 3); }
+    geo.attributes.color.needsUpdate = true; terrain.material = matVC; wire.visible = false;
+    lgEl.style.background = css(RADC);
+    document.getElementById('lg0').textContent = '6 µGy/h'; document.getElementById('lg1').textContent = `now ${r.dose.toFixed(1)} µGy/h · ${RAD_NAME[r.cls]} · 25+`; return;
   }
   if (L === 'img') {
     terrain.material = matImg; wire.visible = false; lgEl.style.background = 'none';
@@ -1730,13 +1810,14 @@ if (SCI) {
 // weather-aware planning on / off (refresh = false: the caller recomputes the route itself)
 function setLayer(l, refresh = true) {
   document.querySelectorAll('#layers button').forEach(x => x.classList.toggle('on', x.dataset.l === l));
-  const wasWx = layer === 'wx'; layer = l;
-  document.getElementById('minOpts').style.display = l === 'wx' ? 'none' : '';
-  document.getElementById('wxCtl').style.display = l === 'wx' ? '' : 'none';
-  minMesh.visible = l !== 'wx' && !!MIN && minOn.size > 0;
-  if (l !== 'wx' && wxState.play) document.getElementById('wxPlay').click();
+  const env = x => x === 'wx' || x === 'rad';      // Weather and Radiation: same planning, different map colours and controls
+  const wasEnv = env(layer); layer = l;
+  document.getElementById('minOpts').style.display = env(l) ? 'none' : '';
+  const ctl = document.getElementById('wxCtl'); ctl.style.display = env(l) ? '' : 'none'; ctl.dataset.mode = l;
+  minMesh.visible = !env(l) && !!MIN && minOn.size > 0;
+  if (!env(l) && wxState.play) document.getElementById('wxPlay').click();
   if (!refresh) return;
-  if (wasWx !== (l === 'wx') && basePlan) applyPlan(); else { paint(); wxRender(); }
+  if (wasEnv !== env(l) && basePlan) applyPlan(); else { paint(); wxRender(); }
 }
 document.querySelectorAll('#layers button').forEach(b => b.onclick = () => setLayer(b.dataset.l));
 
@@ -1751,7 +1832,7 @@ function makeTube(pts, color) {
 const fmtT = s => { const m = Math.round(s / 60); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; };
 const fmtClock = s => { const m = Math.floor(s / 60); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
 const fmtLeft = s => !isFinite(s) ? '—' : s >= 99 * 3600 ? '99h+' : `${Math.floor(Math.max(0, s) / 3600)}h ${String(Math.floor(Math.max(0, s) % 3600 / 60)).padStart(2, '0')}m`;   // time left as "7h 40m"
-const set = (id, v) => document.getElementById(id).textContent = v;
+const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };   // an element a layout no longer has is skipped, not an error
 
 // pipeline route rows: [x, y, z, dist_m, slope_deg, t_min, o2_kg, rover_wh]  (x east, y south, metres from the area's NW corner)
 function seriesFrom(rows, summary, which) {
@@ -1784,11 +1865,18 @@ function stopIdxFor(rows) {                // index of the route point nearest t
   out.push(rows.length - 1); return out;
 }
 
-// =================== WEATHER: EMARS point timeline at Gale ===================
+// =================== WEATHER: EMARS point timeline at the landing site ===================
 // One value per hour for the whole 10 km map: the GCM grid cell (~300 km) is far larger than the area, so weather
 // varies in TIME, not across the map. Spatial detail comes from the terrain (exposure to wind, hazards in poor visibility).
 let WX = null;
-if (SITE_ID === 'gale') { try { const r = await fetch(DATA + 'weather_gale.json'); if (r.ok) WX = await r.json(); } catch (e) { console.warn('weather data not loaded', e); } }   // EMARS covers Gale only
+// every built-in site has its own file (python/emars_extract.py at that site's habitat); a custom site has none
+const WX_FILE = SITE_ID === 'gale' ? 'weather_gale.json' : 'weather.json';
+if (!SITE.custom) { try { const r = await fetch(DATA + WX_FILE); if (r.ok) WX = await r.json(); } catch (e) { console.warn('weather data not loaded', e); } }
+// WXG = Gale's timeline: the radiation (measured by Curiosity at Gale) is moved to another site with the pressure ratio
+let WXG = SITE_ID === 'gale' ? WX : null;
+if (WX && !WXG) { try { const r = await fetch('web/data/weather_gale.json'); if (r.ok) WXG = await r.json(); } catch (e) { console.warn('Gale weather not loaded', e); } }
+{ const p = WX && WX.point, el = document.getElementById('wxGround');           // this site's numbers in Info
+  if (el && p && p.gcm_ground_m != null) el.textContent = ` · here (${SITE.name}): GCM ground ${Math.round(p.gcm_ground_m)} m, habitat ${Math.round(p.elev_m)} m`; }
 // flight rules and weather -> cost / budget model (team assumptions; the NO-GO limits are tunable with the sliders)
 const WXR = {
   wind2m: 0.65,          // 2 m wind ≈ 0.65 × wind at the lowest model level (~36 m): log profile, roughness 1 cm
@@ -1800,15 +1888,28 @@ const WXR = {
 };
 const MAX_EVA_H = SCI?.reach?.max_eva_h ?? 8;        // science.py: longest EVA on foot
 const wxState = { sc: 0, dustX: 1, dep: 0, play: null };
-const wxOn = () => !!WX && layer === 'wx';            // weather is applied while the Weather layer is selected
+const wxOn = () => !!WX && (layer === 'wx' || layer === 'rad');   // weather + radiation apply while the Weather or Radiation layer is selected
 const wxSc = () => WX.scenarios[wxState.sc];
 const wxN = () => wxSc().ts_c.length;
-function wxAt(h) {                       // weather at hour h of the scenario timeline (linear interpolation)
-  const S = wxSc(), n = S.ts_c.length; h = Math.min(Math.max(h, 0), n - 1);
+function wxAtS(S, h) {                   // weather of scenario S at hour h of the timeline (linear interpolation)
+  const n = S.ts_c.length; h = Math.min(Math.max(h, 0), n - 1);
   const i = Math.min(n - 2, Math.floor(h)), f = h - i, L = a => a[i] + (a[i + 1] - a[i]) * f;
   const abs = S.hours[0].lmst + h, tau = L(S.dust_tau) * wxState.dustX;
   return { h, lmst: abs % 24, sol: Math.floor(abs / 24) + 1, ls: L(S.ls), ts: L(S.ts_c), tair: L(S.tair_c), ps: L(S.ps_pa),
     wind: L(S.wind_ms) * WXR.wind2m, wdir: S.wind_dir_deg[Math.round(h)], tau, vis: 3.912 * WXR.dustH_km / Math.max(tau, 0.05) };
+}
+// Injected dust storm: from the moment it is injected, the weather turns into the real conditions of the 2007 planet-encircling
+// dust storm at this site (EMARS MY28, the "Dust storm" weather scenario) at the same local time, over STORM_RAMP_H hours.
+// The ~300 km GCM grid cannot show a storm front arriving, so the change-over itself is an assumption.
+let stormInj = null;                      // { atH: timeline hour of the injection }
+const STORM_RAMP_H = 1;
+const stormSc = () => WX && WX.scenarios.find(s => s.id === 'storm');
+function wxAt(h) {                        // weather at hour h: the selected scenario, or the storm once one is injected
+  const a = wxAtS(wxSc(), h), ST = stormSc();
+  if (!stormInj || !ST || h < stormInj.atH) return a;
+  const b = wxAtS(ST, h), f = Math.min(1, (h - stormInj.atH) / STORM_RAMP_H), m = (x, y) => x + (y - x) * f, tau = m(a.tau, b.tau);
+  return { ...a, ts: m(a.ts, b.ts), tair: m(a.tair, b.tair), ps: m(a.ps, b.ps), wind: m(a.wind, b.wind), wdir: f > 0.5 ? b.wdir : a.wdir,
+    tau, vis: 3.912 * WXR.dustH_km / Math.max(tau, 0.05), storm: f };
 }
 const wxWhen = h => { const w = wxAt(h); return `Sol ${w.sol} ${fmtClock(w.lmst * 3600)}`; };
 function wxWindow(h0, h1) {              // worst weather between two hours of the timeline
@@ -1886,6 +1987,84 @@ function applyWeather(b0, depH, M) {
   }
   return Object.assign(b, { time: t, o2: o, wh: e, heatWh: heat });
 }
+// =================== RADIATION: Curiosity RAD dose-rate timeline (measured at Gale, moved to each site) ===================
+// web/data/radiation_gale.json from python/rad_extract.py: NASA PDS MSL-M-RAD-3-RDR-V1.0, total dose rate in RAD's plastic
+// detector E (closest to tissue), µGy/h, one value per hour on the same local-time axis as the weather timeline.
+// Three real measurement windows: quiet (Feb 2014, Ls ≈ 90°: the same season as the clear-season weather, about 22 sols before
+// its window), elevated (2020 solar minimum) and the 10 Sept 2017 solar particle event. Combined with any weather scenario.
+// Curiosity measured them at Gale, the only surface dosimeter on Mars: at every built-in site the dose follows that site's
+// surface pressure against Gale's (thinner air shields less). One file for every site; a custom site has no weather, so none.
+let RAD = null;
+if (WX && WXG) { try { const r = await fetch('web/data/radiation_gale.json'); if (r.ok) RAD = await r.json(); } catch (e) { console.warn('radiation data not loaded', e); } }
+const RADR = {
+  mod: 12, high: 18,      // µGy/h: MODERATE from, HIGH (NO-GO) from (team flight rules, tunable; quiet ≈ 8.6, Sept 2017 pre-event ≈ 11, solar minimum ≈ 13, event peak ≈ 24)
+  kP: -0.29,              // dose elasticity to surface pressure, fitted on the co-dated sols (RAD vs EMARS, r = −0.47)
+  fSky: 0.8,              // share of the dose that comes from the open sky (the rest: ground albedo), for terrain shielding
+  suit:  { modMaxH: 4, shelterMin: 45, cabin: 1 },     // MODERATE on foot: EVA ≤ 4 h and never more than 45 min from the habitat
+  rover: { modMaxH: 99, shelterMin: 999, cabin: 0.85 }, // the pressurised cabin is the shelter; its walls cut the crew dose a little
+};
+const RAD_NAME = ['LOW', 'MODERATE', 'HIGH'];
+const radState = { sc: 0 };
+const radSc = () => RAD.scenarios[radState.sc];
+const radCls = d => d >= RADR.high ? 2 : d >= RADR.mod ? 1 : 0;
+// mean Gale pressure of a weather scenario: the reference the RAD doses stand for (thicker air = less dose)
+const pRef = {};
+const galeP = id => { if (pRef[id] != null) return pRef[id]; const sc = WXG.scenarios.find(x => x.id === id) || WXG.scenarios[0];
+  return (pRef[id] = sc.ps_pa.reduce((a, v) => a + v, 0) / sc.ps_pa.length); };
+// the RAD hours are on Gale's local-time axis: read them at the same local time of this site (its timeline starts up to ~2 h apart)
+const radShift = () => { const l0 = wxSc().hours[0].lmst, g0 = RAD.lmst_start ?? l0; return ((l0 - g0 + 36) % 24) - 12; };
+// Injected SEP alert: the real 10 Sept 2017 event as Curiosity RAD measured it (dose rate above its pre-event level, from onset),
+// replayed from the moment the alert is injected, on top of the selected radiation scenario.
+const SEPP = (() => {
+  const s = RAD && RAD.scenarios.find(x => x.id === 'sep'); if (!s) return null;
+  const d = s.dose_e, pre = [...d.slice(0, 20)].sort((a, b) => a - b), base = pre[10];
+  let on = d.findIndex((v, i) => i >= 20 && v > base * 1.08); on = Math.max(0, on - 1);
+  const prof = d.slice(on).map(v => Math.max(0, v - base)), pk = prof.indexOf(Math.max(...prof));
+  let dur = prof.length - 1; while (dur > pk && prof[dur] < 1) dur--;    // hours until the excess falls below 1 µGy/h
+  return { base, prof, riseH: pk, durH: dur, peak: base + prof[pk], onsetSol: s.sol_start + Math.floor((on + (RAD.lmst_start ?? 0)) / 24) };
+})();
+let sepInj = null;                         // { atH: timeline hour of the injection }
+const sepExtra = h => { if (!sepInj || !SEPP || h < sepInj.atH) return 0;
+  const t = Math.min(h - sepInj.atH, SEPP.prof.length - 1), i = Math.min(SEPP.prof.length - 2, Math.floor(t)), f = t - i;
+  return SEPP.prof[i] + (SEPP.prof[i + 1] - SEPP.prof[i]) * f; };
+function radAt(h) {                       // dose rate (µGy/h) at hour h of the timeline, at this site's surface pressure
+  const extra = sepExtra(h), ps = wxAt(h).ps;
+  const S = radSc(), a = S.dose_e, n = a.length, hr = Math.min(Math.max(h + radShift(), 0), n - 1);
+  const i = Math.min(n - 2, Math.floor(hr)), f = hr - i, raw = a[i] + (a[i + 1] - a[i]) * f + extra;
+  const dose = raw * Math.pow(ps / galeP(wxSc().id), RADR.kP);   // this site's air column against Gale's: dose ∝ pressure^−0.29
+  return { dose, raw, cls: radCls(dose) };
+}
+// terrain shielding: the share of the sky each cell sees (horizon angles in 8 directions up to ~900 m), computed once
+let SHIELD = null;
+function shieldMap() {
+  if (SHIELD) return SHIELD;
+  const D = [1, 2, 3, 5, 8, 12, 18, 26, 38, 55], dirs = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]];
+  SHIELD = new Float32Array(N * N);
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+    const h0 = data.h[idx(i, j)]; let s2 = 0;
+    for (const [di, dj] of dirs) {
+      const step = Math.hypot(di, dj) * CELL; let t = 0;
+      for (const d of D) { const a = i + di * d, b = j + dj * d; if (a < 0 || a >= N || b < 0 || b >= N) break; t = Math.max(t, (data.h[idx(a, b)] - h0) / (d * step)); }
+      s2 += t * t / (1 + t * t);          // sin² of the horizon elevation
+    }
+    SHIELD[idx(i, j)] = 1 - RADR.fSky * (s2 / dirs.length);   // 1 = open plain; lower under cliffs and in canyons
+  }
+  return SHIELD;
+}
+const radPeak = (h0, h1) => { let p = 0; for (let h = h0; h <= h1 + 1e-6; h += 0.25) p = Math.max(p, radAt(h).dose); return p; };
+// dose along a route: cumulative crew dose (µGy), peak rate, and the longest time to the habitat along the loop
+function radAlong(b, pts, depH) {
+  const S = shieldMap(), T = b.time, cab = RADR[mode].cabin, cumR = [0];
+  let dose = 0, shelter = 0;
+  for (let n = 1; n < b.cumT.length; n++) {
+    const dt = b.cumT[n] - b.cumT[n - 1], p = pts[n] || pts[n - 1];
+    dose += radAt(depH + b.cumT[n - 1] / 3600).dose * S[cellAt(p.x, p.z)] * cab * dt / 3600; cumR.push(dose);
+    shelter = Math.max(shelter, Math.min(b.cumT[n], T - b.cumT[n]));   // back the way you came, or on round the loop
+  }
+  return { dose, peak: radPeak(depH, depH + T / 3600), shelter, cumR };
+}
+// ranking of departures: safety factor (capped at ×3) minus the EVA dose in units of 100 µGy
+const rankScore = e => Math.min(e.sf, 3) - (e.rad ? e.rad.dose / 100 : 0);
 // departure-time A* for the current stops: route chosen for the WORST weather of the expected EVA window, budget hour by hour
 function wxEvaluate(depH) {
   const M = WXR[mode], sup = supply(), base = routeFor(0, 0);
@@ -1902,12 +2081,25 @@ function wxEvaluate(depH) {
     if (mode === 'suit' && hours > MAX_EVA_H) reasons.push(`longer than ${MAX_EVA_H} h`);
   };
   if (R.fail) { rules(win0, 0); reasons.push('no safe route in these conditions');
+    if (RAD && radCls(radPeak(depH, depH + base.plan.b.time / 3600)) === 2) reasons.push('radiation HIGH (solar particle event)');
     return { depH, go: false, reasons, sf: 0, lim: '–', vis, wind, R, rerouted: true, win: win0, plan: null }; }
   const b = applyWeather(R.plan.b, depH, M), sb = applyWeather(R.straight.b, depH, M), win = wxWindow(depH, depH + b.time / 3600);
   rules(win, b.time / 3600);
+  let rad = null;
+  // flight rule: while an SEP alert is active no EVA starts or runs, even before the dose has risen (the flux keeps climbing for hours)
+  if (sepInj && SEPP && depH + b.time / 3600 >= sepInj.atH && depH <= sepInj.atH + SEPP.durH) reasons.push('SEP alert active — no EVA until the event passes');
+  if (RAD) {                                // three radiation levels: LOW = no limit, MODERATE = short EVA near shelter, HIGH = NO-GO
+    rad = radAlong(b, R.plan.pts, depH); rad.cls = radCls(rad.peak); b.cumR = rad.cumR;
+    const L = RADR[mode];
+    if (rad.cls === 2) reasons.push(`radiation ${rad.peak.toFixed(1)} µGy/h ≥ ${RADR.high} (HIGH: shelter)`);
+    else if (rad.cls === 1) {
+      if (b.time / 3600 > L.modMaxH) reasons.push(`radiation MODERATE: EVA over ${L.modMaxH} h`);
+      if (rad.shelter / 60 > L.shelterMin) reasons.push(`radiation MODERATE: ${Math.round(rad.shelter / 60)} min from shelter (max ${L.shelterMin})`);
+    }
+  }
   const sfO = sup.o2 / b.o2, sfE = sup.wh / b.wh, sf = Math.min(sfO, sfE);
   if (sf < SF_GO) reasons.push(`safety factor ×${sf.toFixed(2)} < ${SF_GO}`);
-  return { depH, go: !reasons.length, reasons, sf, lim: sfO < sfE ? 'O₂' : 'battery', vis, wind, R, rerouted: R.rerouted, win,
+  return { depH, go: !reasons.length, reasons, sf, lim: sfO < sfE ? 'O₂' : 'battery', vis, wind, R, rerouted: R.rerouted, win, rad,
     plan: { ...R.plan, b }, straight: { ...R.straight, b: sb } };
 }
 // every departure hour for the current stops (cached per stops; cleared when the scenario, limits or mode change)
@@ -1917,7 +2109,7 @@ function wxScanAll() {
   if (!wxScans.has(key)) { const a = []; for (let h = 0; h < wxN(); h++) a.push(wxEvaluate(h)); wxScans.set(key, a); }
   return wxScans.get(key);
 }
-function wxBest() { let best = null; for (const e of wxScanAll()) if (e.go && (!best || e.sf > best.sf + 1e-9)) best = e; return best ? best.depH : null; }
+function wxBest() { let best = null; for (const e of wxScanAll()) if (e.go && (!best || rankScore(e) > rankScore(best) + 1e-9)) best = e; return best ? best.depH : null; }
 function wxReset() { wxScans.clear(); }
 
 let basePlan = null, baseStraight = null, baseCost = null, baseTube = null, curEval = null;
@@ -1979,6 +2171,9 @@ function nogoReasons(ev, sf, lim, b) {
   if (b && b.blocked > 0) out.add('Rough terrain');
   for (const r of ev ? ev.reasons : []) {
     if (/route/.test(r)) out.add('Rough terrain');
+    else if (/SEP alert/.test(r)) out.add('SEP alert active');
+    else if (/radiation .*HIGH|radiation HIGH/.test(r)) out.add('Radiation HIGH');
+    else if (/radiation MODERATE/.test(r)) out.add(/shelter/.test(r) ? 'Radiation MODERATE: too far from shelter' : 'Radiation MODERATE: EVA too long');
     else if (/dust/.test(r)) out.add('Dust storm warning, high opacity');
     else if (/wind/.test(r)) out.add('High wind');
     else if (/daylight/.test(r)) out.add('Outside daylight');
@@ -2006,7 +2201,9 @@ function clearRoute() {
 // =================== simulation state (shared by preview + first-person) ===================
 const sim = { active: null, t: 0, base: { t: 0, o2: 0, wh: 0 }, aborted: false, sep: false, preview: false, lastStop: 0, ret: null, retClock: 0, arriveUntil: 0,
   running: false, resetAt: 0, leak: null, out: null };   // leak = injected suit leak / power fault; out = a reserve ran out (EVA failed)   // first person: time only runs after ▶ Start; resetAt = when to go back to the start state after returning home
+let abortTube = null;                    // the ABORT / SEP / storm return route drawn on the big map
 function resetSim() {
+  if (abortTube) { scene.remove(abortTube); abortTube.geometry.dispose(); abortTube = null; }
   sim.active = plan; sim.t = 0; sim.base = { t: 0, o2: 0, wh: 0 }; sim.aborted = false; sim.preview = false; sim.lastStop = 0; sim.ret = null; sim.retClock = 0; sim.leak = null; sim.out = null;
   crew.visible = false; set('previewBtn', '▶ Preview traverse'); set('trkP', '0%'); set('trkS', 'At habitat');
 }
@@ -2087,6 +2284,9 @@ document.getElementById('evaBtn').onclick = () => {
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
   fpStartState(); document.getElementById('arrive').style.display = 'none'; sim.arriveUntil = 0;
+  document.getElementById('sepMap').style.display = 'none'; if (abortTube) abortTube.visible = false;
+  document.getElementById('dustMap').style.display = 'none'; document.getElementById('dustHud').style.display = stormInj ? 'block' : 'none';
+  document.getElementById('wxHud').classList.toggle('stormOn', !!stormInj); document.getElementById('swx').classList.toggle('sepOn', !!sepInj);
   set('hL1', mode === 'suit' ? 'O₂ RESERVE' : 'BATTERY'); set('hL2', mode === 'suit' ? 'SUIT BATTERY' : 'CABIN O₂');
   fitHud();
 };
@@ -2123,6 +2323,9 @@ function exitFP() {
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
   if (baseTube) baseTube.visible = true;
+  if (abortTube) abortTube.visible = true;
+  document.getElementById('sepMap').style.display = sepInj ? 'block' : 'none';
+  document.getElementById('dustMap').style.display = stormInj ? 'block' : 'none'; document.getElementById('dustHud').style.display = 'none';
   if (layer !== 'wx') minMesh.visible = !!MIN && minOn.size > 0; else minMesh.visible = false;
   wxRender();                       // restore the weather haze / sunlight of the map view
 }
@@ -2176,6 +2379,12 @@ function fitHud() {
   const hl = document.getElementById('hLeft'), avail = hudCtl.getBoundingClientRect().top - 14 - hl.offsetTop, natural = hl.offsetHeight;
   const k = natural > 0 ? Math.max(0.6, Math.min(1, avail / natural)) : 1;
   hl.style.transform = k < 0.999 ? `scale(${k.toFixed(3)})` : '';
+  // on foot, the instruction line and the turn arrow sit above the timeline and buttons, never behind them (short screens)
+  const ins = document.getElementById('instr'), arr = document.getElementById('arrow'), need = innerHeight - hudCtl.getBoundingClientRect().top + 10;
+  if (mode === 'suit') {
+    ins.style.bottom = need > innerHeight * 0.15 ? `${need}px` : '';
+    arr.style.bottom = need + ins.offsetHeight + 6 > innerHeight * 0.23 ? `${need + ins.offsetHeight + 6}px` : '';
+  } else { ins.style.bottom = ''; arr.style.bottom = ''; }
 }
 addEventListener('resize', fitHud);
 scrubBar.addEventListener('keydown', e => {                             // keyboard: ← → 5 %, Home / End
@@ -2183,8 +2392,12 @@ scrubBar.addEventListener('keydown', e => {                             // keybo
   const to = e.key === 'ArrowLeft' ? f - 0.05 : e.key === 'ArrowRight' ? f + 0.05 : e.key === 'Home' ? 0 : e.key === 'End' ? 1 : null;
   if (to != null) { seekTo(to); e.preventDefault(); e.stopPropagation(); }
 });
-document.getElementById('sepBtn').onclick = () => { sim.sep = true; document.getElementById('sep').style.display = 'block';
-  set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)'; };
+// SEP button: the real RAD replay; with no radiation data (a custom site) the plain alert banner as before
+document.getElementById('sepBtn').onclick = () => {
+  if (RAD && SEPP) return triggerSEP();
+  sim.sep = true; document.getElementById('sep').style.display = 'block';
+  set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').style.borderColor = 'rgba(255,90,77,.9)';
+};
 // contingency scenario: suit O2 leak (on foot) / power fault (rover): an extra constant loss that alone would empty the reserve in LEAK_DRAIN_MIN
 document.getElementById('leakBtn').onclick = () => {
   if (!fp || !sim.active || sim.leak || sim.out) return;
@@ -2204,21 +2417,127 @@ function setArLine(P, colour) {
   arLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(P.pts.map(p => new THREE.Vector3(p.x, heightAt(p.x, p.z) + 0.25, p.z))), new THREE.LineBasicMaterial({ color: colour }));
   arLine.visible = fp; scene.add(arLine);
 }
-document.getElementById('abortBtn').onclick = () => {
-  if (!sim.active || sim.aborted || sim.out) return;
+// Re-plan from where the crew is now to the habitat (A* on the current, weather-aware cost map, then smoothed) and follow it,
+// in through the nearest airlock. Used by ABORT, the SEP alert and the dust storm, in the HUD and on the big map (Preview or a
+// scheduled mission). opt.weather: re-plan on the cost map of the weather from now (e.g. an injected dust storm) and walk it
+// with that weather; opt.again: allowed while already returning (a second alert re-plans from where the crew is).
+function rerouteHome(label, opt = {}) {
+  if (!sim.active || sim.out || (sim.aborted && !opt.again) || sim.t >= sim.active.b.time) return null;
   const st = stateAt(sim.active, sim.t), k = cellAt(st.p.x, st.p.z), here = [Math.floor(k / N), k % N];
-  const door = doorsToward(st.p.x, st.p.z)[0], path = astar(cost, here, door.cell); if (!path) { toast('No safe return route found!'); return; }
+  const hNow = wxState.dep + totals(st).t / 3600;                      // timeline hour now (departure + elapsed)
+  let C = cost, lim = costLimit ?? params[mode].limit, info = null;
+  if (opt.weather && WX) {                                              // the weather of the next 2 h decides the cost map (worst case)
+    const M = WXR[mode], win = wxWindow(hNow, hNow + 2);
+    const vis = win.tauMax >= M.tauVis[1] ? 2 : win.tauMax >= M.tauVis[0] ? 1 : 0, wind = win.windMax >= M.wind[1] ? 2 : win.windMax >= M.wind[0] ? 1 : 0;
+    info = { vis, wind, tau: win.tauMax, windMax: win.windMax, lim: params[mode].limit - M.visLim[vis], buf: M.visBuf[vis] * CELL };
+    if (vis || wind) {
+      const W = weatherCost(vis, wind); blockHabitat(W.cost);   // the way home in a storm does not cross the base either (the airlock doors stay open)
+      for (let di = -2; di <= 2; di++) for (let dj = -2; dj <= 2; dj++) { const a = here[0] + di, b = here[1] + dj; if (a >= 0 && a < N && b >= 0 && b < N) W.cost[idx(a, b)] = 1; }   // the crew must be able to start
+      C = W.cost; lim = W.limit;
+    }
+  }
+  const door = doorsToward(st.p.x, st.p.z)[0];
+  let path = astar(C, here, door.cell, lim);
+  if (!path && C !== cost) { path = astar(cost, here, door.cell); C = cost; if (info) info.fallback = true; }   // no storm-safe way: the normal one
+  if (!path) { toast('No safe return route found!'); return null; }
   // inside the habitat's own grid cell the way home is a single point: nothing to walk, so do not start an ABORT
-  // (this used to give NaN values and an instant "abort complete" with no way to continue)
-  if (path.length < 2) { toast('You are already at the habitat: nothing to abort'); return; }
+  if (path.length < 2) { toast('You are already at the habitat: nothing to abort'); return null; }
   sim.base = totals(st); sim.t = 0; sim.aborted = true; sim.lastStop = 0; if (sim.leak) sim.leak.t0 = 0;   // the leak loss so far is in base now
-  const smooth = smoothReturn(path, st.p);                              // straight shortcuts + rounded corners, starting exactly where the crew stands
+  const smooth = smoothReturn(path, st.p, C);                           // straight shortcuts + rounded corners, starting exactly where the crew stands
   smooth.push({ ...door.mouth });                                       // ... and ending at the airlock hatch
-  const P = { path, stopIdx: [0, smooth.length - 1], dwell: new Set(), stops: [null, 0], b: budgetPts(smooth, mode) };
+  let b = budgetPts(smooth, mode);
+  if (opt.weather && WX) b = applyWeather(b, hNow, WXR[mode]);          // slower in poor visibility and wind, heater hour by hour
+  const P = { path, stopIdx: [0, smooth.length - 1], dwell: new Set(), stops: [null, 0], b, info };
   P.pts = smooth.map(q => new THREE.Vector3(q.x, heightRaw(q.x, q.z) + 2.5, q.z));
+  if (RAD) { const r = radAlong(P.b, P.pts, hNow); P.b.cumR = r.cumR; P.radDose = r.dose; }   // dose on the way home (with an injected SEP, if any)
   sim.active = P; setArLine(P, 0xffb347);
-  toast(`ABORT: re-routed to habitat · ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}`);
-};
+  if (abortTube) { scene.remove(abortTube); abortTube.geometry.dispose(); }
+  abortTube = makeTube(smooth.map(q => new THREE.Vector3(q.x, heightAt(q.x, q.z) + 2.5, q.z)), 0xffb347); abortTube.visible = !fp;   // the return route on the big map
+  toast(`${label}: re-routed to habitat · ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}${P.radDose != null ? ` · ☢ ${P.radDose.toFixed(1)} µGy on the way` : ''}`);
+  return P;
+}
+document.getElementById('abortBtn').onclick = () => rerouteHome('ABORT');
+// SEP alert: replay the measured Sept 2017 event from now; if a traverse is under way, re-route home at once and follow the new route.
+// With no traverse running, the event is placed at the departure hour, so the plan shows what it would mean (NO-GO).
+const sepRunning = () => !!sim.active && !sim.out && (sim.t > 0 || sim.aborted) && sim.t < sim.active.b.time;
+function sepBannerHTML(P) {
+  const S = SEPP;
+  return '☢ SEP EVENT DETECTED — elevated proton flux<br><span style="font-size:12px">'
+    + (S ? `Alert at event onset (t+0) · Curiosity RAD profile of 10 Sept 2017: dose rate +${(S.peak - S.base).toFixed(1)} µGy/h within ${S.riseH} h (${S.base.toFixed(0)} → ${S.peak.toFixed(0)} µGy/h)<br>` : '')
+    + (P ? `Shelter recommended · re-routed to habitat: ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}${P.radDose != null ? ` · ☢ ${P.radDose.toFixed(1)} µGy on the way` : ''}`
+         : 'Shelter recommended · press ABORT to route home') + '</span>';
+}
+function triggerSEP() {
+  if (!RAD || !SEPP) { toast('No radiation data at this site'); return; }
+  const running = sepRunning();
+  const hNow = running ? wxState.dep + totals(stateAt(sim.active, sim.t)).t / 3600 : wxState.dep;
+  sepInj = { atH: hNow }; sim.sep = true; wxReset();
+  let P = null;
+  if (running) {
+    P = rerouteHome('SEP ALERT', { again: true, weather: !!stormInj }); if (!fp) { sim.preview = true; crew.visible = true; set('previewBtn', '⏸ Pause preview'); }
+    if (P) {                                  // the badge follows the traverse on the map: no longer GO, crew returning
+      document.getElementById('gonogo').className = 'nogo'; set('gnTxt', 'NO-GO');
+      document.getElementById('gnWhy').innerHTML = `☢ SEP alert · returning to habitat<br>${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}${P.radDose != null ? ` · ${P.radDose.toFixed(1)} µGy on the way` : ''}`;
+    }
+  }
+  else if (basePlan && !fp) applyPlan();                                // no traverse: show what the event does to the plan
+  for (const id of ['sep', 'sepMap']) { const el = document.getElementById(id); el.innerHTML = sepBannerHTML(P); }
+  document.getElementById('sep').style.display = fp ? 'block' : 'none';
+  document.getElementById('sepMap').style.display = fp ? 'none' : 'block';
+  set('swxTxt', '☢ SEP ALERT · proton flux elevated'); document.getElementById('swx').classList.add('sepOn');
+  sepButtons();
+  if (!running && !fp) toast(`SEP alert placed at ${wxWhen(hNow)} LMST — start a traverse (Preview or a scheduled mission) to see the re-route`);
+}
+function clearSEP() {
+  sepInj = null; sim.sep = false; wxReset();
+  document.getElementById('swx').classList.remove('sepOn');
+  document.getElementById('sep').style.display = 'none'; document.getElementById('sepMap').style.display = 'none';
+  if (abortTube && !sepRunning() && !sim.aborted) { scene.remove(abortTube); abortTube.geometry.dispose(); abortTube = null; }
+  if (basePlan && !sim.preview && !sim.aborted) applyPlan();
+  sepButtons();
+}
+function sepButtons() { const b = document.getElementById('sepMapBtn'); if (b) b.textContent = sepInj ? '✕ Clear SEP alert' : '☢ Inject SEP alert (RAD, Sept 2017)'; }
+// Dust storm: the same idea as the SEP alert, with the real weather of the 2007 global dust storm (EMARS MY28) from now.
+function stormBannerHTML(P, hNow) {
+  const before = wxAtS(wxSc(), hNow), after = stormSc() ? wxAtS(stormSc(), hNow + STORM_RAMP_H) : before, I = P && P.info;
+  return '🌪 DUST STORM DETECTED — visibility dropping<br><span style="font-size:12px">'
+    + `Storm front at t+0 · EMARS 2007 global dust storm (MY28) conditions within ${STORM_RAMP_H} h: dust τ ${before.tau.toFixed(1)} → ${after.tau.toFixed(1)} · wind ${after.wind.toFixed(0)} m/s · visibility ~${after.vis.toFixed(0)} km<br>`
+    + (P ? `Shelter recommended · storm route to habitat: ${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)}`
+           + (I && !I.fallback && (I.vis || I.wind) ? ` (slope ≤ ${I.lim}°${I.buf ? `, ${I.buf} m from hazards` : ''}${I.wind ? ', exposed ridges avoided' : ''})` : '')
+           + (I && I.fallback ? ' (no storm-safe route: normal route)' : '')
+         : 'Shelter recommended · press ABORT to route home') + '</span>';
+}
+function triggerStorm() {
+  if (!WX || !stormSc()) { toast('No weather data at this site'); return; }
+  const running = sepRunning();
+  const hNow = running ? wxState.dep + totals(stateAt(sim.active, sim.t)).t / 3600 : wxState.dep;
+  stormInj = { atH: hNow }; wxReset();
+  let P = null;
+  if (running) {
+    P = rerouteHome('DUST STORM', { again: true, weather: true }); if (!fp) { sim.preview = true; crew.visible = true; set('previewBtn', '⏸ Pause preview'); }
+    if (P) {
+      document.getElementById('gonogo').className = 'nogo'; set('gnTxt', 'NO-GO');
+      document.getElementById('gnWhy').innerHTML = `🌪 Dust storm · returning to habitat<br>${(P.b.dist / 1000).toFixed(2)} km · ${fmtT(P.b.time)} on the storm route`;
+    }
+    applyWxVisual(hNow + STORM_RAMP_H);                                  // the map turns hazy with the storm
+  }
+  else if (basePlan && !fp) applyPlan();                                // no traverse: show what the storm does to the plan
+  for (const id of ['dustHud', 'dustMap']) document.getElementById(id).innerHTML = stormBannerHTML(P, hNow);
+  document.getElementById('dustHud').style.display = fp ? 'block' : 'none';
+  document.getElementById('dustMap').style.display = fp ? 'none' : 'block';
+  document.getElementById('wxHud').classList.add('stormOn');
+  stormButtons();
+  if (!running && !fp) toast(`Dust storm placed at ${wxWhen(hNow)} LMST — start a traverse (Preview or a scheduled mission) to see the re-route`);
+}
+function clearStorm() {
+  stormInj = null; wxReset();
+  document.getElementById('wxHud').classList.remove('stormOn');
+  document.getElementById('dustHud').style.display = 'none'; document.getElementById('dustMap').style.display = 'none';
+  if (basePlan && !sim.preview && !sim.aborted) applyPlan(); else applyWxVisual();
+  stormButtons();
+}
+function stormButtons() { const b = document.getElementById('dustMapBtn'); if (b) b.textContent = stormInj ? '✕ Clear dust storm' : '🌪 Inject dust storm (EMARS 2007)'; }
+document.getElementById('dustBtn').onclick = () => (stormInj ? clearStorm() : triggerStorm());
 function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = 'none', 3500); }
 
 // =================== mouse look (first-person) ===================
@@ -2418,6 +2737,8 @@ function showArrive(a, b) { const el = document.getElementById('arrive'); el.inn
 function updateMapPreview(dt) {
   if (!sim.preview || !sim.active) return;
   const r = advance(dt, 400); if (!r) return; const { st } = r;
+  if (stormInj && wxOn() && performance.now() - (updateMapPreview.hz || 0) > 250) {   // map haze follows the injected storm as the crew walks
+    updateMapPreview.hz = performance.now(); applyWxVisual(wxState.dep + (sim.base.t + sim.t) / 3600); }
   crew.position.copy(st.p).setY(heightAt(st.p.x, st.p.z) + 6 * SC); ring.scale.setScalar(1 + 0.4 * Math.sin(performance.now() / 200));
   const P = sim.active, prog = sim.t / P.b.time;
   set('trkP', `${Math.round(prog * 100)}%`);
@@ -2540,6 +2861,16 @@ function updateFP(dt) {
     if (!done && w.wind >= WR.windNoGo) warn.push(`💨 Wind ${w.wind.toFixed(0)} m/s over the limit — seek shelter`);
     if (!done && WR.daylight && w.lmst > WXR.daylight[1] - 0.75 && w.lmst < 23) warn.push(`🌇 Sunset ${w.lmst >= WXR.daylight[1] ? 'passed' : 'soon'} — head home`);
     document.getElementById('wxHud').style.borderColor = (w.tau >= WR.tauNoGo || w.wind >= WR.windNoGo) ? 'rgba(255,90,77,.9)' : '';
+    if (RAD) {                      // radiation of the current hour (Curiosity RAD scenario) × the terrain shielding where the crew stands
+      const r = radAt(wxState.dep + tot.t / 3600), loc = r.dose * shieldMap()[cellAt(p.x, p.z)] * RADR[mode].cabin;
+      const got = P.b.cumR ? P.b.cumR[Math.max(0, st.n - 1)] : 0;
+      document.getElementById('swxTxt').innerHTML = `${sepInj ? '☢ <b>SEP ALERT</b> · proton flux elevated<br>' : ''}☢ ${loc.toFixed(1)} µGy/h · <b>${RAD_NAME[r.cls]}</b><br>EVA dose so far ${got.toFixed(0)} µGy`;
+      document.getElementById('swx').classList.toggle('sepOn', !!sepInj);
+      set('swxSrc', `Curiosity RAD · ${radSc().label}`);
+      document.getElementById('swx').style.borderColor = r.cls === 2 ? 'rgba(255,90,77,.9)' : r.cls === 1 ? 'rgba(255,179,71,.9)' : '';
+      if (r.cls === 2 && !sim.aborted) { const sb = document.getElementById('sep'); if (sb.style.display !== 'block') sb.innerHTML = sepBannerHTML(null); sb.style.display = 'block'; if (!done) warn.push('☢ Radiation HIGH — return to shelter'); }
+      else if (r.cls === 1 && !done && mode === 'suit') warn.push('☢ Radiation MODERATE — stay close to the habitat');
+    }
   }
   set('hWarn', warn.join('   '));
   const spare = (() => { if (!sim.leak) return ''; const L = sim.leak, left = (L.res === 'o2' ? sup.o2 - tot.o2 : sup.wh - tot.wh), base = P.b.time > 0 ? P.b[L.res] / P.b.time : 0, m = Math.max(0, Math.floor(left / (L.rate + base) / 60));
@@ -2765,6 +3096,21 @@ function setScenario(k) {
   }
   if (basePlan) applyPlan(); else wxRender();
 }
+function renderRadSeg() {                 // radiation scenario buttons (Radiation layer menu and mission planner)
+  if (!RAD) return;
+  const SHORT = { quiet: 'Quiet', elevated: 'Elevated', sep: 'Solar event' };
+  document.querySelectorAll('.radSeg').forEach(seg => {
+    seg.innerHTML = RAD.scenarios.map((s, k) => `<button data-k="${k}" class="${k === radState.sc ? 'on' : ''}" title="${s.label}: ${s.note}">${SHORT[s.id] || s.label}</button>`).join('');
+    seg.querySelectorAll('button').forEach(b => b.onclick = () => setRadScenario(+b.dataset.k));
+  });
+}
+function setRadScenario(k) {
+  radState.sc = k; wxReset(); renderRadSeg();
+  if (planning()) { buildPlanner(); return; }
+  if (sciRouteKey === 'science' && basePlan) { const best = wxBest(); if (best != null) wxState.dep = best; else toast(`${radSc().label}: no GO departure in these 3 sols`); }
+  if (basePlan) applyPlan(); else { paint(); wxRender(); }
+}
+function radTag(c) { return `<span class="radLv l${c}">${RAD_NAME[c]}</span>`; }
 function wxRender() {
   if (!WX) return;
   $('wxHud').style.display = wxOn() ? '' : 'none';
@@ -2774,6 +3120,12 @@ function wxRender() {
   set('wxDepTxt', `${wxWhen(wxState.dep)} LMST`);
   $('wxTauLim').value = M.tauNoGo; set('wxTauLimTxt', M.tauNoGo.toFixed(1));
   $('wxWindLim').value = M.windNoGo; set('wxWindLimTxt', `${M.windNoGo} m/s`);
+  if (RAD) {
+    $('radMod').value = RADR.mod; set('radModTxt', `${RADR.mod} µGy/h`); $('radHigh').value = RADR.high; set('radHighTxt', `${RADR.high} µGy/h`);
+    const r = radAt(wxState.dep);
+    $('envNow').innerHTML = `${wxWhen(wxState.dep)} LMST · 🌪 τ ${w.tau.toFixed(2)} · ${w.wind.toFixed(0)} m/s · ${w.tair.toFixed(0)} °C<br>`
+      + `☢ ${r.dose.toFixed(1)} µGy/h ${radTag(r.cls)} · ${radSc().label}${SITE_ID === 'gale' ? '' : ' · moved from Gale by pressure'}`;
+  }
 }
 // map view: haze from dust, sunlight from local time and dust (display only)
 const hemiLight = scene.children.find(o => o.isHemisphereLight);
@@ -2784,10 +3136,10 @@ function sunDir(w) {
   const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) + Math.PI;   // from north, clockwise
   return { el, v: new THREE.Vector3(Math.cos(el) * Math.sin(az), Math.sin(el), -Math.cos(el) * Math.cos(az)) };
 }
-function applyWxVisual() {
+function applyWxVisual(h = wxState.dep) {
   if (fp) return;
   if (!wxOn()) { scene.fog = null; scene.background = SPACE_BG; sun.position.set(-1200, 900, -600); sun.intensity = 2.2; if (hemiLight) hemiLight.intensity = 0.9; return; }
-  const w = wxAt(wxState.dep), s = sunDir(w), day = Math.max(0, Math.sin(s.el));
+  const w = wxAt(h), s = sunDir(w), day = Math.max(0, Math.sin(s.el));
   sun.position.copy(s.v.clone().multiplyScalar(2000)); if (s.el < 0.05) sun.position.y = 100;
   sun.intensity = 0.3 + 1.9 * Math.sqrt(day) * Math.exp(-0.35 * w.tau / Math.max(0.2, day));
   if (hemiLight) hemiLight.intensity = 0.35 + 0.55 * Math.sqrt(day);
@@ -2805,10 +3157,21 @@ if (WX) {
   const limit = (k, v) => { WXR[mode][k] = v; wxReset(); if (planning()) buildPlanner(); else if (basePlan) applyPlan(); else wxRender(); };
   $('wxTauLim').oninput = e => limit('tauNoGo', +e.target.value);
   $('wxWindLim').oninput = e => limit('windNoGo', +e.target.value);
-} else { $('wxLayerBtn').style.display = 'none'; $('toPlan').style.display = 'none';
-  $('navPlan').disabled = true; $('navPlan').querySelector('small').textContent = 'Needs the weather data (weather_gale.json)'; }
-// entering the Weather layer starts at the best GO departure of the current route
-document.getElementById('wxLayerBtn').addEventListener('click', () => {
+  if (RAD) {
+    renderRadSeg();
+    const radLimit = (k, v) => {             // keep MODERATE below HIGH
+      RADR[k] = v; if (RADR.mod >= RADR.high) { if (k === 'mod') RADR.high = RADR.mod + 0.5; else RADR.mod = RADR.high - 0.5; }
+      wxReset(); if (planning()) buildPlanner(); else if (basePlan) applyPlan(); else { paint(); wxRender(); }
+    };
+    $('sepMapBtn').onclick = () => (sepInj ? clearSEP() : triggerSEP());
+    $('radMod').oninput = e => radLimit('mod', +e.target.value);
+    $('radHigh').oninput = e => radLimit('high', +e.target.value);
+  } else $('radLayerBtn').style.display = 'none';
+  $('dustMapBtn').onclick = () => (stormInj ? clearStorm() : triggerStorm());
+} else { $('wxLayerBtn').style.display = 'none'; $('radLayerBtn').style.display = 'none'; $('dustBtn').style.display = 'none'; $('toPlan').style.display = 'none';
+  $('navPlan').disabled = true; $('navPlan').querySelector('small').textContent = 'No weather data for this site'; }
+// entering the Weather or Radiation layer starts at the best GO departure of the current route
+for (const id of ['wxLayerBtn', 'radLayerBtn']) document.getElementById(id).addEventListener('click', () => {
   if (!WX || sciRouteKey !== 'science' || !basePlan || wxState.touched) return;
   wxState.touched = true; const b = wxBest(); if (b != null && b !== wxState.dep) wxSetDep(b);
 });
@@ -2832,7 +3195,7 @@ function withStops(sites, fn) {                   // evaluate with other stops, 
 }
 function topDeps(scan, n = 5, after = -1, gap = 2) {   // best GO departures, at least `gap` hours apart
   const out = [];
-  for (const e of scan.filter(e => e.go && e.depH >= after).sort((a, b) => b.sf - a.sf)) {
+  for (const e of scan.filter(e => e.go && e.depH >= after).sort((a, b) => rankScore(b) - rankScore(a))) {   // safety factor and radiation dose
     if (out.every(o => Math.abs(o.depH - e.depH) >= gap)) out.push(e);
     if (out.length >= n) break;
   }
@@ -2841,7 +3204,8 @@ function topDeps(scan, n = 5, after = -1, gap = 2) {   // best GO departures, at
 function summary(e) {
   const sup = supply(), b = e.plan ? e.plan.b : null;
   return { go: e.go, sf: e.sf, depH: e.depH, time: b ? b.time : 0, dist: b ? b.dist : 0, o2: b ? 100 * b.o2 / sup.o2 : 0, wh: b ? 100 * b.wh / sup.wh : 0,
-    heat: b ? b.heatWh : 0, rerouted: e.rerouted, reasons: e.reasons, tau: e.win ? e.win.tauMax : 0, wind: e.win ? e.win.windMax : 0, tmin: e.win ? e.win.tMin : 0, lim: e.lim };
+    heat: b ? b.heatWh : 0, rerouted: e.rerouted, reasons: e.reasons, tau: e.win ? e.win.tauMax : 0, wind: e.win ? e.win.windMax : 0, tmin: e.win ? e.win.tMin : 0, lim: e.lim,
+    radDose: e.rad ? e.rad.dose : null, radPeak: e.rad ? e.rad.peak : null, radCls: e.rad ? e.rad.cls : null, shelterMin: e.rad ? e.rad.shelter / 60 : null };
 }
 const sortie = (sites, e) => ({ sites: sites.map(siteLite), depH: e.depH, s: summary(e) });
 function setModeQuiet(m) {                        // switch the travel mode without re-planning (the caller recomputes)
@@ -2859,7 +3223,7 @@ function buildPlanner() {
     const scanOf = sites => withStops(sites, () => wxScanAll());
     const both = B ? [A, B] : [A], full = scanOf(both), top = topDeps(full, 5);
     // departures table: the best GO departures; if none, the best NO-GO hours in daylight, with their reasons
-    MP.deps = top.length ? top : full.filter(e => e.plan && !(e.win && e.win.dark)).sort((a, b) => b.sf - a.sf).slice(0, 3);
+    MP.deps = top.length ? top : full.filter(e => e.plan && !(e.win && e.win.dark)).sort((a, b) => rankScore(b) - rankScore(a)).slice(0, 3);
     MP.depSites = both;
     const M0 = mode, mName = m => m === 'suit' ? 'EVA' : 'drive';
     const add = o => MP.opts.push({ mode: M0, ...o });
@@ -2887,7 +3251,7 @@ function buildPlanner() {
     MP.opts = MP.opts.filter((o, i, a) => a.findIndex(p => p.title === o.title && p.mode === o.mode && p.sorties[0].depH === o.sorties[0].depH) === i).slice(0, 5);
     MP.opts.forEach(o => o.allGo = o.sorties.every(s => s.s.go));
     // recommended: the safest complete option in this travel mode (one EVA, then split), then the rover, then a single site
-    const minSf = o => Math.min(...o.sorties.map(s => s.s.sf)), ok = MP.opts.filter(o => o.allGo);
+    const minSf = o => Math.min(...o.sorties.map(s => Math.min(s.s.sf, 3) - (s.s.radDose || 0) / 100)), ok = MP.opts.filter(o => o.allGo);   // same ranking as the departures
     const pool = [o => o.mode === M0 && o.kind === 'one', o => o.mode === M0 && o.kind === 'split', o => o.kind !== 'only', () => true]
       .map(f => ok.filter(f)).find(p => p.length) || [];
     const rec = pool.sort((a, b) => minSf(b) - minSf(a))[0]; if (rec) rec.rec = true;
@@ -2905,19 +3269,24 @@ function sortieLine(s, k, n) {
   const back = s.depH + s.s.time / 3600, sites = s.sites.map(x => x.name).join(' → ');
   return `<b>${n > 1 ? `EVA ${k + 1} · ` : ''}${wxWhen(s.depH)} → ${s.s.time ? fmtClock((wxAt(back).lmst) * 3600) : '–'} LMST</b> · Habitat → ${sites} → Habitat`
     + `<small>${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · O₂ ${s.s.o2.toFixed(0)}% · battery ${s.s.wh.toFixed(0)}% · ×${s.s.sf.toFixed(2)} ${s.s.go ? '<span class="st go">GO</span>' : '<span class="st nogo">NO-GO</span>'}</small>`
-    + `<small>🌪 τ ${s.s.tau.toFixed(1)} · wind ${s.s.wind.toFixed(0)} m/s · min ${s.s.tmin.toFixed(0)} °C${s.s.rerouted ? ' · weather re-route' : ''}${s.s.heat > 0.5 ? ` · heater ${s.s.heat.toFixed(0)} Wh` : ''}${s.s.reasons.length ? ` · ⛔ ${s.s.reasons.join(', ')}` : ''}</small>`;
+    + `<small>🌪 τ ${s.s.tau.toFixed(1)} · wind ${s.s.wind.toFixed(0)} m/s · min ${s.s.tmin.toFixed(0)} °C${s.s.rerouted ? ' · weather re-route' : ''}${s.s.heat > 0.5 ? ` · heater ${s.s.heat.toFixed(0)} Wh` : ''}</small>`
+    + (s.s.radDose != null ? `<small>☢ peak ${s.s.radPeak.toFixed(1)} µGy/h ${radTag(s.s.radCls)} · EVA dose ${s.s.radDose.toFixed(0)} µGy · farthest ${Math.round(s.s.shelterMin)} min from shelter</small>` : '')
+    + (s.s.reasons.length ? `<small>⛔ ${s.s.reasons.join(', ')}</small>` : '');
 }
 function renderPlanner(busy = false) {
   const S = MP.sites, objs = sciPickText();
   $('planLead').innerHTML = !S.length ? 'Pick objectives in Science Objectives first.'
-    : `Sites for <b>${objs}</b>: ${S.map(s => `${s.name} (value ${Math.round(s.V * 100)})`).join(', ')} · ${MODES[mode].name}. Every departure hour of the scenario is checked with the weather-aware route; pick an option, check the badge, then <b>Confirm</b>.`;
+    : `<div class="lg"><span>Objective${sciPick.size > 1 ? 's' : ''}</span><b>${objs}</b>`
+      + `<span>Site${S.length > 1 ? 's' : ''}</span><b>${S.map(s => `${s.name.replace(/^Site /, '')} (${Math.round(s.V * 100)})`).join(' · ')}</b>`
+      + `<span>Travel mode</span><b>${MODES[mode].name.replace(/\s*\((.*)\)\s*$/, ' · $1')}</b></div>`
+      + 'Choose a departure time based on weather conditions.<br>Check the GO / NO-GO status, then Confirm.';
   if (busy) { $('planDeps').innerHTML = '<div class="small">Planning… (checking 72 departure hours)</div>'; $('planOpts').innerHTML = ''; $('planNote').textContent = ''; return; }
   const both = MP.depSites || [];
   set('planDepHdr', both.length > 1 ? `Best departures · Habitat → ${both[0].name} → ${both[1].name} → Habitat` : both.length ? `Best departures · Habitat → ${both[0].name} → Habitat` : 'Best departures');
   $('planDeps').innerHTML = MP.deps.length
-    ? `<table class="deps"><tr><th>Depart</th><th>Back</th><th>Time</th><th>Safety</th><th></th></tr>${MP.deps.map((e, i) => {
+    ? `<table class="deps"><tr><th>Depart</th><th>Back</th><th>Time</th><th>Safety</th>${RAD ? '<th>☢ Dose</th>' : ''}<th></th></tr>${MP.deps.map((e, i) => {
         const b = e.plan ? e.plan.b.time : 0, back = wxAt(e.depH + b / 3600);
-        return `<tr class="row" data-i="${i}" title="${e.reasons.join(' · ') || 'GO'}"><td>${wxWhen(e.depH)}</td><td>${b ? fmtClock(back.lmst * 3600) : '–'}</td><td>${b ? fmtT(b) : '–'}</td><td>×${e.sf.toFixed(2)}</td><td><span class="st ${e.go ? 'go' : 'nogo'}">${e.go ? 'GO' : 'NO-GO'}</span></td></tr>`; }).join('')}</table>`
+        return `<tr class="row" data-i="${i}" title="${e.reasons.join(' · ') || 'GO'}"><td>${wxWhen(e.depH)}</td><td>${b ? fmtClock(back.lmst * 3600) : '–'}</td><td>${b ? fmtT(b) : '–'}</td><td>×${e.sf.toFixed(2)}</td>${RAD ? `<td class="ds">${e.rad ? `${e.rad.dose.toFixed(0)} µGy ${radTag(e.rad.cls)}` : '–'}</td>` : ''}<td><span class="st ${e.go ? 'go' : 'nogo'}">${e.go ? 'GO' : 'NO-GO'}</span></td></tr>`; }).join('')}</table>`
     : '<div class="small">No departure to show.</div>';
   $('planDeps').querySelectorAll('tr.row').forEach(tr => tr.onclick = () => {   // a departure row = the one-EVA option at that hour
     const e = MP.deps[+tr.dataset.i]; let i = MP.opts.findIndex(o => o.kind === 'one' && o.sorties[0].depH === e.depH);
@@ -2929,7 +3298,7 @@ function renderPlanner(busy = false) {
       ${o.sorties.map((s, k) => `<div class="sortie${i === MP.sel && k === MP.sortie ? ' on' : ''}" data-k="${k}">${sortieLine(s, k, o.sorties.length)}</div>`).join('')}</div>`).join('')
     : '<div class="small">No GO mission option in this scenario. Try another weather scenario, the rover, or fewer objectives.</div>';
   $('planOpts').querySelectorAll('.ocard').forEach(c => c.onclick = e => { const sEl = e.target.closest('.sortie'); selectOption(+c.dataset.i, sEl ? +sEl.dataset.k : 0); });
-  $('planNote').textContent = (MP.note ? MP.note + ' ' : '') + `Two EVAs are at least ${REST_H} h apart (crew turnaround). Times are local mean solar time at Gale.`;
+  $('planNote').textContent = (MP.note ? MP.note + ' ' : '') + `${RAD ? 'Departures are ranked by safety factor (capped at ×3) minus the EVA radiation dose per 100 µGy. ' : ''}Two EVAs are at least ${REST_H} h apart (crew turnaround). Times are local mean solar time at ${SITE.name}.`;
 }
 // show an option's EVA on the map: its stops, its departure hour, the Weather layer
 function selectOption(i, k = 0) {
@@ -2938,7 +3307,7 @@ function selectOption(i, k = 0) {
   setModeQuiet(o.mode || mode);                   // a rover option switches the travel mode
   stopsFrom(s.sites); sciRouteKey = 'science'; placeWaypoints(); fillStops();
   wxState.dep = s.depH; wxState.touched = true;
-  if (layer !== 'wx') setLayer('wx', false);
+  if (!wxOn()) setLayer('wx', false);
   recompute();
   set('stopSrc', `Mission option ${i + 1}${o.sorties.length > 1 ? ` · EVA ${k + 1} of ${o.sorties.length}` : ''} · ${o.title}`);
   renderPlanner();
@@ -2950,7 +3319,7 @@ function planConfirmState() {
   let why = '';
   if (!o) why = 'Pick a mission option to confirm.';
   else if (!o.allGo) why = 'This option has a NO-GO EVA: pick a GO option.';
-  else if (!curEval || wxState.dep !== s.depH || layer !== 'wx') why = 'The map no longer shows the selected option: click it again.';
+  else if (!curEval || wxState.dep !== s.depH || !wxOn()) why ='The map no longer shows the selected option: click it again.';
   else if (!curEval.go) why = 'The badge shows NO-GO: the mission cannot be confirmed.';
   $('confirmBtn').disabled = !!why; $('confirmWhy').textContent = why;
 }
@@ -2960,12 +3329,13 @@ const saveMissions = a => { try { localStorage.setItem(SKEY, JSON.stringify(a));
 $('confirmBtn').onclick = () => {
   planConfirmState(); if ($('confirmBtn').disabled) return;
   const o = MP.opts[MP.sel], list = loadMissions(), M = WXR[mode];
-  const sig = x => `${x.mode}|${x.scenario.k}|${x.sorties.map(s => `${s.depH}:${s.sites.map(q => `${Math.round(q.x)},${Math.round(q.y)}`).join(';')}`).join('/')}`;
-  const dupe = list.find(m => sig(m) === sig({ mode, scenario: { k: wxState.sc }, sorties: o.sorties }));
+  const sig = x => `${x.site || 'gale'}|${x.mode}|${x.scenario.k}|${x.radK ?? (x.radiation ? x.radiation.k : -1)}|${x.sorties.map(s => `${s.depH}:${s.sites.map(q => `${Math.round(q.x)},${Math.round(q.y)}`).join(';')}`).join('/')}`;
+  const dupe = list.find(m => sig(m) === sig({ site: SITE_ID, mode, scenario: { k: wxState.sc }, radK: RAD ? radState.sc : -1, sorties: o.sorties }));
   if (dupe) { toast(`Already scheduled as ${dupe.name}`); return; }
-  const m = { id: Date.now().toString(36), name: `MSN-${String(list.length + 1).padStart(2, '0')}`, savedAt: new Date().toISOString(),
+  const m = { id: Date.now().toString(36), name: `MSN-${String(list.length + 1).padStart(2, '0')}`, savedAt: new Date().toISOString(), site: SITE_ID, siteName: SITE.name,
     mode, modeName: MODES[mode].name, scenario: { k: wxState.sc, id: wxSc().id, label: wxSc().label, my: wxSc().mars_year }, dustX: wxState.dustX,
     limits: { tau: M.tauNoGo, wind: M.windNoGo }, objectives: [...sciPick], objText: sciPickText(), title: o.title,
+    radiation: RAD ? { k: radState.sc, id: radSc().id, label: radSc().label, mod: RADR.mod, high: RADR.high } : null,
     sorties: o.sorties.map(s => ({ sites: s.sites, depH: s.depH, s: s.s })) };
   list.push(m); if (!saveMissions(list)) return;
   renderSched(); toast(`✓ ${m.name} confirmed · saved under SCHEDULED`);
@@ -2983,19 +3353,20 @@ $('planBack').onclick = () => openSection('science');
 // =================== SCHEDULED MISSIONS: saved in this browser, replayed on the map ===================
 let schedSel = null;                              // { id, k } of the mission / EVA on the map
 function renderSched() {
-  const list = loadMissions(), menu = $('schedMenu'), box = $('schedList');
+  const all = loadMissions(), list = all.filter(m => (m.site || 'gale') === SITE_ID), other = all.length - list.length, menu = $('schedMenu'), box = $('schedList');   // a mission belongs to the map it was planned on (older saves had no site: Gale)
   set('schedNavBtn', `MISSIONS${list.length ? ` (${list.length})` : ''}`); $('schedNavBtn').insertAdjacentHTML('beforeend', '<span class="car">▼</span>');
-  menu.innerHTML = list.length ? list.map(m => `<button class="mi" data-id="${m.id}">${m.name} · ${m.objText}<small>${wxWhen0(m)} · ${m.sorties.length > 1 ? `${m.sorties.length} EVAs` : 'one EVA'} · ${m.modeName} · ${m.scenario.label}</small></button>`).join('')
+  menu.innerHTML = list.length ? list.map(m => `<button class="mi" data-id="${m.id}">${m.name} · ${m.objText}<small>${wxWhen0(m)} · ${m.sorties.length > 1 ? `${m.sorties.length} EVAs` : 'one EVA'} · ${m.modeName} · ${m.scenario.label}${m.radiation ? ` · ☢ ${m.radiation.label}` : ''}</small></button>`).join('')
       + '<button class="mi" data-all="1">All scheduled missions…</button>'
     : '<div class="empty">No confirmed missions yet.<br>Science Objectives → Next → pick an option → Confirm.</div><button class="mi" data-all="1">Open scheduled missions</button>';
   menu.querySelectorAll('.mi').forEach(b => b.onclick = () => { closeMenus(); if (b.dataset.all) openSection('scheduled'); else playMission(b.dataset.id, 0); });
   box.innerHTML = list.length ? list.map(m => `<div class="mcard${schedSel && schedSel.id === m.id ? ' sel' : ''}">
       <div class="mh"><span>${m.name} · ${m.title}</span><span class="st go">CONFIRMED</span></div>
-      <div class="mm">${m.objText} · ${m.modeName} · ${m.scenario.label} (MY${m.scenario.my}) · saved ${new Date(m.savedAt).toLocaleString()}</div>
-      ${m.sorties.map((s, k) => `<div class="mm">${m.sorties.length > 1 ? `EVA ${k + 1}: ` : ''}${wxWhenM(m, s.depH)} LMST · Habitat → ${s.sites.map(x => x.name).join(' → ')} → Habitat · ${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · ×${s.s.sf.toFixed(2)}</div>`).join('')}
+      <div class="mm">${m.siteName || SITE.name} · ${m.objText} · ${m.modeName} · ${m.scenario.label} (MY${m.scenario.my})${m.radiation ? ` · ☢ ${m.radiation.label}` : ''} · saved ${new Date(m.savedAt).toLocaleString()}</div>
+      ${m.sorties.map((s, k) => `<div class="mm">${m.sorties.length > 1 ? `EVA ${k + 1}: ` : ''}${wxWhenM(m, s.depH)} LMST · Habitat → ${s.sites.map(x => x.name).join(' → ')} → Habitat · ${(s.s.dist / 1000).toFixed(2)} km · ${fmtT(s.s.time)} · ×${s.s.sf.toFixed(2)}${s.s.radDose != null ? ` · ☢ ${s.s.radDose.toFixed(0)} µGy` : ''}</div>`).join('')}
       <div class="btns">${m.sorties.map((s, k) => `<button class="btn" data-play="${m.id}" data-k="${k}">▶ ${m.sorties.length > 1 ? `EVA ${k + 1}` : 'Simulate'}</button>`).join('')}
         <button class="btn" data-fp="${m.id}">🧑‍🚀 First-person</button><button class="btn del" data-del="${m.id}">🗑 Delete</button></div></div>`).join('')
-    : '<div class="small" style="margin-top:10px">No confirmed missions yet. Pick objectives in Science Objectives, press Next, pick a GO option and press Confirm.</div>';
+    : '<div class="small" style="margin-top:10px">No confirmed missions at this site yet. Pick objectives in Science Objectives, press Next, pick a GO option and press Confirm.</div>';
+  if (other) box.insertAdjacentHTML('beforeend', `<div class="small" style="margin-top:8px">${other} more mission${other > 1 ? 's' : ''} saved at other sites: switch the location to see ${other > 1 ? 'them' : 'it'}.</div>`);
   box.querySelectorAll('[data-play]').forEach(b => b.onclick = () => playMission(b.dataset.play, +b.dataset.k));
   box.querySelectorAll('[data-fp]').forEach(b => b.onclick = () => { playMission(b.dataset.fp, schedSel && schedSel.id === b.dataset.fp ? schedSel.k : 0); if (plan) $('evaBtn').click(); });
   box.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
@@ -3014,10 +3385,14 @@ function playMission(id, k = 0) {
     set('evaBtn', mode === 'suit' ? '▶ Start first-person EVA (helmet HUD)' : '▶ Start drive (rover windshield HUD)'); set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive');
   }
   wxState.sc = WX.scenarios[m.scenario.k] ? m.scenario.k : 0; wxState.dustX = m.dustX ?? 1;
-  WXR[mode].tauNoGo = m.limits.tau; WXR[mode].windNoGo = m.limits.wind; wxReset(); renderWxSeg();
+  WXR[mode].tauNoGo = m.limits.tau; WXR[mode].windNoGo = m.limits.wind;
+  if (RAD && m.radiation && RAD.scenarios[m.radiation.k]) { radState.sc = m.radiation.k; RADR.mod = m.radiation.mod; RADR.high = m.radiation.high; }
+  wxReset(); renderWxSeg(); renderRadSeg();
+  sepInj = null; sim.sep = false; document.getElementById('sepMap').style.display = 'none'; sepButtons();
+  stormInj = null; document.getElementById('dustMap').style.display = 'none'; document.getElementById('wxHud').classList.remove('stormOn'); stormButtons();
   stopsFrom(s.sites); sciRouteKey = 'science'; placeWaypoints(); fillStops();
   wxState.dep = s.depH; wxState.touched = true;
-  if (layer !== 'wx') setLayer('wx', false);
+  if (!wxOn()) setLayer('wx', false);
   schedSel = { id, k };
   recompute();
   set('stopSrc', `Scheduled ${m.name}${m.sorties.length > 1 ? ` · EVA ${k + 1} of ${m.sorties.length}` : ''} · ${m.title}`);
@@ -3082,7 +3457,7 @@ if (!window.__introDone && !matchMedia('(prefers-reduced-motion: reduce)').match
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.1), tt = performance.now();
   wpViz.forEach(v => v.beacon && (v.beacon.material.opacity = 0.45 + 0.3 * Math.sin(tt / 300)));
-  if (fp) updateFP(dt); else { stepFly(); controls.update(); keepOnMap(); updateMapPreview(dt); }
+  if (fp) updateFP(dt); else { stepFly(); controls.update(); if (!FLY.pending && !FLY.active) keepOnMap(); updateMapPreview(dt); }   // the intro hand-over may aim far off the map centre (a card low on the screen): no pan limit until the fly-in ends
   updateLabels();
   renderer.render(scene, camera);
   if (fp && mode === 'rover') {                     // the rover cockpit on top, with its own depth buffer
