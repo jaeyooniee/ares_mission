@@ -273,11 +273,11 @@
   <div class="tipBox">
     <h3>Moving around the map</h3>
     <ul>
-      <li><b>Left-drag</b> — tilt and rotate the view</li>
-      <li><b>Right-drag</b> — move the map position</li>
+      <li><b>Left-drag</b> — move the map position</li>
+      <li><b>Right-drag</b> — tilt and rotate the view</li>
       <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
     </ul>
-    <div class="tipTouch">Touch screen: one finger tilts and rotates, two fingers zoom and move the map.</div>
+    <div class="tipTouch">Touch screen: one finger moves the map, two fingers zoom and rotate.</div>
     <label class="chk"><input type="checkbox" id="tipHide"> Don't show again today</label>
     <button id="tipOk">Got it</button>
   </div>
@@ -448,9 +448,9 @@ const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.5, 20
 const MAP_CAM = () => { camera.position.set(1300 * SC, 2500 * SC, 3000 * SC); controls.target.set(0, 0, 0); controls.update(); };
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.maxPolarAngle = Math.PI * 0.47;
-// map controls: left-drag tilts / rotates, right-drag moves the map position, wheel zooms (the first-visit tip explains this)
-controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
-controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+// map controls: left-drag moves the map position, right-drag tilts / rotates, wheel zooms (the first-visit tip explains this)
+controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+controls.touches = { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_ROTATE };
 controls.screenSpacePanning = false;             // move along the ground, not along the screen
 controls.zoomToCursor = true;                    // the wheel zooms towards the point under the mouse cursor
 controls.minDistance = 120; controls.maxDistance = 40000 * Math.max(1, SC / 2.8);
