@@ -107,9 +107,6 @@
     setTimeout(swap, reduce ? 0 : DOCK_MS + 120);                     // fallback if the browser never reports the end (hidden tab)
   }
 
-  // landing-site choice: logo + title move up, two cards appear; the picked site's data is then loaded by the app.
-  // From here on a click or key no longer skips: a site has to be picked (Enter / Space = the focused card, else Gale).
-  // Hovering a card starts downloading that site's map image, so it is ready sooner.
   function prefetch(card) {
     if (card.dataset.pre || !card.dataset.tex) return; card.dataset.pre = '1';
     const im = new Image(); im.crossOrigin = 'anonymous'; im.src = card.dataset.tex;
@@ -120,20 +117,105 @@
     Promise.all(el.getAnimations().map(a => a.finished.catch(() => {}))),
     new Promise(r => setTimeout(r, max)),
   ]);
+  // landing-site choice: a carousel. The card in the centre is bigger and lit; the Mars globe above turns to its site and a pin
+  // drops there. Browse: mouse wheel / trackpad, drag (or swipe), ← →, the ‹ › buttons or the dots. Pick: click the centre card
+  // (a side card is first brought to the centre), or Enter / Space. The pick then runs exactly as before: the card's map
+  // brightens and turns into the 3D map.
   function chooseSite() {
     return new Promise(res => {
       removeEventListener('keydown', skipNow); intro.removeEventListener('pointerdown', skipNow);
       intro.removeAttribute('aria-hidden'); intro.classList.add('select');
-      document.getElementById('introSkip').textContent = 'Choose a landing site';
-      const cards = [...intro.querySelectorAll('.siteCard:not(.soon)')], soon = intro.querySelector('.siteCard.soon');
-      const gale = cards.find(c => c.dataset.site === 'gale') || cards[0];
-      const onKey = e => { if (window.__cxOpen) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(cards.includes(document.activeElement) ? document.activeElement : gale); } };
-      const onClick = e => choose(e.currentTarget);
-      // Custom: the user's own data. The dialog builds (or loads) the site first; then the card goes on like Gale / Jezero.
-      let busy = false;
+      document.getElementById('introSkip').textContent = 'Scroll or drag to browse · click the centre card to land';
+      const $ = id => document.getElementById(id);
+      const cards = [...intro.querySelectorAll('.siteCard:not(.soon)')], box = $('introSites');
+      const prevB = $('carPrev'), nextB = $('carNext'), dotsBox = $('carDots'), globeEl = $('introGlobe');
+      const SPACING = 1.15, SMAX = 1.3, SMIN = 0.82, FADE = 0.28, WHEEL = 90;   // same feel as the team's carousel demo
+      let target = Math.max(0, cards.findIndex(c => c.dataset.site === 'gale')), pos = target, drag = 0, raf = 0, done = false;
+      let customMeta = null, busy = false;
+      if (window.MarsGlobe && globeEl) MarsGlobe.mount(globeEl);
+
+      const dots = cards.map((c, i) => {
+        const d = document.createElement('button'); d.type = 'button'; d.setAttribute('role', 'tab'); d.setAttribute('aria-label', c.dataset.label || c.dataset.site);
+        d.addEventListener('click', () => goTo(i)); dotsBox.appendChild(d); return d;
+      });
+      function render() {
+        const w = cards[0].offsetWidth, p = pos + drag;
+        cards.forEach((c, i) => {
+          const d = i - p, a = Math.abs(d);
+          const sc = a < 1 ? SMAX - (SMAX - SMIN) * a : SMIN;
+          const x = d * w * SPACING + Math.sign(d) * Math.min(a, 1) * w * (SMAX - 1) * 0.5;   // room for the bigger centre card
+          c.style.transform = `translate(-50%,-50%) translateX(${x.toFixed(1)}px) scale(${sc.toFixed(4)})`;
+          c.style.opacity = Math.max(0, 1 - Math.max(0, a - 0.5) * FADE).toFixed(3);
+          c.style.zIndex = 100 - Math.round(a * 10);
+          c.style.visibility = a > 4 ? 'hidden' : 'visible';
+        });
+      }
+      function tick() {
+        raf = 0; if (done) return;
+        pos += (target - pos) * 0.14; if (Math.abs(target - pos) < 0.001) pos = target;
+        render(); if (pos !== target || drag) raf = requestAnimationFrame(tick);
+      }
+      const kick = () => { if (!raf && !done) raf = requestAnimationFrame(tick); };
+      function showOnGlobe(c) {
+        if (!window.MarsGlobe) return;
+        if (c.dataset.site !== 'custom') return MarsGlobe.focus(+c.dataset.lat, +c.dataset.lon, c.dataset.label || c.dataset.site);
+        const m = customMeta;
+        if (m && m.centre) MarsGlobe.focus(m.centre[0], m.centre[1], m.name || 'Custom site', 'Your own data · saved in this browser');
+        else MarsGlobe.focus(null, null, 'Custom site', 'Your own DEM, image and CRISM data');
+      }
+      function goTo(i) {
+        if (done) return;
+        const t = Math.max(0, Math.min(cards.length - 1, i)), changed = t !== target; target = t;
+        cards.forEach((c, k) => { c.classList.toggle('active', k === target); c.setAttribute('aria-selected', k === target); c.tabIndex = k === target ? 0 : -1; });
+        dots.forEach((d, k) => { d.classList.toggle('on', k === target); d.setAttribute('aria-selected', k === target); });
+        prevB.disabled = target === 0; nextB.disabled = target === cards.length - 1;
+        const c = cards[target]; prefetch(c); if (changed || !goTo.once) showOnGlobe(c); goTo.once = true;
+        kick();
+      }
+
+      // ---- input ----
+      let wheelAcc = 0, wheelLock = 0;
+      const onWheel = e => {
+        if (window.__cxOpen) return; e.preventDefault();
+        const now = performance.now(); wheelAcc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (now < wheelLock) return;
+        if (Math.abs(wheelAcc) >= WHEEL || (e.deltaMode === 1 && wheelAcc)) { goTo(target + Math.sign(wheelAcc)); wheelAcc = 0; wheelLock = now + 180; }
+      };
+      const onKey = e => {
+        if (window.__cxOpen) return;
+        if (e.key === 'ArrowRight') { e.preventDefault(); goTo(target + 1); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(target - 1); }
+        else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(cards[target]); }
+      };
+      let dragX = null, moved = false;
+      const onDown = e => { if (done || e.button > 0) return; dragX = e.clientX; moved = false; box.classList.add('dragging'); };
+      const onMove = e => {
+        if (dragX === null) return; const dx = e.clientX - dragX;
+        if (Math.abs(dx) > 6) moved = true;
+        drag = -dx / (cards[0].offsetWidth * SPACING); render();
+      };
+      const onUp = () => {
+        if (dragX === null) return;
+        const snap = Math.round(pos + drag); pos += drag; drag = 0; dragX = null; box.classList.remove('dragging');
+        goTo(snap); setTimeout(() => { moved = false; }, 0);
+      };
+      intro.addEventListener('wheel', onWheel, { passive: false });
+      addEventListener('keydown', onKey);
+      box.addEventListener('pointerdown', onDown); addEventListener('pointermove', onMove); addEventListener('pointerup', onUp); addEventListener('pointercancel', onUp);
+      prevB.onclick = () => goTo(target - 1); nextB.onclick = () => goTo(target + 1);
+      cards.forEach((c, i) => {
+        c.addEventListener('click', () => { if (moved || done) return; i === target ? choose(c) : goTo(i); });
+        c.addEventListener('pointerenter', () => prefetch(c));
+      });
+
+      // Custom: the user's own data. The dialog builds (or loads) the site first; then the card goes on like the others.
       const custom = cards.find(c => c.dataset.site === 'custom');
-      if (custom) import('./custom/store.js?v=1').then(m => m.siteMeta()).then(m => { if (m) custom.querySelector('.sub').textContent = `Saved: ${m.name}`; }).catch(() => {});
+      if (custom) import('./custom/store.js?v=1').then(m => m.siteMeta()).then(m => {
+        if (!m) return; customMeta = m; custom.querySelector('.sub').textContent = `Saved: ${m.name}`;
+        if (cards[target] === custom) showOnGlobe(custom);
+      }).catch(() => {});
       async function choose(card) {
+        if (done) return;
         if (card.dataset.site !== 'custom') return pick(card);
         if (busy) return; busy = true;
         try {
@@ -142,28 +224,28 @@
           if (!r) { card.focus({ preventScroll: true }); return; }
           card.querySelector('.map').style.backgroundImage = `url(${r.thumbUrl})`; card.classList.add('ready');
           card.querySelector('.sub').textContent = r.meta.name;
+          customMeta = r.meta; showOnGlobe(card);
           pick(card);
         } finally { busy = false; }
       }
-      cards.forEach(c => { c.addEventListener('click', onClick); c.addEventListener('pointerenter', () => prefetch(c)); });
       function pick(card) {
-        removeEventListener('keydown', onKey); cards.forEach(c => c.removeEventListener('click', onClick));
+        done = true; if (raf) cancelAnimationFrame(raf); raf = 0;
+        target = cards.indexOf(card); pos = target; drag = 0; render();     // exactly in the centre, nothing left moving
+        intro.removeEventListener('wheel', onWheel); removeEventListener('keydown', onKey);
+        box.removeEventListener('pointerdown', onDown); removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); removeEventListener('pointercancel', onUp);
         prefetch(card);
         window.__site = card.dataset.site; window.dispatchEvent(new CustomEvent('site-chosen', { detail: card.dataset.site }));   // the app starts loading this site
-        const r = card.getBoundingClientRect();
-        card.style.setProperty('--toCentre', (innerWidth / 2 - (r.left + r.width / 2)) + 'px');   // slide to the middle of the screen
-
+        card.style.setProperty('--toCentre', '0px');
         if (!window.__siteReady) {                                     // still loading: say so under the map
           document.getElementById('introSkip').textContent = 'Loading terrain…'; intro.classList.add('wait');
           addEventListener('site-ready', () => intro.classList.remove('wait'), { once: true });
         }
         card.classList.add('picked'); intro.classList.add('picked'); card.blur();
-        settled(card).then(() => intro.classList.add('open'));         // arrived in the centre: frame and text go, the map brightens
+        setTimeout(() => window.MarsGlobe && MarsGlobe.stop(), 700);    // the globe has faded out
+        settled(card).then(() => intro.classList.add('open'));         // frame and text go, the map brightens
         res({ card, t: performance.now() });
       }
-      addEventListener('keydown', onKey);
-      if (soon) soon.addEventListener('click', () => { soon.classList.remove('nudge'); void soon.offsetWidth; soon.classList.add('nudge'); });
-      // no card is focused automatically: only the card under the mouse (or one reached with Tab) lights up; Enter / Space still picks Gale
+      render(); goTo(target);
     });
   }
 

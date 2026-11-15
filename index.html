@@ -364,7 +364,7 @@
   "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
 } }
 </script>
-<link rel="stylesheet" href="web/css/intro.css?v=20261115s"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
+<link rel="stylesheet" href="web/css/intro.css?v=20261115c"><!-- ?v= : change it whenever intro.css / intro.js change, so browsers do not keep an old copy -->
 </head>
 <body class="brand-hidden">
 <div id="intro" aria-hidden="true">
@@ -374,17 +374,22 @@
   <div id="introTitle"><span id="introGhost"></span><span id="introText"></span><span id="introCursor"></span></div>
   <!-- landing-site choice: shown after the title is typed; the app then loads that site's data (data-tex: its map image, fetched early on hover) -->
   <div id="introSites" role="group" aria-label="Choose a landing site">
-    <button class="siteCard" data-site="gale" data-tex="web/data/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg?v=3d1)"></span><span class="name">GALE</span><span class="sub">Curiosity rover</span></button>
-    <button class="siteCard" data-site="jezero" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Perseverance rover</span></button>
-    <button class="siteCard" data-site="mawrth" data-tex="web/data/mawrth/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_mawrth.jpg?v=3d1)"></span><span class="name">MAWRTH</span><span class="sub">Clay-rich valley</span></button>
-    <button class="siteCard" data-site="meridiani" data-tex="web/data/meridiani/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_meridiani.jpg?v=3d1)"></span><span class="name">MERIDIANI</span><span class="sub">Opportunity rover</span></button>
-    <button class="siteCard" data-site="columbia" data-tex="web/data/columbia/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_columbia.jpg?v=3d1)"></span><span class="name">COLUMBIA</span><span class="sub">Spirit rover</span></button>
-    <button class="siteCard" data-site="melas" data-tex="web/data/melas/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_melas.jpg?v=3d1)"></span><span class="name">EAST MELAS</span><span class="sub">Valles Marineris</span></button>
-    <button class="siteCard custom" data-site="custom" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own data</span></button>
+    <button class="siteCard" data-site="gale" data-lat="-4.78" data-lon="137.4" data-label="Gale crater" data-tex="web/data/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_gale.jpg?v=3d1)"></span><span class="name">GALE</span><span class="sub">Curiosity rover</span></button>
+    <button class="siteCard" data-site="jezero" data-lat="18.48" data-lon="77.39" data-label="Jezero crater" data-tex="web/data/jezero/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_jezero.jpg?v=3d1)"></span><span class="name">JEZERO</span><span class="sub">Perseverance rover</span></button>
+    <button class="siteCard" data-site="mawrth" data-lat="23.04" data-lon="-18.46" data-label="Mawrth Vallis" data-tex="web/data/mawrth/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_mawrth.jpg?v=3d1)"></span><span class="name">MAWRTH</span><span class="sub">Clay-rich valley</span></button>
+    <button class="siteCard" data-site="meridiani" data-lat="-2.02" data-lon="-5.48" data-label="Meridiani Planum" data-tex="web/data/meridiani/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_meridiani.jpg?v=3d1)"></span><span class="name">MERIDIANI</span><span class="sub">Opportunity rover</span></button>
+    <button class="siteCard" data-site="columbia" data-lat="-14.583" data-lon="175.502" data-label="Columbia Hills" data-tex="web/data/columbia/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_columbia.jpg?v=3d1)"></span><span class="name">COLUMBIA</span><span class="sub">Spirit rover</span></button>
+    <button class="siteCard" data-site="melas" data-lat="-13.26" data-lon="-70.26" data-label="East Melas" data-tex="web/data/melas/texture_color.jpg" type="button"><span class="map" style="background-image:url(web/img/site_melas.jpg?v=3d1)"></span><span class="name">EAST MELAS</span><span class="sub">Valles Marineris</span></button>
+    <button class="siteCard custom" data-site="custom" data-label="Custom site" type="button"><span class="map"></span><span class="plus" aria-hidden="true">+</span><span class="name">CUSTOM</span><span class="sub">Your own data</span></button>
   </div>
+  <div id="introGlobe" data-tex="web/img/mars_globe.jpg" aria-hidden="true"><canvas></canvas><div class="gName"></div><div class="gSub"></div></div>
+  <button class="carArrow" id="carPrev" type="button" aria-label="Previous site">‹</button>
+  <button class="carArrow" id="carNext" type="button" aria-label="Next site">›</button>
+  <div id="carDots" role="tablist" aria-label="Landing sites"></div>
   <div id="introSkip">click or press any key to skip</div>
 </div>
-<script src="web/js/intro.js?v=20261115q"></script>
+<script src="web/js/intro-globe.js?v=20261115c"></script>
+<script src="web/js/intro.js?v=20261115c"></script>
 <canvas id="c"></canvas>
 <div id="labels"></div>
 
