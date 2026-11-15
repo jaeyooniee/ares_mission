@@ -124,6 +124,7 @@
   #gonogo .why{font-size:11.5px;text-align:right;line-height:1.4}
   .go{background:rgba(98,242,154,.13);border:1px solid rgba(98,242,154,.5);color:var(--green)}
   .nogo{background:rgba(255,90,77,.13);border:1px solid rgba(255,90,77,.55);color:var(--red)}
+  .idle{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cfe3ea}
   .cmp{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:3px 8px;font-size:12px}
   .cmp div{padding:2px 0;font-variant-numeric:tabular-nums}
   .cmp .h{color:var(--dim);font-size:10.5px}
@@ -201,9 +202,24 @@
   .tipBox li{margin:4px 0} .tipBox li b{color:var(--cyan)}
   .tipBox .tipTouch{font-size:11.5px;color:var(--dim);margin-bottom:12px}
   #tipOk{width:100%;margin-top:12px;padding:9px;font-size:14px;font-weight:600;background:#1f6f86;border:1px solid #37a7c4;color:#fff;border-radius:9px;cursor:pointer}
-  #tipOpen{color:var(--cyan);cursor:pointer;text-decoration:underline;font-size:11.5px}
 
   
+  /* ---------- science value layer (Moon to Mars) ---------- */
+  .wlabel.sci{border-color:rgba(253,231,37,.8);color:#fff6b0}
+  .sciObj .btn{flex:1 1 calc(33.3% - 6px);padding:7px 6px}
+  .sciObj .btn.on{background:rgba(253,231,37,.16);border-color:rgba(253,231,37,.7);color:#fff}
+  .sciObj .btn.on::before{content:'✓ ';color:#fde725}
+  #sciCount{margin-top:7px}
+  #sciLegend{height:8px;border-radius:4px;margin-top:12px;background:linear-gradient(90deg,rgba(68,1,84,.25),#3b528b,#21918c,#5ec962,#fde725)}
+  .sciScale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);margin-top:3px}
+  #sciSites{list-style:none;margin:4px 0 0;padding:0}
+  #sciSites li{display:grid;grid-template-columns:22px 1fr auto;column-gap:9px;row-gap:2px;align-items:center;padding:8px 6px;border-radius:8px;cursor:pointer;border-bottom:1px dashed var(--line)}
+  #sciSites li:hover{background:rgba(253,231,37,.07)}
+  #sciSites .rk{grid-row:span 3;align-self:start;width:20px;height:20px;border-radius:50%;background:#fde725;color:#1b1a05;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  #sciSites .nm{font-size:12.5px;font-weight:600}
+  #sciSites .v{font-size:13px;font-weight:700;color:#fde725;font-variant-numeric:tabular-nums}
+  #sciSites .meta{grid-column:2 / span 2;font-size:11px;color:var(--dim)}
+  .crit{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.08);margin:2px 4px 0 0;color:#cfe3ea}
 </style>
 <script type="importmap">
 { "imports": {
@@ -234,8 +250,9 @@
   <div class="navitem">
     <button class="navbtn">MISSION<span class="car">▼</span></button>
     <div class="sub">
-      <button class="mi" data-sec="mission">EVA-07 plan<small>Waypoints from CRISM mineral targets</small></button>
+      <button class="mi" data-sec="mission">EVA plan<small>Habitat and the stops picked from science objectives</small></button>
       <button class="mi" data-sec="compare">Mission readiness<small>GO / NO-GO and route comparison</small></button>
+      <button class="mi" data-sec="science" id="sciMenu">Science value<small>Where is worth visiting, and reachable on foot</small></button>
     </div>
   </div>
   <div class="navitem">
@@ -266,6 +283,7 @@
       <div id="legend"></div><div id="legendTxt"><span id="lg0"></span><span id="lg1"></span></div>
       <label class="chk"><input type="checkbox" id="showMin" autocomplete="off"> CRISM minerals overlay</label>
       <div id="minLegend" class="small" style="display:flex;flex-wrap:wrap;gap:3px 10px;margin-top:4px"></div>
+      <label class="chk"><input type="checkbox" id="showSci" autocomplete="off"> Science value (Moon to Mars)</label>
     </div>
   </div>
   <div class="navitem">
@@ -298,13 +316,13 @@
     <div class="wp"><div class="dot">1</div><div><b id="wp1Name">WP1</b><br><small id="wp1Txt">–</small></div></div>
     <div class="wp"><div class="dot">2</div><div><b id="wp2Name">WP2</b><br><small id="wp2Txt">–</small></div></div>
     <div class="wp"><div class="dot">H</div><div><b>Return to habitat</b></div></div>
-    <div class="note" style="margin-top:10px">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). Stops are one clay and one sulfate patch picked from CRISM. See Info → About this build.</div>
+    <div class="note" style="margin-top:10px">Terrain: <b>real HiRISE DEM</b> of the Gale team area (10 km, 16 m grid from a 1 m source). <span id="stopSrc">Stops are one clay and one sulfate patch picked from CRISM.</span> See Info → About this build.</div>
   </div>
 
   <div class="sec" data-sec="compare">
     <div class="small" style="margin-bottom:8px">GO when the safety factor (supply ÷ need) is at least ×1.5. The badge at top right always shows the current state.</div>
     <div class="cmp">
-      <div class="h"></div><div class="h opt">■ Optimal</div><div class="h str">■ Straight</div>
+      <div class="h"></div><div class="h"><span class="opt">■</span> Optimal</div><div class="h"><span class="str">■</span> Straight</div>
       <div>Distance</div><div id="oD"></div><div id="sD"></div>
       <div>Max slope</div><div id="oS"></div><div id="sS"></div>
       <div>Travel time</div><div id="oT"></div><div id="sT"></div>
@@ -312,6 +330,17 @@
       <div id="rLbl2">Battery used</div><div id="oE"></div><div id="sE"></div>
       <div>Blocked cells</div><div id="oB"></div><div id="sB"></div>
     </div>
+  </div>
+
+  <div class="sec" data-sec="science">
+    <div class="small" id="sciLead"></div>
+    <h2>Objectives · a site must be strong in all picked</h2>
+    <div class="btns sciObj" id="sciObj"></div>
+    <div class="small" id="sciCount"></div>
+    <div id="sciLegend"></div><div class="sciScale"><span>low</span><span>high value · dark = out of reach</span></div>
+    <h2 id="sciTopHdr">Top sites</h2>
+    <ol id="sciSites"></ol>
+    <div class="small" id="sciNote" style="margin-top:8px"></div>
   </div>
 
   <div class="sec" data-sec="conditions">
@@ -380,7 +409,6 @@
         <li><b>Mouse wheel</b> — zoom in and out at the cursor</li>
       </ul>
       <p class="small">Touch screen: one finger moves the map, two fingers zoom and rotate.</p>
-      <button class="btn" id="tipOpen">Show the first-visit tip again</button>
     </div>
     <div class="ipane" data-info="sources">
       <h1>Data used in this build</h1>
@@ -389,6 +417,7 @@
         <tr><td>Imagery</td><td>USGS HiRISE colour mosaic of Gale (colour strips fused with the 25 cm red mosaic) — processed colour</td></tr>
         <tr><td>Routes · budget</td><td>Team Python pipeline (Tobler + Pandolf)</td></tr>
         <tr><td>Minerals</td><td id="srcMin">MRO CRISM summary parameters</td></tr>
+        <tr><td>Science value</td><td>Team science.py: HiRISE DEM (geology, reachability), CRISM summary parameters (life, water), THEMIS thermal inertia (resources), Curiosity traverse (novelty), scored against NASA Moon to Mars objectives</td></tr>
         <tr><td>Not in this build</td><td>Soft soil (THEMIS), boulders, live space weather (DONKI), radiation, rover photos</td></tr>
       </table>
       <p class="small" style="margin-top:12px">Data: NASA/JPL-Caltech/University of Arizona (HiRISE) · colour mosaic: USGS Astrogeology (T. Parker, F. Calef III) · colour is processed, not a true-colour photo.</p>
@@ -476,14 +505,32 @@ const idx = (i, j) => i * N + j;
 const WPS = ROUTES.suit.waypoints.map((w, k) => ({ id: ['H', '1', '2'][k], name: w.name, short: k === 0 ? 'HAB' : w.name, lon: w.lon, lat: w.lat,
   cell: [Math.min(N - 1, Math.round(w.y / CELL)), Math.min(N - 1, Math.round(w.x / CELL))] }));
 const MISSION = [0, 1, 2, 0];                    // visit order H → 1 → 2 → H
+const WPS0 = WPS.map(w => ({ ...w, cell: [...w.cell] }));   // the pipeline's EVA-07 stops (restored by the 'Mineral targets' priority)
 const HAB = WPS[0].cell;
 const KCOL = { clay: [220, 60, 60], poly_sulf: [60, 200, 90], mono_sulf: [70, 120, 240], hematite: [255, 150, 30] };
 const DEST = TERRAIN.destinations || [];
-for (const [id, nid, k] of [['wp1Txt', 'wp1Name', 1], ['wp2Txt', 'wp2Name', 2]]) {
-  const d = DEST[k - 1], pos = `${Math.abs(WPS[k].lat).toFixed(4)}°S, ${WPS[k].lon.toFixed(4)}°E`;
-  document.getElementById(nid).textContent = WPS[k].name;
-  document.getElementById(id).textContent = d ? `${d.label} · ${d.index} ${d.peak_index} · ${(d.area_m2 / 1e4).toFixed(1)} ha · ${pos}` : pos;
+function fillStops() {
+  if (WPS[1].off) {                                   // no route yet: only the habitat
+    document.getElementById('wp1Name').textContent = '—'; document.getElementById('wp1Txt').textContent = 'Pick objectives in Science value';
+    document.getElementById('wp2Name').textContent = '—'; document.getElementById('wp2Txt').textContent = '';
+    document.getElementById('stopSrc').textContent = 'No stops yet: pick the objectives in Science value and the route is planned through the best sites.';
+    return;
+  }
+  for (const [id, nid, k] of [['wp1Txt', 'wp1Name', 1], ['wp2Txt', 'wp2Name', 2]]) {
+    const w = WPS[k], d = w.site ? null : DEST[k - 1], pos = `${Math.abs(w.lat).toFixed(4)}°S, ${w.lon.toFixed(4)}°E`;
+    document.getElementById(nid).textContent = w.name;
+    // line 1: mineral · CRISM index and its peak value · patch area (or the science value of a priority site); line 2: coordinates
+    const el = document.getElementById(id);
+    el.textContent = w.site ? `Science value ${Math.round(w.site.V * 100)} · ${sciCrits(w.site).join(', ') || 'no single strong criterion'}`
+      : d ? `${d.label} · ${d.index} ${d.peak_index} · ${(d.area_m2 / 1e4).toFixed(1)} ha` : '';
+    const c = document.createElement('span'); c.style.whiteSpace = 'nowrap'; c.textContent = pos;
+    if (el.textContent) el.appendChild(document.createElement('br')); el.appendChild(c);
+  }
+  document.getElementById('stopSrc').textContent = WPS[1].site
+    ? `Stops are the best ${WPS[2].dup ? 'site' : 'two sites'} for ${sciPickText()} in the science value layer.`
+    : 'Stops are one clay and one sulfate patch picked from CRISM.';
 }
+fillStops();
 
 // walking model: same constants as the pipeline config
 const W_BODY = TERRAIN.walk.body_kg, L_SUIT = TERRAIN.walk.suit_kg, SUIT_SPEED = TERRAIN.walk.suit_speed_factor, G_MARS = 3.71, G_EARTH = 9.81;
@@ -763,6 +810,244 @@ if (MIN) {
   document.getElementById('srcMin').textContent = MIN.source;
 } else { document.getElementById('showMin').parentElement.style.display = 'none'; }
 document.getElementById('showMin').onchange = e => { minMesh.visible = e.target.checked; };
+
+// ===================== SCIENCE VALUE layer =====================
+// Data from Min_trial/science.py (same config and grid as the pipeline):
+//   science.json  criteria + Moon to Mars objective codes, reach model, notes
+//   science.bin   the six criterion scores per web-mesh cell, Uint8 [criteria × meshH × meshW], 0-254 = 0-1, 255 = no data
+//   reach.bin     reachability R per cell, Uint8 R × 254 (0 = cannot walk there and back within the O2 / time limit)
+// The objectives picked here are a FILTER: a place qualifies only if it scores ≥ HIGH in every picked objective,
+// and is ranked by V = mean(picked scores) × R. Nothing picked = all six with equal weight (science.py "Balanced").
+let SCI = null, SCIB = null, REACH = null;
+try {
+  const rs = await Promise.all(['science.json', 'science.bin', 'reach.bin'].map(f => fetch(DATA + f)));
+  if (rs.every(r => r.ok)) { SCI = await rs[0].json(); SCIB = new Uint8Array(await rs[1].arrayBuffer()); REACH = new Uint8Array(await rs[2].arrayBuffer()); }
+} catch (e) { console.warn('[science] data missing', e); }
+if (SCI && (SCIB.length !== SCI.criteria.length * SCI.meshW * SCI.meshH || REACH.length !== SCI.meshW * SCI.meshH)) { console.warn('[science] bin size mismatch'); SCI = null; }
+const HIGH = 0.6, SPACING_M = 150, N_SITES = 5;     // science.py: high_score, site_spacing_m, n_sites
+const sciMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false,
+  polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }));   // drawn over the CRISM overlay (-2)
+sciMesh.visible = false; scene.add(sciMesh);
+const sciPins = [], sciPick = new Set();            // picked objectives (criterion keys)
+let sciSitesNow = [], sciTex = null;
+const SCI_SHORT = { life: 'Life', water: 'Water', geology: 'Geology', resource: 'ISRU', novelty: 'Novelty', diversity: 'Diversity' };
+const SCI_BTN = { life: 'Habitability', water: 'Water', geology: 'Geology', resource: 'Resources (ISRU)', novelty: 'Novelty', diversity: 'Sample diversity' };
+let sciRouteKey = 'none';          // 'none' = habitat only (start); 'science' = the best sites for the picked objectives; 'minerals' = pipeline EVA-07 route (only without science data)
+const sciCrits = s => SCI.criteria.filter(c => c.objectives.some(o => s.objectives.includes(o))).map(c => SCI_SHORT[c.key] || c.key);
+function sciPickText() { return sciPick.size ? SCI.criteria.filter(c => sciPick.has(c.key)).map(c => SCI_BTN[c.key]).join(' + ') : 'all six objectives (Balanced)'; }
+// on/off follows the LAYERS checkbox, and the layer is always hidden in the first-person view
+function sciSync() {
+  const on = !!SCI && document.getElementById('showSci').checked && !fp;
+  sciMesh.visible = on; for (const p of sciPins) p.mesh.visible = on;
+}
+// smooth camera move to a site (keeps the viewing direction, comes closer if far away)
+function sciFly(x, y, z) {
+  const t0 = performance.now(), D = 900, fromT = controls.target.clone(), fromC = camera.position.clone();
+  const toT = new THREE.Vector3(x, y, z), off = fromC.clone().sub(fromT); off.setLength(Math.min(off.length(), 900 * SC));
+  const toC = toT.clone().add(off);
+  const step = () => {
+    const k = Math.min(1, (performance.now() - t0) / D), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    controls.target.lerpVectors(fromT, toT, e); camera.position.lerpVectors(fromC, toC, e); controls.update();
+    if (k < 1) requestAnimationFrame(step);
+  };
+  step();
+}
+// V for every mesh cell under the current filter: -1 = cannot reach, 0 = fails the filter, > 0 = qualifies
+function sciEvaluate() {
+  const W = SCI.meshW, H = SCI.meshH, n = W * H, keys = SCI.criteria.map(c => c.key);
+  const use = keys.map((k, i) => (!sciPick.size || sciPick.has(k)) ? i : -1).filter(i => i >= 0);
+  const V = new Float32Array(n); let pass = 0, reach = 0;
+  for (let p = 0; p < n; p++) {
+    const r = REACH[p]; if (r === 0 || r === 255) { V[p] = -1; continue; }
+    reach++; let sum = 0, ok = true;
+    for (const i of use) { const u = SCIB[i * n + p], sc = u === 255 ? 0 : u / 254; if (sciPick.size && sc < HIGH) { ok = false; break; } sum += sc; }
+    if (!ok) continue;
+    V[p] = sum / use.length * (r / 254); if (V[p] > 0) pass++;
+  }
+  return { V, W, H, n, pass, reach };
+}
+function sciSite(p, x, y, v, E) {
+  const [lw, ls, le, ln] = TERRAIN.area_lonlat_W_S_E_N, cov = SCI.overlay.covers_m, scores = {}, objectives = [];
+  SCI.criteria.forEach((c, i) => { const u = SCIB[i * E.n + p]; scores[c.key] = u === 255 ? null : u / 254; });
+  for (const c of SCI.criteria) if (scores[c.key] != null && scores[c.key] >= HIGH) for (const o of c.objectives) if (!objectives.includes(o)) objectives.push(o);
+  const R = REACH[p] / 254, o2 = 2 * SCI.reach.limit * (1 - R);          // science.py: R = 1 - 0.5 · round-trip O2 / limit
+  return { name: '', x, y, V: v, R, scores, objectives, rt_used_pct: 100 * o2 / SCI.reach.o2_capacity_kg,
+           lon: lw + x / cov[0] * (le - lw), lat: ln - y / cov[1] * (ln - ls) };
+}
+// best sites: repeatedly take the highest V that is at least SPACING_M from the ones already taken (as science.py does)
+function sciPickSites(E) {
+  const { V, W } = E, cw = SCI.overlay.covers_m[0] / W, ch = SCI.overlay.covers_m[1] / E.H, min2 = SPACING_M * SPACING_M, out = [];
+  for (let k = 0; k < N_SITES; k++) {
+    let best = -1, bv = 0, bx = 0, by = 0;
+    for (let p = 0; p < V.length; p++) {
+      if (V[p] <= bv) continue;
+      const r = (p / W) | 0, x = (p - r * W + 0.5) * cw, y = (r + 0.5) * ch;
+      if (out.some(o => (o.x - x) ** 2 + (o.y - y) ** 2 < min2)) continue;
+      best = p; bv = V[p]; bx = x; by = y;
+    }
+    if (best < 0) break;
+    out.push(sciSite(best, bx, by, bv, E));
+  }
+  out.forEach((o, i) => o.name = `Site ${String.fromCharCode(65 + i)}`);
+  return out;
+}
+const VIR = [[68, 1, 84], [59, 82, 139], [33, 145, 140], [94, 201, 98], [253, 231, 37]];   // viridis, as in science.py's previews
+const viridis = t => { t = Math.min(1, Math.max(0, t)) * 4; const i = Math.min(3, Math.floor(t)), f = t - i, a = VIR[i], b = VIR[i + 1]; return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f]; };
+function sciOverlay(E) {
+  const { V, W, H } = E, cv = sciTex ? sciTex.image : document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const g = cv.getContext('2d'), img = g.createImageData(W, H), d = img.data;
+  let vmax = 0; for (let p = 0; p < V.length; p++) if (V[p] > vmax) vmax = V[p];
+  for (let p = 0; p < V.length; p++) {
+    const q = p * 4, v = V[p];
+    if (v < 0) { d[q] = d[q + 1] = d[q + 2] = 12; d[q + 3] = 80; continue; }         // out of reach: darkened
+    if (v === 0) continue;                                                           // fails the filter: map left as it is
+    const t = v / (vmax || 1), c = viridis(t);
+    d[q] = c[0]; d[q + 1] = c[1]; d[q + 2] = c[2]; d[q + 3] = Math.round(255 * Math.min(0.85, 0.2 + 0.65 * t));
+  }
+  g.putImageData(img, 0, 0);
+  if (!sciTex) {                                                                     // same placement as areaTex(): covers_m from the NW corner
+    sciTex = new THREE.CanvasTexture(cv); sciTex.colorSpace = THREE.SRGBColorSpace; sciTex.magFilter = THREE.NearestFilter;
+    const cov = SCI.overlay.covers_m, rx = SIZE / cov[0], ry = SIZE / cov[1]; sciTex.repeat.set(rx, ry); sciTex.offset.set(0, 1 - ry);
+    sciMesh.material.map = sciTex; sciMesh.material.needsUpdate = true;
+  } else sciTex.needsUpdate = true;
+}
+function sciRender() {
+  const E = sciEvaluate(); sciOverlay(E); sciSitesNow = sciPick.size ? sciPickSites(E) : [];
+  document.getElementById('sciCount').textContent = sciPick.size
+    ? (() => {                                                                       // qualifying area in hectares (one mesh cell = covers / mesh)
+        const cellM2 = SCI.overlay.covers_m[0] / E.W * SCI.overlay.covers_m[1] / E.H, ha = E.pass * cellM2 / 1e4, pct = E.reach ? 100 * E.pass / E.reach : 0;
+        return E.pass ? `${ha < 10 ? ha.toFixed(1) : Math.round(ha)} ha (${pct < 0.01 ? '<0.01' : pct < 1 ? pct.toFixed(2) : pct.toFixed(0)}% of the reachable area) is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}.`
+          : `No reachable place is strong (score ≥ ${HIGH}) in all of: ${sciPickText()}. No route: drop one objective.`;
+      })()
+    : 'No objective picked yet. The map shows the value of every reachable place with all six objectives counted equally.';
+  document.getElementById('sciTopHdr').textContent = sciPick.size ? `Top sites · ${sciPickText()}` : 'Top sites';
+  for (const p of sciPins) { scene.remove(p.mesh); p.mesh.geometry.dispose(); p.el.remove(); }
+  sciPins.length = 0;
+  const list = document.getElementById('sciSites'); list.innerHTML = '';
+  if (!sciSitesNow.length) { const li = document.createElement('li'); li.className = 'meta'; li.style.cursor = 'default';
+    li.textContent = sciPick.size ? 'No reachable place is strong in all of these. Drop one objective to get a science route.'
+      : 'Pick one or more objectives: the places strong in all of them are ranked here, and the route visits the best two.';
+    list.appendChild(li); }
+  sciSitesNow.forEach(s => {
+    const x = -SIZE / 2 + s.x, z = -SIZE / 2 + s.y, y = heightAt(x, z);            // x, y = m from the area's north-west corner
+    const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(10 * SC), new THREE.MeshBasicMaterial({ color: 0xfde725 }));
+    mesh.position.set(x, y + 40 * SC, z); mesh.visible = sciMesh.visible; scene.add(mesh);
+    const el = document.createElement('div'); el.className = 'wlabel sci'; el.textContent = `${s.name} · ${Math.round(s.V * 100)}`;
+    el.style.display = 'none'; labelsEl.appendChild(el);
+    sciPins.push({ mesh, el, ground: new THREE.Vector3(x, y, z), s });
+    const li = document.createElement('li');
+    const add = (cls, txt, tag = 'span') => { const e = document.createElement(tag); e.className = cls; e.textContent = txt; li.appendChild(e); return e; };
+    add('rk', s.name.replace('Site ', '')); add('nm', s.name); add('v', Math.round(s.V * 100));
+    add('meta', `≈${s.rt_used_pct.toFixed(0)}% of suit O₂ round trip · ${Math.abs(s.lat).toFixed(4)}°S, ${s.lon.toFixed(4)}°E`);
+    const crit = add('meta', '', 'div');
+    for (const c of SCI.criteria) if (s.scores[c.key] != null && s.scores[c.key] >= HIGH) {
+      const t = document.createElement('span'); t.className = 'crit'; t.textContent = `${SCI_SHORT[c.key]} ${Math.round(s.scores[c.key] * 100)}`;
+      t.title = `${c.label} · ${c.objectives.join(', ')}`; crit.appendChild(t);
+    }
+    if (!crit.childNodes.length) crit.textContent = 'no single strong criterion';
+    li.title = 'Show on the map'; li.onclick = () => sciFly(x, y, z);
+    list.appendChild(li);
+  });
+}
+function updateSciLabels() {
+  for (const p of sciPins) {
+    const s = p.ground.clone().setY(p.ground.y + 70 * SC).project(camera);
+    const hidden = !sciMesh.visible || s.z > 1 || s.z < -1 || WPS.some(w => w.site === p.s);   // a site on the route already has its waypoint label
+    p.el.style.display = hidden ? 'none' : 'block';
+    if (!hidden) { p.el.style.left = `${(s.x * 0.5 + 0.5) * innerWidth}px`; p.el.style.top = `${(-s.y * 0.5 + 0.5) * innerHeight}px`; }
+  }
+}
+// ---- route stops: 'science' = the best two sites for the picked objectives (one site → Habitat → it → Habitat)
+const cellOf = m => Math.min(N - 1, Math.max(0, Math.round(m / CELL)));
+function placeWaypoints() {          // move the waypoint beacons and label anchors to the current stops
+  wpViz.forEach(v => {
+    const w = v.w, x = wx(w.cell[1]), z = wz(w.cell[0]), y = heightAt(x, z);
+    v.ground.set(x, y, z); v.anchor.set(x, y + (w.id === 'H' ? 60 * SC : 225 * SC), z);
+    if (v.beacon) {
+      v.beacon.userData.c0 ??= v.beacon.material.color.clone();
+      v.beacon.position.set(x, y + 110 * SC, z); v.beacon.material.color.copy(w.site ? new THREE.Color(0xfde725) : v.beacon.userData.c0);
+      v.beacon.visible = !w.dup && !w.off;
+    }
+  });
+}
+function setPriority(k, quiet = false) {
+  if (k === 'science' && !sciSitesNow.length) k = 'none';
+  sciRouteKey = k;
+  const sites = k === 'science' ? sciSitesNow.slice(0, 2) : [];
+  for (const n of [1, 2]) {
+    const s = sites[n - 1] || sites[0], o = WPS0[n];
+    Object.assign(WPS[n], s ? { name: s.name, short: s.name, lon: s.lon, lat: s.lat, cell: [cellOf(s.y), cellOf(s.x)], site: s, dup: n === 2 && !sites[1], off: false }
+                            : { name: o.name, short: o.short, lon: o.lon, lat: o.lat, cell: [...o.cell], site: null, dup: false, off: k === 'none' });
+  }
+  placeWaypoints(); fillStops(); recompute();
+  if (quiet) return;
+  if (k === 'science' && plan && WPS[1].site) toast(`Route re-planned: Habitat → ${WPS[1].name}${WPS[2].dup ? '' : ` → ${WPS[2].name}`} → Habitat`);
+  else if (k === 'none') toast(sciPick.size ? 'No route: no reachable place is strong in all the picked objectives' : 'No route yet: pick objectives');
+}
+function toggleObjective(key) {
+  if (sciPick.has(key)) sciPick.delete(key); else sciPick.add(key);
+  document.querySelectorAll('#sciObj .btn').forEach(b => b.classList.toggle('on', sciPick.has(b.dataset.k)));
+  sciRender();
+  if (!document.getElementById('showSci').checked) { document.getElementById('showSci').checked = true; sciSync(); }
+  setPriority(sciSitesNow.length ? 'science' : 'none');         // the route always matches what the drawer shows
+}
+// route through the current stops on the current mode's cost map (same A* + smoothing + budget model as the ABORT route)
+function scienceRoute() {
+  // computeCost() opens a 5 × 5 square around every waypoint whatever its slope; for this route those steep cells stay closed,
+  // and each stop moves to the nearest cell within the slope limit (≤ 6 cells ≈ 100 m away), so the whole route keeps the limit
+  const lim = params[mode].limit, c2 = cost.map((c, k) => slope[k] > lim ? Infinity : c);
+  const flat = ([i0, j0]) => {
+    let best = null, bd = Infinity;
+    for (let di = -6; di <= 6; di++) for (let dj = -6; dj <= 6; dj++) {
+      const i = i0 + di, j = j0 + dj; if (i < 0 || j < 0 || i >= N || j >= N || !isFinite(c2[idx(i, j)])) continue;
+      if (di * di + dj * dj < bd) { bd = di * di + dj * dj; best = [i, j]; }
+    }
+    return best;
+  };
+  const stops = [0, 1, 2].map(n => flat(WPS[n].cell)); if (stops.some(c => !c)) return null;
+  const legs = [[0, 1], [1, 2], [2, 0]], at = n => ({ x: wx(stops[n][1]), z: wz(stops[n][0]) });
+  const pts = [], stopIdx = [0], keep = cost;
+  cost = c2;                                           // smoothReturn() checks walkability on the global cost map
+  try {
+    for (const [a, b] of legs) {
+      const cells = astar(c2, stops[a], stops[b]); if (!cells) return null;
+      const leg = cells.length > 1 ? smoothReturn(cells, at(a)) : [at(a)];
+      if (pts.length) leg.shift();                     // each leg starts where the previous one ended
+      pts.push(...leg); stopIdx.push(pts.length - 1);
+    }
+  } finally { cost = keep; }
+  const path = pts.map(q => cellAt(q.x, q.z)), b = budgetPts(pts, mode);
+  b.blocked = 0; b.maxSlope = Math.max(...path.map(k => slope[k]));       // like the pipeline: steepest grid cell crossed (point-to-point heights pick up DEM noise)
+  const plan = { path, pts: pts.map(q => new THREE.Vector3(q.x, heightAt(q.x, q.z) + 2.5, q.z)), b, stopIdx, dwell: new Set(), stops: MISSION.slice() };
+  const sp = [];                                       // straight-line comparison through the same stops, a point every cell
+  for (const [a, c] of legs) {
+    const A = at(a), B = at(c), m = Math.max(1, Math.ceil(Math.hypot(B.x - A.x, B.z - A.z) / CELL));
+    for (let q = sp.length ? 1 : 0; q <= m; q++) sp.push({ x: A.x + (B.x - A.x) * q / m, z: A.z + (B.z - A.z) * q / m });
+  }
+  const spath = sp.map(q => cellAt(q.x, q.z)), sb = budgetPts(sp, mode);
+  sb.blocked = new Set(spath.filter(k => !isFinite(cost[k]))).size; sb.maxSlope = Math.max(...spath.map(k => slope[k]));
+  return { plan, straight: { path: spath, pts: sp.map(q => new THREE.Vector3(q.x, heightAt(q.x, q.z) + 2.5, q.z)), b: sb } };
+}
+if (SCI) {
+  const R = SCI.reach;
+  document.getElementById('sciLead').textContent = `Pick the objectives this EVA must serve: only places strong in all of them are kept, and the route visits the best two (Habitat → A → B → Habitat). Value = science score × reachability; a place counts only if a suited crew can walk there and back within ${Math.round(R.reserve_frac * 100)}% of suit O₂ (${R.limit} kg) and ${R.max_eva_h} h.`;
+  document.getElementById('sciNote').textContent = 'Scores are relative within this 10 km area, not absolute. Hover an objective or a tag for its NASA Moon to Mars objective codes; click a site to fly to it.';
+  const ob = document.getElementById('sciObj');
+  for (const c of SCI.criteria) {
+    const b = document.createElement('button'); b.className = 'btn'; b.dataset.k = c.key; b.textContent = SCI_BTN[c.key] || c.key;
+    b.title = `${c.label} · ${c.objectives.join(', ')}`; b.onclick = () => toggleObjective(c.key); ob.appendChild(b);
+  }
+  sciRender();
+  WPS[1].off = WPS[2].off = true; placeWaypoints(); fillStops();       // start: only the habitat, no route until objectives are picked
+  document.getElementById('showSci').onchange = e => { sciSync(); if (e.target.checked) openSection('science'); };
+  const openSci = () => setTimeout(() => openSection('science'), 0);  // after the module has finished (the drawer code is further down)
+  if (window.__introDone) openSci(); else addEventListener('intro-done', openSci, { once: true });
+} else {
+  sciRouteKey = 'minerals';                                            // no science data: fall back to the pipeline's EVA-07 route
+  document.getElementById('showSci').parentElement.style.display = 'none';
+  document.getElementById('sciMenu').style.display = 'none';
+}
 document.querySelectorAll('#layers button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#layers button').forEach(x => x.classList.remove('on')); b.classList.add('on'); layer = b.dataset.l; paint(); });
 
@@ -813,8 +1098,17 @@ function stopIdxFor(rows) {                // index of the route point nearest t
 function recompute() {
   const P = params[mode], R = ROUTES[mode], sup = supply();
   cost = computeCost(slope, data.soft, data.rock[mode], P.limit, P.wSlope, P.wSoft);
-  straight = seriesFrom(R.straight, R.summary.straight, mode);
-  plan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
+  if (sciRouteKey === 'none') { clearRoute(); return; }
+  const sr = sciRouteKey === 'science' ? scienceRoute() : null;
+  if (sciRouteKey === 'science' && !sr) {
+    setPriority('none', true);
+    toast(`No traversable ${mode === 'suit' ? 'walking' : 'rover'} route through ${WPS0[1] && sciSitesNow[0] ? sciSitesNow.slice(0, 2).map(x => x.name).join(' and ') : 'the picked sites'}`); return;
+  }
+  if (sr) { plan = sr.plan; straight = sr.straight; }
+  else {
+    straight = seriesFrom(R.straight, R.summary.straight, mode);
+    plan = { ...seriesFrom(R.route, R.summary, mode), stopIdx: stopIdxFor(R.route), dwell: new Set(), stops: MISSION.slice() };
+  }
   [optTube, retTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } }); optTube = retTube = arLine = null;
   strTube = makeTube(straight.pts, 0xff5a4d); strTube.visible = document.getElementById('showStraight').checked;
   const sb = straight.b;
@@ -834,6 +1128,18 @@ function recompute() {
   g.className = go ? 'go' : 'nogo'; set('gnTxt', go ? 'GO' : 'NO-GO');
   document.getElementById('gnWhy').innerHTML = `Safety factor <b>×${sf.toFixed(2)}</b> (limited by ${lim})<br>${(b.dist / 1000).toFixed(2)} km · ${fmtT(b.time)} · max ${b.maxSlope.toFixed(0)}°`;
   document.getElementById('evaBtn').disabled = false; document.getElementById('previewBtn').disabled = false;
+  set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
+  resetSim(); paint(); drawProfile();
+}
+
+// no route yet (start, or no place meets the picked objectives): only the habitat, and the panels say what to do
+function clearRoute() {
+  [optTube, retTube, strTube, arLine].forEach(o => { if (o) { scene.remove(o); o.geometry.dispose(); } });
+  optTube = retTube = strTube = arLine = null; plan = null; straight = null;
+  for (const id of ['oD', 'oS', 'oT', 'oO', 'oE', 'oB', 'sD', 'sS', 'sT', 'sO', 'sE', 'sB']) set(id, '–');
+  document.getElementById('gonogo').className = 'idle'; set('gnTxt', 'PLAN');
+  document.getElementById('gnWhy').innerHTML = 'No route yet<br>Pick objectives in Science value';
+  document.getElementById('evaBtn').disabled = true; document.getElementById('previewBtn').disabled = true;
   set('rLbl1', mode === 'suit' ? 'O₂ used' : 'Cabin O₂ used'); set('rLbl2', mode === 'suit' ? 'Suit battery' : 'Rover battery');
   resetSim(); paint(); drawProfile();
 }
@@ -873,6 +1179,7 @@ function drawProfile(cur) {
   const cv = document.getElementById('profile'), ctx = cv.getContext('2d'), dpr = devicePixelRatio;
   cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const Wc = cv.clientWidth, Hc = cv.clientHeight, pad = 6; ctx.clearRect(0, 0, Wc, Hc);
+  if (!plan || !straight) { ctx.fillStyle = '#97b3bd'; ctx.font = '11px sans-serif'; ctx.fillText('No route yet', pad + 2, 14); return; }
   const series = [[straight, '#ff5a4d', 1.2]]; if (plan) series.push([plan, '#37e0ff', 1.8]);
   const maxD = Math.max(...series.map(s => s[0].b.dist));
   const y = z => Hc - pad - (z - hMin) / (hMax - hMin) * (Hc - 2 * pad), X = d => pad + d / maxD * (Wc - 2 * pad);
@@ -910,7 +1217,7 @@ document.getElementById('evaBtn').onclick = () => {
   if (!plan) return; resetSim(); setVex(1); hab.scale.setScalar(1); speedUp = 1; set('speedBtn', 'Sim speed ×1'); fp = true; mouseLook.tx = mouseLook.ty = mouseLook.yaw = mouseLook.pitch = 0; controls.enabled = false; crew.visible = false;
   setArLine(plan, 0x5dff9d);      // always start from the planned route line (an earlier ABORT had replaced it with the amber return line)
   if (mouseLook.on) flashLookHint();
-  paint('img'); optTube.visible = retTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false;
+  paint('img'); optTube.visible = retTube.visible = strTube.visible = false; arLine.visible = true; wire.visible = false; minMesh.visible = false; sciSync();
   hudEl.className = mode === 'suit' ? 'helmet' : 'rover'; hudEl.style.display = 'block'; hudCtl.style.display = 'flex';
   panels.forEach(p => p.style.visibility = 'hidden'); document.body.classList.add('hudmode');
   scene.background = SKY; scene.fog = new THREE.Fog(SKY, 150 * SC, 1500 * SC); camera.fov = mode === 'suit' ? 70 : 64; camera.updateProjectionMatrix();
@@ -921,7 +1228,7 @@ document.getElementById('evaBtn').onclick = () => {
 };
 function exitFP() {
   setVex(2); hab.scale.setScalar(SC); fp = false; controls.enabled = true; paint(); optTube && (optTube.visible = true); retTube && (retTube.visible = true); strTube.visible = document.getElementById('showStraight').checked;
-  if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; hudEl.style.display = 'none'; hudCtl.style.display = 'none';
+  if (arLine) arLine.visible = false; wire.visible = layer === 'slope'; minMesh.visible = !!MIN && document.getElementById('showMin').checked; sciSync(); hudEl.style.display = 'none'; hudCtl.style.display = 'none';
   panels.forEach(p => p.style.visibility = ''); document.body.classList.remove('hudmode');
   scene.background = SPACE_BG; scene.fog = null; camera.fov = 50; camera.updateProjectionMatrix(); MAP_CAM();
   crew.visible = sim.t > 0;
@@ -1123,11 +1430,12 @@ function updateLabels() {
   for (const v of wpViz) {
     const target = fp ? v.ground.clone().setY(v.ground.y + (v.w.id === 'H' ? 30 : 90)) : v.anchor;
     const s = target.clone().project(camera), dist = camera.position.distanceTo(v.ground);
-    const hidden = s.z > 1 || s.z < -1 || (fp && dist < 15);
+    const hidden = s.z > 1 || s.z < -1 || (fp && dist < 15) || v.w.dup || v.w.off;
     v.el.style.display = hidden ? 'none' : 'block';
     if (!hidden) { v.el.style.left = `${(s.x * 0.5 + 0.5) * innerWidth}px`; v.el.style.top = `${(-s.y * 0.5 + 0.5) * innerHeight}px`;
-      v.el.textContent = fp ? `◆ ${v.w.short} · ${dist.toFixed(0)} m` : (v.w.id === 'H' ? 'H · HABITAT' : v.w.name); }
+      v.el.textContent = fp ? `◆ ${v.w.short} · ${dist.toFixed(0)} m` : (v.w.id === 'H' ? 'Habitat' : v.w.name); }
   }
+  updateSciLabels();
 }
 function advance(dt, mult) {
   const P = sim.active; if (!P) return null;
@@ -1274,14 +1582,14 @@ addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; cam
   document.getElementById('tipOk').onclick = close;
   el.addEventListener('click', e => { if (e.target === el) close(); });
   addEventListener('keydown', e => { if (el.style.display === 'flex' && (e.key === 'Escape' || e.key === 'Enter')) close(); });
-  document.getElementById('tipOpen').onclick = open;
+  const tipBtn = document.getElementById('tipOpen'); if (tipBtn) tipBtn.onclick = open;   // optional: no re-open button in the Info tab any more
   const first = () => { if (!hiddenToday()) open(); };
   if (window.__introDone) first(); else addEventListener('intro-done', first, { once: true });
 })();
 // =================== menus · drawer · info tab ===================
 set('limWalk', `${MODES.suit.limit}°`); set('limRover', `${MODES.rover.limit}°`);
 const drawerEl = document.getElementById('drawer'), infoEl = document.getElementById('infoView');
-const SEC_TITLE = { mission: 'Mission · EVA-07', compare: 'Mission readiness', conditions: 'Route conditions', profile: 'Elevation profile', display: 'Display options', track: 'Crew track · EVA' };
+const SEC_TITLE = { mission: 'Mission · EVA-07', compare: 'Mission readiness', conditions: 'Route conditions', profile: 'Elevation profile', display: 'Display options', track: 'Crew track · EVA', science: 'Science value · Moon to Mars' };
 // each top-level item opens only its own dropdown (hover with a mouse, tap/click otherwise)
 const navItems = document.querySelectorAll('.navitem');
 let navTimer = 0;
@@ -1302,6 +1610,7 @@ function openSection(id) {
   document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.dataset.sec === id));
   set('drTitle', SEC_TITLE[id]); drawerEl.classList.add('open');
   if (id === 'profile') drawProfile();
+  if (id === 'science' && SCI && !document.getElementById('showSci').checked) { document.getElementById('showSci').checked = true; sciSync(); }
 }
 function openInfo(id) {
   closeMenus(); closeDrawer(); infoEl.classList.add('open'); document.getElementById('infoNavBtn').classList.add('on');
@@ -1312,10 +1621,11 @@ document.querySelectorAll('button[data-sec]').forEach(b => b.addEventListener('c
 document.querySelectorAll('button[data-info]').forEach(b => b.addEventListener('click', () => openInfo(b.dataset.info)));
 document.getElementById('drClose').onclick = closeDrawer;
 document.getElementById('infoClose').onclick = closeInfo;
-document.getElementById('gonogo').onclick = () => openSection('compare');
+document.getElementById('gonogo').onclick = () => openSection(plan ? 'compare' : 'science');
 document.getElementById('evaTop').onclick = () => {
   const b = document.getElementById('evaBtn');
-  if (b.disabled) { openSection('compare'); toast('NO-GO: no traversable route'); } else b.click();
+  if (!plan) { openSection('science'); toast('No route yet: pick objectives in Science value first'); }
+  else if (b.disabled) { openSection('compare'); toast('NO-GO: no traversable route'); } else b.click();
 };
 document.querySelectorAll('#modeSeg button').forEach(b => b.addEventListener('click', () => set('evaTop', mode === 'suit' ? '▶ Start EVA' : '▶ Start drive')));
 addEventListener('keydown', e => { if (e.key === 'Escape' && !fp) { closeMenus(); closeDrawer(); closeInfo(); } });
