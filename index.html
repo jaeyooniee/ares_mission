@@ -221,6 +221,8 @@
   #sciSites .nm{font-size:12.5px;font-weight:600}
   #sciSites .v{font-size:13px;font-weight:700;color:#fde725;font-variant-numeric:tabular-nums}
   #sciSites .meta{grid-column:2 / span 2;font-size:11px;color:var(--dim)}
+  #sciSites .mins .mn{display:inline-flex;align-items:center;gap:4px;margin:3px 9px 0 0;color:#cfe3ea;white-space:nowrap}
+  #sciSites .mins .mn i{width:8px;height:8px;border-radius:2px;display:inline-block}
   .crit{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.08);margin:2px 4px 0 0;color:#cfe3ea}
 </style>
 <script type="importmap">
@@ -758,6 +760,33 @@ const areaTex = (file, cover) => { const t = new THREE.TextureLoader().load(DATA
 const costTex = MIN ? areaTex(MIN.cost_file, MIN.covers_m) : null;
 const matCost = new THREE.MeshStandardMaterial({ map: costTex, roughness: 0.95, metalness: 0 });
 const minTex = MIN ? areaTex(MIN.file, MIN.covers_m) : null;
+// the same minerals.png read as pixels, to list which minerals are at a place (each mineral has exactly one colour in the image)
+const MINCOL = MIN ? Object.fromEntries(Object.entries(MIN.classes).map(([k, c]) => [c.color.join(','), k])) : {};
+const MIN_SHORT = { hematite: 'Hematite', clay: 'Fe/Mg clay', clay_oh: 'Fe/Mg-OH clay', poly_sulf: 'Poly. sulfate', mono_sulf: 'Mono. sulfate',
+  ferric_sulfate: 'Ferric sulfate*', hydrated: 'Hydrated (H₂O)', fine_hematite: 'Fine hematite*', olivine: 'Olivine', fe_olivine: 'Fe-olivine', hcp: 'High-Ca pyroxene' };
+let MINPX = null;
+if (MIN) {
+  const im = new Image();
+  im.onload = () => {
+    const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
+    const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+    MINPX = { w: im.width, h: im.height, d: g.getImageData(0, 0, im.width, im.height).data };
+    dispatchEvent(new Event('minerals-ready'));
+  };
+  im.src = DATA + MIN.file;
+}
+// minerals detected within rM metres of (x, y) (m from the north-west corner), most pixels first; null while the image loads
+function mineralsAt(xm, ym, rM = 50) {
+  if (!MINPX) return null;
+  const { w, h, d } = MINPX, cw = MIN.covers_m[0] / w, ch = MIN.covers_m[1] / h, cx = xm / cw, cy = ym / ch, rx = rM / cw, ry = rM / ch, cnt = {};
+  for (let y = Math.max(0, Math.floor(cy - ry)); y <= Math.min(h - 1, Math.ceil(cy + ry)); y++)
+    for (let x = Math.max(0, Math.floor(cx - rx)); x <= Math.min(w - 1, Math.ceil(cx + rx)); x++) {
+      if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1) continue;
+      const q = (y * w + x) * 4; if (!d[q + 3]) continue;
+      const k = MINCOL[`${d[q]},${d[q + 1]},${d[q + 2]}`]; if (k) cnt[k] = (cnt[k] || 0) + 1;
+    }
+  return Object.entries(cnt).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+}
 if (minTex) { minTex.magFilter = THREE.NearestFilter; }
 const minMesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: minTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
 minMesh.visible = false; scene.add(minMesh);       // the CRISM overlay starts switched off; the checkbox turns it on
@@ -824,7 +853,7 @@ function paint(force) {
 }
 if (MIN) {
   // legend: colour · name · area %; * = low-confidence detection (hover for the CRISM index and threshold)
-  const cls = Object.values(MIN.classes), lowAny = cls.some(c => c.low);
+  const cls = Object.values(MIN.classes).sort((a, b) => (b.area_pct ?? 0) - (a.area_pct ?? 0)), lowAny = cls.some(c => c.low);   // largest area first
   document.getElementById('minLegend').innerHTML = cls.map(c => `<span style="white-space:nowrap" title="${c.index}${c.threshold != null ? ` · robust z ≥ ${c.threshold}` : ''}${c.low ? ' · low confidence' : ''}"><i style="display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;background:rgb(${c.color.join(',')})"></i>${c.label}${c.low ? '*' : ''} ${c.area_pct}%</span>`).join('')
     + (lowAny ? '<span style="opacity:.7">* low confidence</span>' : '');
   document.getElementById('srcMin').textContent = MIN.source;
@@ -966,6 +995,15 @@ function sciRender() {
       t.title = `${c.label} · ${c.objectives.join(', ')}`; crit.appendChild(t);
     }
     if (!crit.childNodes.length) crit.textContent = 'no single strong criterion';
+    // minerals actually detected around the site (CRISM overlay pixels within 50 m)
+    const mins = mineralsAt(s.x, s.y), ml = add('meta mins', '', 'div');
+    if (mins === null) ml.textContent = MIN ? 'Minerals: loading…' : '';
+    else if (!mins.length) ml.textContent = 'No CRISM mineral detected within 50 m';
+    else for (const k of mins) {
+      const c = MIN.classes[k], sp = document.createElement('span'), dot = document.createElement('i');
+      sp.className = 'mn'; dot.style.background = `rgb(${c.color.join(',')})`; sp.append(dot, MIN_SHORT[k] || c.label);
+      sp.title = `${c.label} (${c.index})${c.low ? ' · low confidence' : ''}`; ml.appendChild(sp);
+    }
     li.title = 'Show on the map'; li.onclick = () => sciFly(x, y, z);
     list.appendChild(li);
   });
@@ -1061,6 +1099,7 @@ if (SCI) {
   }
   sciRender();
   WPS[1].off = WPS[2].off = true; placeWaypoints(); fillStops();       // start: only the habitat, no route until objectives are picked
+  if (!MINPX) addEventListener('minerals-ready', () => sciRender(), { once: true });   // fill in the per-site mineral lines once the image is read
   document.getElementById('showSci').onchange = e => { sciSync(); if (e.target.checked) openSection('science'); };
   const openSci = () => setTimeout(() => openSection('science'), 0);  // after the module has finished (the drawer code is further down)
   if (window.__introDone) openSci(); else addEventListener('intro-done', openSci, { once: true });

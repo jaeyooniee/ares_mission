@@ -21,7 +21,7 @@
   },
   {
    "key": "geology",
-   "label": "Geologic diversity (exposed strata)",
+   "label": "Geology: hematite, high-Ca pyroxene, olivine + exposed strata",
    "objectives": [
     "LPS-1LM",
     "LPS-2LM"
@@ -45,7 +45,7 @@
   },
   {
    "key": "diversity",
-   "label": "Sample diversity nearby",
+   "label": "Sample diversity: clay, sulfate, hematite within 100 m",
    "objectives": [
     "SE-4LM",
     "SE-5LM"
@@ -97,13 +97,35 @@
    "params": {
     "life": [
      "D2300",
-     "BD2500_2"
+     "BD2290"
     ],
     "water": [
-     "BD1900_2",
+     "BD1900R2",
+     "SINDEX2",
+     "BD2100_2"
+    ],
+    "resource": [
      "SINDEX2",
      "BD2100_2",
-     "BD860_2"
+     "BD1900R2"
+    ],
+    "geology": [
+     "BD860_2",
+     "BD530_2",
+     "HCPINDEX2",
+     "OLINDEX3"
+    ],
+    "_clay": [
+     "D2300",
+     "BD2290"
+    ],
+    "_sulfate": [
+     "SINDEX2",
+     "BD2100_2"
+    ],
+    "_hematite": [
+     "BD860_2",
+     "BD530_2"
     ]
    },
    "normalize": "robust z per observation",
@@ -129,6 +151,17 @@
    "science.bin": "Uint8 [criteria x meshH x meshW], 0-254 = score 0-1, 255 = no data, criteria in the order of \"criteria\"",
    "reach.bin": "Uint8 [meshH x meshW], R x 254 (0 = cannot reach)"
   },
-  "site_rule": "a site must score >= 0.6 (science.py high_score) in every picked objective; ranked by mean(picked scores) x R; sites >= 150 m apart"
+  "site_rule": "a site must score >= 0.6 (science.py high_score) in every picked objective; ranked by mean(picked scores) x R; sites >= 150 m apart",
+  "gale_mapping": {
+   "life": "max(D2300, BD2290)",
+   "water": "max(BD1900R2, SINDEX2, BD2100_2)",
+   "resource": "max(SINDEX2, BD2100_2, BD1900R2) x THEMIS firm ground",
+   "geology": "(max(BD860_2, BD530_2, HCPINDEX2, OLINDEX3) + relief) / 2",
+   "novelty": "distance from the Curiosity traverse (1 at >= 300 m)",
+   "diversity": "share of the clay (D2300, BD2290) / sulfate (SINDEX2, BD2100_2) / hematite (BD860_2, BD530_2) families scoring >= 0.6 within 100 m"
+  },
+  "excluded": {
+   "BD2230": "hydroxylated ferric sulfate, low confidence: strong cells form vertical stripes (column/row anisotropy 3.15 vs ~1.0 for the other water indices) and 74% of the old Water-strong area came from it alone; still shown in the CRISM mineral overlay, not used for scores"
+  }
  }
 }
